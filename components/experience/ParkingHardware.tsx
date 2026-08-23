@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
+import { useExperienceStore } from "./useExperienceStore";
 
 export function ParkingBlocker({
   position = [0, 0, 0],
@@ -13,10 +14,19 @@ export function ParkingBlocker({
   lowered?: boolean;
 }) {
   const barrier = useRef<THREE.Group>(null);
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
+  const selectedProblem = useExperienceStore((state) => state.selectedProblem);
+  const residenceAccessAuthorized = useExperienceStore(
+    (state) => state.residenceAccessAuthorized,
+  );
+  const requiresResidenceAuthorization =
+    lowered && selectedEnvironment === "residence" && selectedProblem === "protect-space";
+  const effectiveLowered =
+    lowered && (!requiresResidenceAuthorization || residenceAccessAuthorized);
 
   useFrame((_, delta) => {
     if (!barrier.current) return;
-    const target = lowered ? -1.18 : -0.08;
+    const target = effectiveLowered ? -1.18 : -0.08;
     barrier.current.rotation.x = THREE.MathUtils.lerp(
       barrier.current.rotation.x,
       target,
@@ -34,7 +44,11 @@ export function ParkingBlocker({
       </RoundedBox>
       <mesh position={[0, 0.205, 0.15]}>
         <boxGeometry args={[0.12, 0.035, 0.025]} />
-        <meshStandardMaterial color="#9df4b7" emissive="#4eb767" emissiveIntensity={0.9} />
+        <meshStandardMaterial
+          color={effectiveLowered ? "#9df4b7" : "#7b8780"}
+          emissive={effectiveLowered ? "#4eb767" : "#000000"}
+          emissiveIntensity={effectiveLowered ? 0.9 : 0}
+        />
       </mesh>
 
       <group ref={barrier} position={[0, 0.2, 0.08]}>
@@ -49,7 +63,11 @@ export function ParkingBlocker({
         </RoundedBox>
         <mesh position={[0, 0.83, 0.045]}>
           <boxGeometry args={[0.25, 0.045, 0.012]} />
-          <meshStandardMaterial color="#a9f5bd" emissive="#4cb968" emissiveIntensity={0.75} />
+          <meshStandardMaterial
+            color={effectiveLowered ? "#a9f5bd" : "#89938d"}
+            emissive={effectiveLowered ? "#4cb968" : "#000000"}
+            emissiveIntensity={effectiveLowered ? 0.75 : 0}
+          />
         </mesh>
       </group>
     </group>
