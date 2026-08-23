@@ -10,7 +10,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 **Pull request:** Draft PR #1 — `Phase 1: interactive MacroPark foundation`
 
-**Current priority:** Validate the multi-need configurator build, then browser-review and refine the cinematic experience before expanding environment breadth.
+**Current priority:** Browser-review and refine the cinematic experience, then selectively replace procedural geometry where higher-fidelity assets will create the biggest visual gain.
 
 **Repository state at planning start:** Empty repository.
 
@@ -30,7 +30,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - Performance, reduced-motion behavior and fallback support are requirements from the beginning.
 - The first prototype uses procedural geometry so interaction quality can be validated before investing in heavy production 3D assets.
 - Experience navigation is driven by an explicit state machine rather than being hard-wired to scroll position.
-- Client choices should accumulate into one solution instead of resetting after each demonstration.
+- Client choices accumulate into one solution instead of resetting after each demonstration.
 - Technical configuration remains hidden; the visitor expresses needs and MacroPark assembles the setup.
 
 ## Core experience
@@ -81,8 +81,10 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - [x] Add personalized `Your MacroPark` summary.
 - [x] Add contextual solar option after EV charging selection.
 - [x] Add persistent 3D solution effects for guidance, protected spaces, access flow and solar.
-- [ ] Validate the latest configurator build in CI.
-- [ ] Performance-check the complete vertical slice.
+- [x] Validate the multi-need configurator production build in CI.
+- [x] Add subtle pointer parallax, depth particles and active-environment lighting.
+- [x] Ensure canvas-only cinematic polish disables itself for reduced-motion users.
+- [ ] Performance-check the complete vertical slice on real devices.
 - [ ] Refine transition timing and scene composition after browser review.
 
 ## Implemented interaction examples
@@ -128,9 +130,12 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - The first scene has no required remote HDR/model dependency, so the initial render is self-contained apart from npm packages.
 - CI is configured on pull requests to `main` and installs dependencies before running the production build.
 - The original CI failure was caused by `setup-node` npm caching requiring a lockfile before the new repository had one. Cache configuration was removed until a lockfile is committed.
-- GitHub Actions run #11 completed successfully: dependency installation, Next.js production compile, TypeScript validation, static generation and optimization all passed.
-- Successful baseline build reported `/` at 238 kB route size and 340 kB First Load JS.
-- The latest multi-need configurator changes are awaiting their own CI result and must not be treated as validated until that run completes.
+- GitHub Actions run #11 completed successfully for the baseline vertical slice.
+- Baseline build reported `/` at 238 kB route size and 340 kB First Load JS.
+- GitHub Actions run #17 completed successfully after the multi-need configurator, personalized summary and persistent 3D solution effects were added.
+- Configurator build reported `/` at 240 kB route size and 342 kB First Load JS: roughly +2 kB First Load JS from the intelligence/summary layer.
+- Run #17 produced one CSS compatibility warning for `align-items: end`; it was corrected to `flex-end` immediately afterward.
+- The newest cinematic polish commit should receive the next CI validation before this branch is considered ready for browser sign-off.
 
 ## Decisions still intentionally open
 
@@ -147,14 +152,22 @@ These should be decided through iteration based on what produces the strongest c
 
 ## Next action
 
-1. Confirm the latest configurator commit passes GitHub Actions.
-2. Fix any type/build issue revealed by CI.
-3. Browser-review the vertical slice and refine camera/animation composition.
-4. Performance-check desktop and mobile.
-5. Add richer scene storytelling and production-quality visual assets selectively.
-6. Design the client handoff / consultation step from the personalized configuration.
+1. Confirm the latest cinematic polish commit passes GitHub Actions cleanly.
+2. Browser-review the vertical slice and refine camera/animation composition.
+3. Performance-check desktop and mobile on real hardware.
+4. Replace only the highest-impact procedural assets with optimized production-quality assets.
+5. Design the client handoff / consultation step from the personalized configuration.
+6. Expand beyond Home / Residence / Retail only after the core journey feels premium.
 
 ## Change log
+
+### 2026-08-23 — Cinematic polish
+
+- Added subtle pointer-driven camera parallax.
+- Added low-cost depth particles to improve scale and atmosphere.
+- Added environment-focused moving light so selected places feel physically emphasized.
+- Explicitly disabled the canvas-only polish when `prefers-reduced-motion` is enabled.
+- Cleaned the CSS compatibility warning surfaced by CI.
 
 ### 2026-08-23 — Intelligent configurator polish
 
@@ -166,6 +179,7 @@ These should be decided through iteration based on what produces the strongest c
 - Added contextual solar upgrade that only exists when EV charging is selected.
 - Added 3D solution effects that persist across selections: guidance trail, protected-bay glow, guest-access indicator, access/flow pulse and solar canopy energy flow.
 - Kept the interaction client-facing and plain-language; no technical configuration UI was introduced.
+- Production CI passed after these additions with only a minor CSS warning that was then corrected.
 
 ### 2026-08-23 — CI repair and first validated build
 
