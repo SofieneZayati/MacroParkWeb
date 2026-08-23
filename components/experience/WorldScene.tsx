@@ -33,6 +33,12 @@ const CAMERA: Record<string, CameraTarget> = {
   retail: { position: [-14.4, 7.25, -0.25], lookAt: [-8.25, 0.95, -8.7], fov: 39 },
 };
 
+const MOBILE_CAMERA: Partial<Record<string, CameraTarget>> = {
+  home: { position: [11.9, 8.7, 1.6], lookAt: [8, 1.75, -9.5], fov: 50 },
+  residence: { position: [6.65, 9.2, -2.35], lookAt: [0, 2.15, -12.6], fov: 49 },
+  retail: { position: [-12.9, 8.65, 1.2], lookAt: [-8.5, 1.8, -8.8], fov: 49 },
+};
+
 export function WorldScene() {
   const phase = useExperienceStore((state) => state.phase);
   const showArrivalInfrastructure = ["arrival", "scan", "reveal", "choose"].includes(phase);
@@ -68,8 +74,9 @@ function CameraRig({ phase }: { phase: string }) {
   const targetPosition = useMemo(() => new THREE.Vector3(), []);
   const targetLookAt = useMemo(() => new THREE.Vector3(), []);
 
-  useFrame(({ camera }, delta) => {
-    const target = CAMERA[phase] ?? CAMERA.choose;
+  useFrame(({ camera, size }, delta) => {
+    const mobileTarget = size.width <= 760 ? MOBILE_CAMERA[phase] : undefined;
+    const target = mobileTarget ?? CAMERA[phase] ?? CAMERA.choose;
     targetPosition.set(...target.position);
     targetLookAt.set(...target.lookAt);
 
@@ -289,7 +296,7 @@ function RetailWorld() {
       <RetailArchitecture />
 
       {[-2.7, -0.9, 0.9, 2.7].map((x, index) => (
-        <RetailBay key={x} x={x} active={guidance && index === 2} />
+        <RetailBay key={x} x={x} active={guidance && index === 1} />
       ))}
 
       {active && selectedProblem === "reduce-queues" && (
