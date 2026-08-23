@@ -1,10 +1,6 @@
 name: MacroPark Web CI
 
 on:
-  push:
-    branches:
-      - main
-      - phase-1-interactive-foundation
   pull_request:
     branches:
       - main
