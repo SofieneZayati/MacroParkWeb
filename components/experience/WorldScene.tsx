@@ -76,8 +76,12 @@ function CameraRig({ phase }: { phase: string }) {
     const ease = 1 - Math.exp(-delta * 2.2);
     camera.position.lerp(targetPosition, ease);
     lookAt.current.lerp(targetLookAt, ease);
-    camera.fov = THREE.MathUtils.damp(camera.fov, target.fov, 2.7, delta);
-    camera.updateProjectionMatrix();
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = THREE.MathUtils.damp(camera.fov, target.fov, 2.7, delta);
+      camera.updateProjectionMatrix();
+    }
+
     camera.lookAt(lookAt.current);
   });
 
