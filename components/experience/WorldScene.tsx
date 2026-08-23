@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, useCursor } from "@react-three/drei";
 import * as THREE from "three";
@@ -11,6 +11,7 @@ import {
 import { EntranceKit } from "./EntranceKit";
 import { EVCharger, ParkingBlocker } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { HomeAccessSequence } from "./HomeAccessSequence";
 import {
   HomeArchitecture,
   ResidenceArchitecture,
@@ -34,6 +35,11 @@ const CAMERA: Record<string, CameraTarget> = {
 };
 
 const PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "home:automatic-access": {
+    position: [12.3, 4.35, -2.55],
+    lookAt: [7.35, 0.9, -6.95],
+    fov: 36,
+  },
   "retail:parking-guidance": {
     position: [-13.55, 4.95, -2.15],
     lookAt: [-9.65, 0.32, -7.18],
@@ -48,6 +54,11 @@ const MOBILE_CAMERA: Partial<Record<string, CameraTarget>> = {
 };
 
 const MOBILE_PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "home:automatic-access": {
+    position: [10.95, 7.5, 0.75],
+    lookAt: [7.45, 1.25, -7.55],
+    fov: 47,
+  },
   "retail:parking-guidance": {
     position: [-12.35, 7.25, 0.15],
     lookAt: [-9.45, 0.72, -7.25],
@@ -240,10 +251,20 @@ function HomeWorld() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const active = selectedEnvironment === "home";
+  const automaticAccessActive = active && selectedProblem === "automatic-access";
+  const [garageAuthorized, setGarageAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (!automaticAccessActive) setGarageAuthorized(false);
+  }, [automaticAccessActive]);
 
   return (
     <InteractiveEnvironment id="home" position={[8, 0, -10]}>
-      <HomeArchitecture garageOpen={active && selectedProblem === "automatic-access"} />
+      <HomeArchitecture garageOpen={automaticAccessActive && garageAuthorized} />
+
+      {automaticAccessActive && (
+        <HomeAccessSequence onRecognized={() => setGarageAuthorized(true)} />
+      )}
 
       {selectedProblem === "guest-access" && active && (
         <group position={[1.15, 0, 3.1]} rotation-y={Math.PI}>
