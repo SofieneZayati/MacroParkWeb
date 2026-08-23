@@ -9,6 +9,7 @@ import {
   useExperienceStore,
 } from "./useExperienceStore";
 import { EntranceKit } from "./EntranceKit";
+import { EVCharger, ParkingBlocker } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
 
 const CAMERA: Record<string, { position: [number, number, number]; lookAt: [number, number, number] }> = {
@@ -218,8 +219,8 @@ function HomeWorld() {
 
       {selectedProblem === "ev-charging" && active && (
         <group position={[-2.4, 0, 2.2]}>
-          <Charger />
-          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={4} distance={4} />
+          <EVCharger compact />
+          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={3} distance={4} />
         </group>
       )}
     </InteractiveEnvironment>
@@ -255,8 +256,8 @@ function ResidenceWorld() {
       <ParkingBay x={-2.45} glow={active && selectedProblem === "protect-space"} />
       <ParkingBay x={0} glow={active && selectedProblem === "guest-access"} />
       <ParkingBay x={2.45} glow={active && selectedProblem === "ev-charging"} />
-      {active && selectedProblem === "protect-space" && <ParkingLock position={[-2.45, 0.18, 2.4]} lowered />}
-      {active && selectedProblem === "ev-charging" && <Charger position={[3.1, 0, 1.25]} />}
+      {active && selectedProblem === "protect-space" && <ParkingBlocker position={[-2.45, 0.1, 2.4]} lowered />}
+      {active && selectedProblem === "ev-charging" && <EVCharger position={[3.1, 0, 1.25]} />}
     </InteractiveEnvironment>
   );
 }
@@ -275,32 +276,6 @@ function ParkingBay({ x, glow }: { x: number; glow?: boolean }) {
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}>
         <ringGeometry args={[0.6, 0.63, 32, 1, 0, Math.PI]} />
         <meshBasicMaterial color="#e3e9e5" transparent opacity={0.25} />
-      </mesh>
-    </group>
-  );
-}
-
-function ParkingLock({ position, lowered = false }: { position: [number, number, number]; lowered?: boolean }) {
-  const arm = useRef<THREE.Mesh>(null);
-
-  useFrame((_, delta) => {
-    if (!arm.current) return;
-    arm.current.rotation.x = THREE.MathUtils.lerp(
-      arm.current.rotation.x,
-      lowered ? 0.05 : -0.85,
-      1 - Math.exp(-delta * 4),
-    );
-  });
-
-  return (
-    <group position={position}>
-      <mesh>
-        <boxGeometry args={[0.65, 0.08, 0.34]} />
-        <meshStandardMaterial color="#adb7b0" metalness={0.55} roughness={0.42} />
-      </mesh>
-      <mesh ref={arm} position={[0, 0.3, 0.05]}>
-        <boxGeometry args={[0.08, 0.62, 0.08]} />
-        <meshStandardMaterial color="#a9f7be" />
       </mesh>
     </group>
   );
@@ -346,26 +321,11 @@ function RetailWorld() {
 
       {active && selectedProblem === "ev-charging" && (
         <group>
-          <Charger position={[2.95, 0, 0.7]} />
-          <Charger position={[1.15, 0, 0.7]} />
+          <EVCharger position={[2.95, 0, 0.7]} />
+          <EVCharger position={[1.15, 0, 0.7]} />
         </group>
       )}
     </InteractiveEnvironment>
-  );
-}
-
-function Charger({ position = [0, 0, 0] }: { position?: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <RoundedBox args={[0.38, 1.28, 0.32]} radius={0.08} position={[0, 0.65, 0]} castShadow>
-        <meshStandardMaterial color="#e2e7e3" roughness={0.45} />
-      </RoundedBox>
-      <mesh position={[0, 0.82, 0.17]}>
-        <boxGeometry args={[0.19, 0.31, 0.02]} />
-        <meshBasicMaterial color="#85f6a9" />
-      </mesh>
-      <pointLight position={[0, 0.9, 0.45]} color="#85f6a9" intensity={2.5} distance={2.5} />
-    </group>
   );
 }
 
