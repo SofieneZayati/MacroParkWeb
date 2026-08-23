@@ -17,6 +17,7 @@ export type ProblemId =
   | "automatic-access"
   | "guest-access"
   | "protect-space"
+  | "reservations"
   | "parking-guidance"
   | "reduce-queues"
   | "ev-charging";
