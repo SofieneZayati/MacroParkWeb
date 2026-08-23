@@ -89,32 +89,70 @@ function GuidanceTrail() {
   return (
     <group>
       {[0, 1, 2, 3, 4, 5].map((step) => (
-        <group key={step} position={[-3.2 + step * 0.46, 0.075, 5.65 - step * 0.64]}>
+        <group key={step} position={[-3.25 + step * 0.47, 0.075, 5.75 - step * 0.66]}>
           <mesh rotation-x={-Math.PI / 2} rotation-z={-0.23} position={[-0.12, 0, 0]}>
-            <planeGeometry args={[0.5, 0.1]} />
+            <planeGeometry args={[0.5, 0.11]} />
             <meshBasicMaterial
-              color="#a7f8be"
+              color="#b9ffca"
               transparent
-              opacity={0.34 + step * 0.075}
+              opacity={0.38 + step * 0.08}
               side={THREE.DoubleSide}
             />
           </mesh>
           <mesh rotation-x={-Math.PI / 2} rotation-z={-1.05} position={[0.12, 0, 0]}>
-            <planeGeometry args={[0.5, 0.1]} />
+            <planeGeometry args={[0.5, 0.11]} />
             <meshBasicMaterial
-              color="#a7f8be"
+              color="#b9ffca"
               transparent
-              opacity={0.34 + step * 0.075}
+              opacity={0.38 + step * 0.08}
               side={THREE.DoubleSide}
             />
           </mesh>
         </group>
       ))}
-      <mesh rotation-x={-Math.PI / 2} position={[-0.9, 0.07, 2.45]}>
-        <ringGeometry args={[0.48, 0.56, 36]} />
-        <meshBasicMaterial color="#a7f8be" transparent opacity={0.55} side={THREE.DoubleSide} />
+      <AvailableBayMarker />
+    </group>
+  );
+}
+
+function AvailableBayMarker() {
+  const pulse = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!pulse.current) return;
+    const material = pulse.current.material as THREE.MeshBasicMaterial;
+    material.opacity = 0.2 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.08;
+  });
+
+  return (
+    <group position={[-0.9, 0, 2.45]}>
+      <mesh ref={pulse} rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
+        <planeGeometry args={[1.42, 3.02]} />
+        <meshBasicMaterial color="#8dffab" transparent opacity={0.28} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[-0.9, 0.72, 2.45]} color="#9effbd" intensity={2} distance={3.5} />
+
+      {[-0.68, 0.68].map((x) => (
+        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.115, 0]}>
+          <planeGeometry args={[0.055, 2.9]} />
+          <meshBasicMaterial color="#c7ffd5" transparent opacity={0.9} />
+        </mesh>
+      ))}
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.115, -1.42]}>
+        <planeGeometry args={[1.38, 0.055]} />
+        <meshBasicMaterial color="#c7ffd5" transparent opacity={0.9} />
+      </mesh>
+
+      <group position={[0, 0, -1.15]}>
+        <mesh position={[0, 0.72, 0]}>
+          <cylinderGeometry args={[0.03, 0.045, 1.42, 10]} />
+          <meshStandardMaterial color="#68736c" metalness={0.45} roughness={0.45} />
+        </mesh>
+        <mesh position={[0, 1.44, 0]}>
+          <sphereGeometry args={[0.105, 16, 12]} />
+          <meshStandardMaterial color="#b8ffc8" emissive="#62d77e" emissiveIntensity={2.2} />
+        </mesh>
+        <pointLight position={[0, 1.35, 0]} color="#8fffaa" intensity={2.3} distance={4.1} />
+      </group>
     </group>
   );
 }
