@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, Preload } from "@react-three/drei";
+import { Preload } from "@react-three/drei";
 import { WorldScene } from "./WorldScene";
 import { useExperienceStore } from "./useExperienceStore";
 import { environments, getEnvironment, getProblem } from "@/lib/experienceContent";
@@ -55,7 +55,6 @@ export function MacroParkExperience() {
       >
         <Suspense fallback={null}>
           <WorldScene />
-          <Environment preset="city" environmentIntensity={0.34} />
           <Preload all />
         </Suspense>
       </Canvas>
