@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
@@ -12,6 +12,9 @@ const FOCUS: Record<EnvironmentId, [number, number, number]> = {
 };
 
 export function ScenePolish() {
+  const reducedMotion = useReducedMotion();
+  if (reducedMotion) return null;
+
   return (
     <>
       <CameraParallax />
@@ -19,6 +22,21 @@ export function ScenePolish() {
       <EnvironmentGlow />
     </>
   );
+}
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return reduced;
 }
 
 function CameraParallax() {
