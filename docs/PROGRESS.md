@@ -34,6 +34,8 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - Experience navigation is driven by an explicit state machine rather than being hard-wired to scroll position.
 - Client choices accumulate into one solution instead of resetting after each demonstration.
 - Technical configuration remains hidden; the visitor expresses needs and MacroPark assembles the setup.
+- Reservation and guest access are separate concepts: a guest can be authorized at the entrance while a reservation holds a specific parking bay.
+- Never show a fake successful lead submission. Until a real email/CRM destination is configured, the project handoff creates a useful copyable brief instead.
 
 ## Core experience
 
@@ -48,6 +50,8 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 9. The visitor can combine multiple needs into a single configuration.
 10. If EV charging is selected, solar becomes an optional contextual upgrade.
 11. The visitor reviews a personalized `Your MacroPark` summary built from those choices.
+12. The visitor can turn the setup into a structured project brief with location, scale and project timing.
+13. If a MacroPark contact email is configured, the brief opens as a prefilled consultation request; otherwise it remains copyable and useful without pretending it was submitted.
 
 ## Implementation checklist
 
@@ -83,11 +87,16 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - [x] Add personalized `Your MacroPark` summary.
 - [x] Add contextual solar option after EV charging selection.
 - [x] Add persistent 3D solution effects for guidance, protected spaces, access flow and solar.
+- [x] Add explicit reserved-space scenarios for Residence and Retail/Mall.
+- [x] Add a distinct 3D reserved-bay state instead of reusing guest access visuals.
+- [x] Add functional project/consultation handoff from the personalized setup.
+- [x] Add copyable structured project brief fallback when no contact destination is configured.
+- [x] Document optional `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` configuration in `.env.example`.
 - [x] Validate the multi-need configurator production build in CI.
 - [x] Add subtle pointer parallax, depth particles and active-environment lighting.
 - [x] Ensure canvas-only cinematic polish disables itself for reduced-motion users.
 - [x] Modernize CI to current Node 24 / Actions v7 runtime.
-- [x] Validate the complete current branch under Node 24.
+- [x] Validate the complete current client journey under Node 24.
 - [ ] Performance-check the complete vertical slice on real devices.
 - [ ] Refine transition timing and scene composition after browser review.
 
@@ -103,17 +112,19 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 ### Residence
 
 - Protected assigned-space concept.
-- Guest-access scenario.
+- Explicit time-window parking reservation scenario.
+- Guest-access scenario separate from reservation logic.
 - Shared EV charging scenario.
-- Persistent protected-bay and access indicators.
+- Persistent protected-bay, reserved-bay and access indicators.
 - EV + solar canopy configuration path.
 
 ### Retail / mall
 
 - Entrance-flow / queue-reduction scenario.
 - Free-space guidance visualization.
+- Reserved / premium parking scenario.
 - Customer EV charging visualization.
-- Persistent guidance and flow effects.
+- Persistent guidance, reservation and flow effects.
 - EV + solar canopy configuration path.
 
 ## Personalized configuration behavior
@@ -127,6 +138,17 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - Solar is only offered when EV charging is part of the configuration.
 - Removing EV charging automatically removes the solar add-on.
 - Configured choices produce persistent visual effects in the 3D environment.
+- Reservations use a warm amber physical bay state to remain visually distinct from access/availability green.
+
+## Client handoff behavior
+
+- `Turn this into a project` continues from the personalized setup instead of starting a generic contact form.
+- The client can add project location/name, approximate parking scale and project timing.
+- Name and email are optional at this prototype stage.
+- A structured MacroPark project brief is generated from the selected environment and needs.
+- The brief can always be copied.
+- If `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` is configured, `Request a consultation` opens the visitor's email app with the subject and complete project brief prefilled.
+- Without a configured contact destination, the interface explicitly says delivery is not configured and copies the brief instead of faking a submission.
 
 ## Validation notes
 
@@ -140,13 +162,17 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - The CSS compatibility warning from that run was corrected.
 - CI was modernized to `actions/checkout@v7`, `actions/setup-node@v7` and Node 24 with package-manager caching explicitly disabled while no lockfile is committed.
 - Node 24 exposed a stricter TypeScript tuple-spread inference issue in `ScenePolish`; it was corrected by using explicit tuple typing/indexed vector assignment.
-- GitHub Actions run #26 then completed successfully under Node 24: install, compile, type validation, static generation and optimization all passed.
-- Current build reports `/` at 240 kB route size and 343 kB First Load JS.
+- GitHub Actions run #26 completed successfully under Node 24 after that correction.
+- The first consultation-handoff CI attempt exposed a nullable-environment TypeScript issue inside the nested contact action; the environment name was stabilized before the callback and the rerun passed.
+- GitHub Actions run #33 completed successfully for the consultation handoff.
+- GitHub Actions run #36 completed successfully for the cumulative branch including explicit reservations and the 3D reserved-bay effect.
+- Current build reports `/` at 243 kB route size and 345 kB First Load JS.
+- The cumulative client experience therefore remains about +5 kB First Load JS above the original 340 kB baseline despite the added configurator, summary, solar, cinematic polish, handoff and reservations.
 - npm currently emits a non-blocking `sharp` install-script approval warning under npm 11; the production build itself succeeds.
 
 ## Art direction
 
-Production 3D replacement priorities and visual rules are now recorded in `docs/ART_DIRECTION.md`.
+Production 3D replacement priorities and visual rules are recorded in `docs/ART_DIRECTION.md`.
 
 Highest-impact replacement order after visual review:
 
@@ -166,7 +192,7 @@ These should be decided through iteration based on what produces the strongest c
 - Final balance of scroll versus direct interaction.
 - Whether subtle optional sound materially improves the experience.
 - Final brand accent palette.
-- Final consultation / lead-capture flow after `Your MacroPark`.
+- Actual MacroPark consultation email / CRM destination.
 
 ## Next action
 
@@ -175,10 +201,24 @@ These should be decided through iteration based on what produces the strongest c
 3. Performance-check representative real hardware.
 4. Tune camera timing, object placement and text timing from the actual rendered experience.
 5. Replace only the highest-impact procedural assets with optimized production-quality assets.
-6. Design the consultation handoff from the personalized configuration.
+6. Connect the project handoff to the final MacroPark email/CRM destination once chosen.
 7. Expand beyond Home / Residence / Retail only after the core journey feels premium.
 
 ## Change log
+
+### 2026-08-23 — Client handoff and reservations milestone
+
+- Added `Turn this into a project` from the personalized MacroPark setup.
+- Added project location, parking scale and project-timing context.
+- Added automatic structured project-brief generation.
+- Added copyable fallback so the prototype remains honest and functional before CRM/email integration.
+- Added optional `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` configuration for a prefilled consultation email.
+- Added explicit parking reservations to Residence and Retail/Mall.
+- Kept guest access separate from reserved-space behavior.
+- Added a persistent amber reserved-bay visualization to the 3D scene.
+- Fixed the TypeScript issue surfaced by the first handoff CI attempt.
+- Completed a clean cumulative Node 24 production build after all changes.
+- Current First Load JS: 345 kB.
 
 ### 2026-08-23 — Clean Node 24 validation checkpoint
 
@@ -186,7 +226,6 @@ These should be decided through iteration based on what produces the strongest c
 - Synchronized the Phase 1 branch with the new `main` CI baseline without losing feature work.
 - Fixed the TypeScript tuple inference issue surfaced only by the newer toolchain.
 - Completed a clean production build on Node 24.
-- Current First Load JS is 343 kB.
 - Added `docs/ART_DIRECTION.md` to preserve the production-asset strategy.
 
 ### 2026-08-23 — Cinematic polish
