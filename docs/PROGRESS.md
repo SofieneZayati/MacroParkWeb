@@ -12,7 +12,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 **Build status:** Passing on Node 24 with the current GitHub Actions runtime.
 
-**Current priority:** Browser/device visual review, then selective high-impact asset replacement instead of adding more feature breadth.
+**Current priority:** Browser/device visual review of the upgraded entrance and hero vehicle, then selective parking-blocker / EV-kit polish instead of adding more feature breadth.
 
 **Repository state at planning start:** Empty repository.
 
@@ -36,6 +36,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - Technical configuration remains hidden; the visitor expresses needs and MacroPark assembles the setup.
 - Reservation and guest access are separate concepts: a guest can be authorized at the entrance while a reservation holds a specific parking bay.
 - Never show a fake successful lead submission. Until a real email/CRM destination is configured, the project handoff creates a useful copyable brief instead.
+- High-impact procedural assets can be upgraded before introducing GLB payloads when that lets us validate visual hierarchy first.
 
 ## Core experience
 
@@ -97,6 +98,10 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - [x] Ensure canvas-only cinematic polish disables itself for reduced-motion users.
 - [x] Modernize CI to current Node 24 / Actions v7 runtime.
 - [x] Validate the complete current client journey under Node 24.
+- [x] Upgrade the hero car from the original blockout to a reusable premium brand-neutral procedural vehicle.
+- [x] Upgrade the entrance to a reusable barrier / recognition-camera / intercom kit with induction-loop and improved scan detail.
+- [x] Reuse the upgraded vehicle for Home guest and Retail queue scenarios.
+- [x] Validate the first visual-asset upgrade milestone in CI.
 - [ ] Performance-check the complete vertical slice on real devices.
 - [ ] Refine transition timing and scene composition after browser review.
 
@@ -150,6 +155,15 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - If `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` is configured, `Request a consultation` opens the visitor's email app with the subject and complete project brief prefilled.
 - Without a configured contact destination, the interface explicitly says delivery is not configured and copies the brief instead of faking a submission.
 
+## Visual asset milestone
+
+- `PremiumVehicle.tsx` is now the shared brand-neutral procedural car component.
+- The vehicle has a more automotive silhouette, separate cabin/glass treatment, wheels/rims, mirrors, front/rear lighting, lower trim and a neutral plate area.
+- `EntranceKit.tsx` is now the shared controlled-entry component.
+- The entrance kit includes a more believable barrier housing, segmented arm, status light, ANPR-style camera head, IR details, compact fallback/intercom surface and induction-loop marking.
+- Scan mode now uses paired moving scan lines instead of a single flat line.
+- No external model payload was added for this milestone; the purpose is to validate perceived quality before choosing a final GLB asset.
+
 ## Validation notes
 
 - React Three Fiber is aligned to v9 for React 19 compatibility; Drei is on the compatible v10 line.
@@ -166,8 +180,9 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - The first consultation-handoff CI attempt exposed a nullable-environment TypeScript issue inside the nested contact action; the environment name was stabilized before the callback and the rerun passed.
 - GitHub Actions run #33 completed successfully for the consultation handoff.
 - GitHub Actions run #36 completed successfully for the cumulative branch including explicit reservations and the 3D reserved-bay effect.
-- Current build reports `/` at 243 kB route size and 345 kB First Load JS.
-- The cumulative client experience therefore remains about +5 kB First Load JS above the original 340 kB baseline despite the added configurator, summary, solar, cinematic polish, handoff and reservations.
+- GitHub Actions run #40 completed successfully after the premium procedural vehicle and entrance-kit refactor.
+- Current build reports `/` at 244 kB route size and 346 kB First Load JS.
+- The current client experience remains about +6 kB First Load JS above the original 340 kB baseline despite the configurator, summary, solar, cinematic polish, handoff, reservations and first high-impact visual asset upgrades.
 - npm currently emits a non-blocking `sharp` install-script approval warning under npm 11; the production build itself succeeds.
 
 ## Art direction
@@ -176,8 +191,8 @@ Production 3D replacement priorities and visual rules are recorded in `docs/ART_
 
 Highest-impact replacement order after visual review:
 
-1. Hero vehicle.
-2. Entrance / camera / barrier kit.
+1. Hero vehicle — premium procedural upgrade complete; final GLB decision pending rendered review.
+2. Entrance / camera / barrier kit — premium procedural upgrade complete; final GLB decision pending rendered review.
 3. Residence parking blocker.
 4. EV charger + solar canopy.
 5. Architecture only after the first four prove worthwhile.
@@ -188,7 +203,7 @@ These should be decided through iteration based on what produces the strongest c
 
 - Final opening copy.
 - Final architectural/art direction of the shared world within the documented visual rules.
-- Production vehicle model/style.
+- Whether the upgraded procedural hero vehicle is sufficient or should be replaced by a compressed GLB.
 - Final balance of scroll versus direct interaction.
 - Whether subtle optional sound materially improves the experience.
 - Final brand accent palette.
@@ -196,15 +211,27 @@ These should be decided through iteration based on what produces the strongest c
 
 ## Next action
 
-1. Browser-review the full vertical slice on desktop.
+1. Browser-review the upgraded entrance and hero vehicle on desktop.
 2. Review mobile composition separately rather than assuming desktop scales down correctly.
 3. Performance-check representative real hardware.
 4. Tune camera timing, object placement and text timing from the actual rendered experience.
-5. Replace only the highest-impact procedural assets with optimized production-quality assets.
-6. Connect the project handoff to the final MacroPark email/CRM destination once chosen.
-7. Expand beyond Home / Residence / Retail only after the core journey feels premium.
+5. If the first two upgraded assets read well, polish the Residence parking blocker and EV / solar hardware next.
+6. Only introduce external GLB assets where the rendered quality gain justifies the payload.
+7. Connect the project handoff to the final MacroPark email/CRM destination once chosen.
+8. Expand beyond Home / Residence / Retail only after the core journey feels premium.
 
 ## Change log
+
+### 2026-08-23 — First production-style visual asset upgrade
+
+- Replaced the original blockout hero car with a reusable premium procedural vehicle.
+- Added separate automotive body/cabin/glass treatment, detailed wheels, mirrors, lights, lower trim and neutral plate detail.
+- Replaced the original gate blockout with a reusable entrance kit.
+- Added improved barrier housing and arm, status feedback, ANPR-style recognition camera, IR details, fallback/intercom surface and induction-loop marking.
+- Upgraded scan visualization from one flat line to a paired moving recognition field.
+- Reused the new vehicle in guest and retail queue scenes for visual consistency.
+- Removed the superseded car/entrance blockout implementations from `WorldScene.tsx`.
+- GitHub Actions run #40 passed the full Node 24 production build and reported 346 kB First Load JS.
 
 ### 2026-08-23 — Client handoff and reservations milestone
 
@@ -218,7 +245,7 @@ These should be decided through iteration based on what produces the strongest c
 - Added a persistent amber reserved-bay visualization to the 3D scene.
 - Fixed the TypeScript issue surfaced by the first handoff CI attempt.
 - Completed a clean cumulative Node 24 production build after all changes.
-- Current First Load JS: 345 kB.
+- Current First Load JS at that milestone: 345 kB.
 
 ### 2026-08-23 — Clean Node 24 validation checkpoint
 
