@@ -23,6 +23,9 @@ export function ParkingBlocker({
     lowered && selectedEnvironment === "residence" && selectedProblem === "protect-space";
   const effectiveLowered =
     lowered && (!requiresResidenceAuthorization || residenceAccessAuthorized);
+  const renderedPosition: [number, number, number] = requiresResidenceAuthorization
+    ? [position[0], position[1], position[2] + 1.15]
+    : position;
 
   useFrame((_, delta) => {
     if (!barrier.current) return;
@@ -35,7 +38,7 @@ export function ParkingBlocker({
   });
 
   return (
-    <group position={position}>
+    <group position={renderedPosition}>
       <RoundedBox args={[0.82, 0.11, 0.48]} radius={0.055} position={[0, 0.08, 0]} castShadow>
         <meshStandardMaterial color="#8e9892" metalness={0.62} roughness={0.36} />
       </RoundedBox>
