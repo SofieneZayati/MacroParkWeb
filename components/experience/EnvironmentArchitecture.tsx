@@ -12,7 +12,7 @@ export function HomeArchitecture({ garageOpen }: { garageOpen: boolean }) {
     if (!garageDoor.current) return;
     garageDoor.current.position.y = THREE.MathUtils.damp(
       garageDoor.current.position.y,
-      garageOpen ? 2.35 : 0.98,
+      garageOpen ? 2.78 : 0.98,
       4.4,
       delta,
     );
