@@ -25,3 +25,61 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Capture visual QA
+        run: |
+          mkdir -p visual-qa
+          npm run start -- -H 127.0.0.1 -p 3000 >/tmp/macropark-next.log 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/ >/dev/null
+
+          CHROME_BIN="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "Chrome/Chromium is not available on the runner."
+            exit 1
+          fi
+
+          COMMON_FLAGS=(
+            --headless=new
+            --no-sandbox
+            --disable-dev-shm-usage
+            --hide-scrollbars
+            --enable-webgl
+            --ignore-gpu-blocklist
+            --use-angle=swiftshader
+            --run-all-compositor-stages-before-draw
+          )
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=1440,1000 \
+            --virtual-time-budget=1400 \
+            --screenshot=visual-qa/desktop-arrival.png \
+            http://127.0.0.1:3000/
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=1440,1000 \
+            --virtual-time-budget=7800 \
+            --screenshot=visual-qa/desktop-chooser.png \
+            http://127.0.0.1:3000/
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=390,844 \
+            --virtual-time-budget=7800 \
+            --screenshot=visual-qa/mobile-chooser.png \
+            http://127.0.0.1:3000/
+
+      - name: Upload visual QA
+        uses: actions/upload-artifact@v7
+        with:
+          name: macropark-visual-qa
+          path: visual-qa
+          if-no-files-found: error
+          retention-days: 7
