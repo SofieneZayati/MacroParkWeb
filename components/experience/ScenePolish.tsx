@@ -107,8 +107,11 @@ function EnvironmentGlow() {
   useFrame(({ clock }, delta) => {
     if (!light.current) return;
 
-    const targetPosition = selectedEnvironment ? FOCUS[selectedEnvironment] : ([0, 4, -9] as const);
-    target.set(...targetPosition);
+    const targetPosition: [number, number, number] = selectedEnvironment
+      ? FOCUS[selectedEnvironment]
+      : [0, 4, -9];
+
+    target.set(targetPosition[0], targetPosition[1], targetPosition[2]);
     current.current.lerp(target, 1 - Math.exp(-delta * 2.6));
     light.current.position.copy(current.current);
     light.current.intensity = 2.6 + Math.sin(clock.elapsedTime * 1.2) * 0.35;
