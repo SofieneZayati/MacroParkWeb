@@ -33,6 +33,7 @@ type ExperienceState = {
   summaryOpen: boolean;
   introComplete: boolean;
   guestAccessPreview: GuestAccessPreview;
+  residenceAccessAuthorized: boolean;
   setPhase: (phase: ExperiencePhase) => void;
   chooseEnvironment: (environment: EnvironmentId) => void;
   chooseProblem: (problem: ProblemId) => void;
@@ -44,6 +45,7 @@ type ExperienceState = {
   backToChooser: () => void;
   completeIntro: () => void;
   setGuestAccessPreview: (preview: GuestAccessPreview) => void;
+  setResidenceAccessAuthorized: (authorized: boolean) => void;
   reset: () => void;
 };
 
@@ -56,6 +58,7 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
   summaryOpen: false,
   introComplete: false,
   guestAccessPreview: "active",
+  residenceAccessAuthorized: false,
   setPhase: (phase) => set({ phase }),
   chooseEnvironment: (selectedEnvironment) =>
     set({
@@ -65,6 +68,7 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       solarEnabled: false,
       summaryOpen: false,
       guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
       phase: selectedEnvironment,
     }),
   chooseProblem: (selectedProblem) =>
@@ -75,8 +79,14 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
         : [...state.selectedProblems, selectedProblem],
       summaryOpen: false,
       guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
     })),
-  clearProblem: () => set({ selectedProblem: null, guestAccessPreview: "active" }),
+  clearProblem: () =>
+    set({
+      selectedProblem: null,
+      guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
+    }),
   removeProblem: (problem) =>
     set((state) => {
       const selectedProblems = state.selectedProblems.filter((item) => item !== problem);
@@ -87,13 +97,20 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
         selectedProblem: state.selectedProblem === problem ? null : state.selectedProblem,
         solarEnabled: evStillSelected ? state.solarEnabled : false,
         guestAccessPreview: "active",
+        residenceAccessAuthorized: false,
       };
     }),
   toggleSolar: () =>
     set((state) => ({
       solarEnabled: state.selectedProblems.includes("ev-charging") ? !state.solarEnabled : false,
     })),
-  openSummary: () => set({ summaryOpen: true, selectedProblem: null, guestAccessPreview: "active" }),
+  openSummary: () =>
+    set({
+      summaryOpen: true,
+      selectedProblem: null,
+      guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
+    }),
   closeSummary: () => set({ summaryOpen: false }),
   backToChooser: () =>
     set({
@@ -103,10 +120,12 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       solarEnabled: false,
       summaryOpen: false,
       guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
       phase: "choose",
     }),
   completeIntro: () => set({ introComplete: true, phase: "choose" }),
   setGuestAccessPreview: (guestAccessPreview) => set({ guestAccessPreview }),
+  setResidenceAccessAuthorized: (residenceAccessAuthorized) => set({ residenceAccessAuthorized }),
   reset: () =>
     set({
       phase: "arrival",
@@ -117,5 +136,6 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       summaryOpen: false,
       introComplete: false,
       guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
     }),
 }));
