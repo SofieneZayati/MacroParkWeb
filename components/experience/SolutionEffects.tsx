@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ParkingBlocker, SolarCanopy } from "./ParkingHardware";
+import { ResidenceAccessSequence } from "./ResidenceAccessSequence";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
@@ -36,6 +37,9 @@ export function SolutionEffects() {
   const selectedProblems = useExperienceStore((state) => state.selectedProblems);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
+  const residenceAccessAuthorized = useExperienceStore(
+    (state) => state.residenceAccessAuthorized,
+  );
 
   if (!selectedEnvironment) return null;
 
@@ -48,14 +52,21 @@ export function SolutionEffects() {
   const hasFlow = selectedProblems.includes("reduce-queues") || selectedProblems.includes("automatic-access");
   const guestPreviewActive =
     selectedEnvironment !== "home" || selectedProblem !== "guest-access" || guestAccessPreview === "active";
+  const residenceProtectionStory =
+    selectedEnvironment === "residence" && selectedProblem === "protect-space";
+  const residenceBayReady = !residenceProtectionStory || residenceAccessAuthorized;
 
   return (
     <group position={origin}>
       {selectedProblem && <ActiveBeacon />}
       {hasGuidance && selectedEnvironment === "retail" && <GuidanceTrail />}
       {hasProtectedSpace && selectedEnvironment === "residence" && (
-        <ProtectedBay showHardware={selectedProblem !== "protect-space"} />
+        <ProtectedBay
+          showHardware={selectedProblem !== "protect-space"}
+          ready={residenceBayReady}
+        />
       )}
+      {residenceProtectionStory && <ResidenceAccessSequence />}
       {hasReservation && <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />}
       {hasGuestAccess && (
         <GuestWindow position={GUEST_PLACEMENT[selectedEnvironment]} active={guestPreviewActive} />
@@ -172,21 +183,29 @@ function AvailableBayMarker() {
   );
 }
 
-function ProtectedBay({ showHardware }: { showHardware: boolean }) {
+function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: boolean }) {
   const glow = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!glow.current) return;
     const material = glow.current.material as THREE.MeshBasicMaterial;
-    material.opacity = 0.12 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.05;
+    material.opacity = ready
+      ? 0.14 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.06
+      : 0.86;
   });
 
   return (
     <group position={[-2.45, 0, 2.4]}>
-      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.045, 0]}>
+      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.095, 0]}>
         <planeGeometry args={[2.15, 3.15]} />
-        <meshBasicMaterial color="#a7f8be" transparent opacity={0.17} side={THREE.DoubleSide} />
+        <meshBasicMaterial
+          color={ready ? "#a7f8be" : "#222a26"}
+          transparent
+          opacity={ready ? 0.17 : 0.86}
+          side={THREE.DoubleSide}
+        />
       </mesh>
+      {ready && <pointLight position={[0, 0.7, 0]} color="#9effb7" intensity={1.6} distance={3.2} />}
       {showHardware && <ParkingBlocker position={[0, 0.04, -1.05]} />}
     </group>
   );
