@@ -33,10 +33,26 @@ const CAMERA: Record<string, CameraTarget> = {
   retail: { position: [-14.4, 7.25, -0.25], lookAt: [-8.25, 0.95, -8.7], fov: 39 },
 };
 
+const PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "retail:parking-guidance": {
+    position: [-13.55, 4.95, -2.15],
+    lookAt: [-9.65, 0.32, -7.18],
+    fov: 35,
+  },
+};
+
 const MOBILE_CAMERA: Partial<Record<string, CameraTarget>> = {
   home: { position: [11.9, 8.7, 1.6], lookAt: [8, 1.75, -9.5], fov: 50 },
   residence: { position: [6.65, 9.2, -2.35], lookAt: [0, 2.15, -12.6], fov: 49 },
   retail: { position: [-12.9, 8.65, 1.2], lookAt: [-8.5, 1.8, -8.8], fov: 49 },
+};
+
+const MOBILE_PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "retail:parking-guidance": {
+    position: [-12.35, 7.25, 0.15],
+    lookAt: [-9.45, 0.72, -7.25],
+    fov: 47,
+  },
 };
 
 export function WorldScene() {
@@ -70,13 +86,17 @@ export function WorldScene() {
 }
 
 function CameraRig({ phase }: { phase: string }) {
+  const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const lookAt = useRef(new THREE.Vector3(0, 0.8, 1));
   const targetPosition = useMemo(() => new THREE.Vector3(), []);
   const targetLookAt = useMemo(() => new THREE.Vector3(), []);
 
   useFrame(({ camera, size }, delta) => {
-    const mobileTarget = size.width <= 760 ? MOBILE_CAMERA[phase] : undefined;
-    const target = mobileTarget ?? CAMERA[phase] ?? CAMERA.choose;
+    const problemKey = selectedProblem ? `${phase}:${selectedProblem}` : null;
+    const problemTarget = problemKey ? PROBLEM_CAMERA[problemKey] : undefined;
+    const mobileProblemTarget = problemKey ? MOBILE_PROBLEM_CAMERA[problemKey] : undefined;
+    const mobileTarget = size.width <= 760 ? mobileProblemTarget ?? MOBILE_CAMERA[phase] : undefined;
+    const target = mobileTarget ?? problemTarget ?? CAMERA[phase] ?? CAMERA.choose;
     targetPosition.set(...target.position);
     targetLookAt.set(...target.lookAt);
 
@@ -299,6 +319,8 @@ function RetailWorld() {
         <RetailBay key={x} x={x} active={guidance && index === 1} />
       ))}
 
+      {guidance && <GuidedRetailVehicle />}
+
       {active && selectedProblem === "reduce-queues" && (
         <group position={[-1.15, 0, 4.0]} rotation-y={0.04}>
           <PremiumVehicle color="#ccd4cf" scale={0.42} lightsOn={false} />
@@ -318,6 +340,48 @@ function RetailWorld() {
         </group>
       )}
     </InteractiveEnvironment>
+  );
+}
+
+function GuidedRetailVehicle() {
+  const group = useRef<THREE.Group>(null);
+  const progress = useRef(0);
+  const point = useMemo(() => new THREE.Vector3(), []);
+  const tangent = useMemo(() => new THREE.Vector3(), []);
+  const curve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-3.75, 0, 6.35),
+        new THREE.Vector3(-3.2, 0, 5.35),
+        new THREE.Vector3(-2.45, 0, 4.45),
+        new THREE.Vector3(-1.55, 0, 3.4),
+        new THREE.Vector3(-0.9, 0, 2.45),
+      ]),
+    [],
+  );
+
+  useFrame((_, delta) => {
+    if (!group.current) return;
+
+    progress.current = Math.min(1, progress.current + delta * 0.55);
+    const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
+    curve.getPointAt(t, point);
+    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
+
+    group.current.position.copy(point);
+    group.current.rotation.y = THREE.MathUtils.damp(
+      group.current.rotation.y,
+      Math.atan2(-tangent.x, -tangent.z),
+      7,
+      delta,
+    );
+  });
+
+  return (
+    <group ref={group} position={[-3.75, 0, 6.35]}>
+      <PremiumVehicle color="#d4ddd7" scale={0.46} lightsOn={false} />
+      <pointLight position={[0, 0.45, -0.8]} color="#dfffe8" intensity={1.2} distance={2.5} />
+    </group>
   );
 }
 
