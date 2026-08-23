@@ -10,7 +10,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 **Pull request:** Draft PR #1 — `Phase 1: interactive MacroPark foundation`
 
-**Current priority:** Validate the production build, then browser-review and polish the first interactive sequence before expanding content breadth.
+**Current priority:** Browser-review and polish the first interactive sequence, then validate performance before expanding content breadth.
 
 **Repository state at planning start:** Empty repository.
 
@@ -72,7 +72,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - [x] Add environment-specific problem selection.
 - [x] Add first physical solution reactions in 3D.
 - [x] Add first-pass responsive/mobile treatment.
-- [ ] Validate production build in CI.
+- [x] Validate production build in CI.
 - [ ] Performance-check the complete vertical slice.
 - [ ] Refine transition timing and scene composition after browser review.
 
@@ -111,21 +111,33 @@ These should be decided through iteration based on what produces the strongest c
 
 ## Validation notes
 
-- React Three Fiber was aligned to v9 for React 19 compatibility; Drei is on the compatible v10 line.
+- React Three Fiber is aligned to v9 for React 19 compatibility; Drei is on the compatible v10 line.
 - The first scene has no required remote HDR/model dependency, so the initial render is self-contained apart from npm packages.
-- CI is configured on pull requests to `main` and installs dependencies before running the production build.
-- This session's local execution environment cannot resolve GitHub/npm hosts, so a local dependency install/build was not possible here.
-- The GitHub connector has not surfaced an Actions run for PR #1 yet; build validation remains open rather than being assumed successful.
+- The initial CI failure was caused by `actions/setup-node` npm caching requiring a lockfile that did not exist yet; npm caching was removed until a lockfile is committed.
+- GitHub Actions run #11 completed successfully on 2026-08-23 using Node 22.
+- Dependency installation completed successfully.
+- `next build` compiled successfully, completed type checking, generated all static pages and finished production optimization.
+- Current production output reports `/` at 238 kB route size and 340 kB First Load JS. This is acceptable for the procedural prototype but is now a concrete performance baseline to improve as production 3D assets are introduced.
+- This session's local execution environment cannot resolve GitHub/npm hosts, so GitHub Actions is the authoritative production-build validation for now.
 
 ## Next action
 
-1. Confirm PR #1 receives and passes the GitHub Actions production build.
-2. Fix any type/build issues revealed by CI or the first local checkout.
-3. Browser-review the first vertical slice and refine camera/animation composition.
-4. Performance-check desktop and mobile.
-5. Begin the next polish pass: richer environment behavior, solar/energy visualization, accumulated client choices, and a personalized solution summary.
+1. Browser-review the first vertical slice and refine camera/animation composition.
+2. Performance-check desktop and mobile using the 340 kB First Load JS baseline.
+3. Add richer environment behavior and stronger spatial transitions.
+4. Add solar/energy visualization and accumulated client choices.
+5. Build the personalized `Your MacroPark` solution summary and lead-capture path.
 
 ## Change log
+
+### 2026-08-23 — CI/build validation fixed
+
+- Investigated the failed GitHub Actions job instead of assuming a code failure.
+- Confirmed the failure happened in `setup-node` because npm caching required a missing lockfile.
+- Removed premature npm cache configuration.
+- Re-ran the PR workflow through the subsequent branch update.
+- GitHub Actions run #11 passed dependency installation, production compilation, type checking, static generation and optimization.
+- Recorded the current 340 kB First Load JS value as the first performance baseline.
 
 ### 2026-08-23 — Phase 0 / first vertical slice implementation
 
