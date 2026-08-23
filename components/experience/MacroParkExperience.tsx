@@ -4,6 +4,8 @@ import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Preload } from "@react-three/drei";
 import { WorldScene } from "./WorldScene";
+import { SolutionEffects } from "./SolutionEffects";
+import { ConfigurationSummary } from "./ConfigurationSummary";
 import { useExperienceStore } from "./useExperienceStore";
 import { environments, getEnvironment, getProblem } from "@/lib/experienceContent";
 
@@ -13,6 +15,7 @@ export function MacroParkExperience() {
     introComplete,
     selectedEnvironment,
     selectedProblem,
+    selectedProblems,
     setPhase,
     completeIntro,
     chooseEnvironment,
@@ -65,6 +68,7 @@ export function MacroParkExperience() {
       >
         <Suspense fallback={null}>
           <WorldScene />
+          <SolutionEffects />
           <Preload all />
         </Suspense>
       </Canvas>
@@ -78,6 +82,8 @@ export function MacroParkExperience() {
         </div>
         <span className="topbar-note">Parking that adapts to you</span>
       </header>
+
+      <ConfigurationSummary />
 
       <section className="hud" aria-live="polite">
         {phase === "arrival" && !introComplete && (
@@ -151,21 +157,26 @@ export function MacroParkExperience() {
 
               {!problem ? (
                 <div className="problem-list">
-                  {environment.problems.map((item) => (
-                    <button
-                      className="problem-button"
-                      type="button"
-                      key={item.id}
-                      onClick={() => chooseProblem(item.id)}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                  {environment.problems.map((item) => {
+                    const configured = selectedProblems.includes(item.id);
+
+                    return (
+                      <button
+                        className="problem-button"
+                        type="button"
+                        key={item.id}
+                        aria-pressed={configured}
+                        onClick={() => chooseProblem(item.id)}
+                      >
+                        {configured ? `✓ ${item.label}` : item.label}
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="problem-list">
                   <button className="problem-button" type="button" onClick={clearProblem}>
-                    Explore another need
+                    Add another need
                   </button>
                 </div>
               )}
