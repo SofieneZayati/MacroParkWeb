@@ -22,6 +22,7 @@ export function SolutionEffects() {
   const origin = ORIGIN[selectedEnvironment];
   const hasGuidance = selectedProblems.includes("parking-guidance");
   const hasProtectedSpace = selectedProblems.includes("protect-space");
+  const hasReservation = selectedProblems.includes("reservations");
   const hasGuestAccess = selectedProblems.includes("guest-access");
   const hasFlow = selectedProblems.includes("reduce-queues") || selectedProblems.includes("automatic-access");
 
@@ -30,6 +31,7 @@ export function SolutionEffects() {
       {selectedProblem && <ActiveBeacon />}
       {hasGuidance && <GuidanceTrail />}
       {hasProtectedSpace && <ProtectedBay />}
+      {hasReservation && <ReservedBay />}
       {hasGuestAccess && <GuestWindow />}
       {hasFlow && <FlowPulse />}
       {solarEnabled && <SolarCanopy />}
@@ -92,6 +94,35 @@ function ProtectedBay() {
         <boxGeometry args={[1.7, 0.12, 0.22]} />
         <meshStandardMaterial color="#9beeb3" emissive="#3e8653" emissiveIntensity={0.55} />
       </mesh>
+    </group>
+  );
+}
+
+function ReservedBay() {
+  const marker = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!marker.current) return;
+    marker.current.rotation.z = clock.elapsedTime * 0.22;
+    const material = marker.current.material as THREE.MeshBasicMaterial;
+    material.opacity = 0.32 + (Math.sin(clock.elapsedTime * 2) + 1) * 0.08;
+  });
+
+  return (
+    <group position={[-2.7, 0, 0.55]}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 0]}>
+        <planeGeometry args={[2.05, 4]} />
+        <meshBasicMaterial color="#f2c76f" transparent opacity={0.1} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={marker} rotation-x={Math.PI / 2} position={[0, 0.11, 0]}>
+        <torusGeometry args={[0.55, 0.045, 10, 48, Math.PI * 1.62]} />
+        <meshBasicMaterial color="#f6cf79" transparent opacity={0.4} />
+      </mesh>
+      <mesh position={[0, 0.16, -1.62]}>
+        <boxGeometry args={[1.5, 0.08, 0.12]} />
+        <meshStandardMaterial color="#d8aa50" emissive="#7d5720" emissiveIntensity={0.45} />
+      </mesh>
+      <pointLight position={[0, 1.1, 0]} color="#f2ca77" intensity={1.8} distance={3.2} />
     </group>
   );
 }
