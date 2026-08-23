@@ -108,6 +108,9 @@ jobs:
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
 
+          capture 390,844 2100 visual-qa/mobile-home-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
+
           capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
