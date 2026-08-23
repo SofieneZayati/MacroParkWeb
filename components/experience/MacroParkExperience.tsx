@@ -124,24 +124,26 @@ export function MacroParkExperience() {
         )}
 
         {phase === "choose" && (
-          <div className="chooser fade-in">
-            <div className="chooser-heading">
-              <span>Start with your world</span>
-              <h1>Where should parking feel smarter?</h1>
-            </div>
-            <div className="environment-grid">
-              {environments.map((item) => (
-                <button
-                  className="environment-card"
-                  type="button"
-                  key={item.id}
-                  onClick={() => chooseEnvironment(item.id)}
-                >
-                  <span className="environment-index">{item.index}</span>
-                  <span className="environment-name">{item.name}</span>
-                  <span className="environment-hint">{item.hint}</span>
-                </button>
-              ))}
+          <div className="chooser">
+            <div className="fade-in">
+              <div className="chooser-heading">
+                <span>Start with your world</span>
+                <h1>Where should parking feel smarter?</h1>
+              </div>
+              <div className="environment-grid">
+                {environments.map((item) => (
+                  <button
+                    className="environment-card"
+                    type="button"
+                    key={item.id}
+                    onClick={() => chooseEnvironment(item.id)}
+                  >
+                    <span className="environment-index">{item.index}</span>
+                    <span className="environment-name">{item.name}</span>
+                    <span className="environment-hint">{item.hint}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
