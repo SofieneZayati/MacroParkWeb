@@ -35,6 +35,7 @@ export function SolutionEffects() {
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const selectedProblems = useExperienceStore((state) => state.selectedProblems);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
+  const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
 
   if (!selectedEnvironment) return null;
 
@@ -45,6 +46,8 @@ export function SolutionEffects() {
   const hasReservation = selectedProblems.includes("reservations");
   const hasGuestAccess = selectedProblems.includes("guest-access");
   const hasFlow = selectedProblems.includes("reduce-queues") || selectedProblems.includes("automatic-access");
+  const guestPreviewActive =
+    selectedEnvironment !== "home" || selectedProblem !== "guest-access" || guestAccessPreview === "active";
 
   return (
     <group position={origin}>
@@ -54,7 +57,9 @@ export function SolutionEffects() {
         <ProtectedBay showHardware={selectedProblem !== "protect-space"} />
       )}
       {hasReservation && <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />}
-      {hasGuestAccess && <GuestWindow position={GUEST_PLACEMENT[selectedEnvironment]} />}
+      {hasGuestAccess && (
+        <GuestWindow position={GUEST_PLACEMENT[selectedEnvironment]} active={guestPreviewActive} />
+      )}
       {hasFlow && (
         <FlowPulse
           x={selectedEnvironment === "retail" ? -1.9 : -0.75}
@@ -216,14 +221,17 @@ function ReservedBay({ position }: { position: [number, number, number] }) {
   );
 }
 
-function GuestWindow({ position }: { position: [number, number, number] }) {
+function GuestWindow({ position, active }: { position: [number, number, number]; active: boolean }) {
+  const color = active ? "#d6f7df" : "#f0c779";
+  const lightColor = active ? "#b6f7c9" : "#e5ae53";
+
   return (
     <group position={position}>
       <mesh rotation-x={-Math.PI / 2}>
         <ringGeometry args={[0.62, 0.7, 40]} />
-        <meshBasicMaterial color="#d6f7df" transparent opacity={0.44} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={color} transparent opacity={active ? 0.44 : 0.5} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[0, 1.1, 0]} color="#b6f7c9" intensity={2.2} distance={3.4} />
+      <pointLight position={[0, 1.1, 0]} color={lightColor} intensity={active ? 2.2 : 1.45} distance={3.4} />
     </group>
   );
 }
