@@ -190,22 +190,47 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
     if (!glow.current) return;
     const material = glow.current.material as THREE.MeshBasicMaterial;
     material.opacity = ready
-      ? 0.14 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.06
-      : 0.86;
+      ? 0.2 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.07
+      : 0.9;
   });
+
+  const lineColor = ready ? "#d1ffdc" : "#66736b";
+  const lineOpacity = ready ? 0.95 : 0.45;
 
   return (
     <group position={[-2.45, 0, 2.4]}>
-      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.095, 0]}>
-        <planeGeometry args={[2.15, 3.15]} />
+      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.125, 0]}>
+        <planeGeometry args={[2.08, 3.02]} />
         <meshBasicMaterial
-          color={ready ? "#a7f8be" : "#222a26"}
+          color={ready ? "#78e693" : "#222a26"}
           transparent
-          opacity={ready ? 0.17 : 0.86}
+          opacity={ready ? 0.25 : 0.9}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {ready && <pointLight position={[0, 0.7, 0]} color="#9effb7" intensity={1.6} distance={3.2} />}
+
+      {[-1.01, 1.01].map((x) => (
+        <mesh key={`protected-side-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.145, 0]}>
+          <planeGeometry args={[0.055, 3.02]} />
+          <meshBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
+        </mesh>
+      ))}
+      {[-1.48, 1.48].map((z) => (
+        <mesh key={`protected-end-${z}`} rotation-x={-Math.PI / 2} position={[0, 0.145, z]}>
+          <planeGeometry args={[2.08, 0.055]} />
+          <meshBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
+        </mesh>
+      ))}
+
+      {ready && (
+        <>
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.155, -0.2]}>
+            <ringGeometry args={[0.45, 0.51, 42]} />
+            <meshBasicMaterial color="#caffd7" transparent opacity={0.72} side={THREE.DoubleSide} />
+          </mesh>
+          <pointLight position={[0, 0.85, 0]} color="#9effb7" intensity={2.2} distance={3.8} />
+        </>
+      )}
       {showHardware && <ParkingBlocker position={[0, 0.04, -1.05]} />}
     </group>
   );
