@@ -8,6 +8,8 @@ import {
   type EnvironmentId,
   useExperienceStore,
 } from "./useExperienceStore";
+import { EntranceKit } from "./EntranceKit";
+import { PremiumVehicle } from "./PremiumVehicle";
 
 const CAMERA: Record<string, { position: [number, number, number]; lookAt: [number, number, number] }> = {
   arrival: { position: [0, 3.1, 14], lookAt: [0, 0.8, 1] },
@@ -39,7 +41,7 @@ export function WorldScene() {
       <CameraRig phase={phase} />
       <Ground />
       <Road />
-      <Entrance />
+      <EntranceKit />
       <ArrivalCar />
       <WorldBuildings />
     </>
@@ -107,83 +109,6 @@ function Road() {
   );
 }
 
-function Entrance() {
-  const phase = useExperienceStore((state) => state.phase);
-  const selectedProblem = useExperienceStore((state) => state.selectedProblem);
-  const arm = useRef<THREE.Group>(null);
-  const isOpen = phase !== "arrival" || selectedProblem === "automatic-access";
-
-  useFrame((_, delta) => {
-    if (!arm.current) return;
-    const desired = isOpen ? Math.PI * 0.47 : 0;
-    arm.current.rotation.z = THREE.MathUtils.lerp(
-      arm.current.rotation.z,
-      desired,
-      1 - Math.exp(-delta * 4.6),
-    );
-  });
-
-  return (
-    <group position={[0, 0, 0.25]}>
-      <RoundedBox args={[0.55, 1.35, 0.55]} radius={0.08} position={[-2.45, 0.68, 0]} castShadow>
-        <meshStandardMaterial color="#e6ebe7" roughness={0.45} />
-      </RoundedBox>
-      <group ref={arm} position={[-2.25, 1.04, 0]}>
-        <RoundedBox args={[4.8, 0.15, 0.18]} radius={0.04} position={[2.35, 0, 0]} castShadow>
-          <meshStandardMaterial color="#f1f4f1" roughness={0.4} />
-        </RoundedBox>
-        {[0.5, 1.55, 2.6, 3.65].map((x) => (
-          <mesh key={x} position={[x, 0, 0.1]}>
-            <boxGeometry args={[0.36, 0.16, 0.02]} />
-            <meshBasicMaterial color="#9df4b7" />
-          </mesh>
-        ))}
-      </group>
-      <CameraPost />
-      {phase === "scan" && <ScanField />}
-    </group>
-  );
-}
-
-function CameraPost() {
-  return (
-    <group position={[2.25, 0, 0.25]}>
-      <mesh position={[0, 1.3, 0]} castShadow>
-        <cylinderGeometry args={[0.055, 0.07, 2.6, 10]} />
-        <meshStandardMaterial color="#303934" metalness={0.5} roughness={0.5} />
-      </mesh>
-      <group position={[-0.12, 2.42, 0.02]} rotation={[0, 0, -0.16]}>
-        <RoundedBox args={[0.5, 0.23, 0.25]} radius={0.06} castShadow>
-          <meshStandardMaterial color="#d9dedb" metalness={0.25} roughness={0.4} />
-        </RoundedBox>
-        <mesh position={[-0.25, 0, 0]} rotation-y={Math.PI / 2}>
-          <cylinderGeometry args={[0.065, 0.065, 0.04, 16]} />
-          <meshBasicMaterial color="#95fbb6" />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-function ScanField() {
-  const scan = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }) => {
-    if (!scan.current) return;
-    scan.current.position.z = 2.2 + Math.sin(clock.elapsedTime * 4) * 0.8;
-  });
-
-  return (
-    <>
-      <mesh ref={scan} rotation-x={-Math.PI / 2} position={[0, 0.05, 2.2]}>
-        <planeGeometry args={[5.2, 0.12]} />
-        <meshBasicMaterial color="#86f7ac" transparent opacity={0.8} />
-      </mesh>
-      <pointLight position={[0, 1.1, 2]} color="#8affb0" intensity={5} distance={5} />
-    </>
-  );
-}
-
 function ArrivalCar() {
   const phase = useExperienceStore((state) => state.phase);
   const car = useRef<THREE.Group>(null);
@@ -200,36 +125,7 @@ function ArrivalCar() {
 
   return (
     <group ref={car} position={[0, 0, 11]}>
-      <Car color="#dce2de" />
-    </group>
-  );
-}
-
-function Car({ color = "#dce2de", scale = 1 }: { color?: string; scale?: number }) {
-  return (
-    <group scale={scale}>
-      <RoundedBox args={[1.65, 0.42, 3.05]} radius={0.2} position={[0, 0.48, 0]} castShadow>
-        <meshStandardMaterial color={color} metalness={0.48} roughness={0.3} />
-      </RoundedBox>
-      <RoundedBox args={[1.38, 0.48, 1.5]} radius={0.17} position={[0, 0.83, -0.15]} castShadow>
-        <meshStandardMaterial color="#1a2520" metalness={0.25} roughness={0.22} />
-      </RoundedBox>
-      {[-0.72, 0.72].flatMap((x) =>
-        [-0.92, 0.92].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.28, z]} rotation-z={Math.PI / 2} castShadow>
-            <cylinderGeometry args={[0.28, 0.28, 0.16, 18]} />
-            <meshStandardMaterial color="#080a09" roughness={0.8} />
-          </mesh>
-        )),
-      )}
-      <mesh position={[-0.52, 0.47, -1.53]}>
-        <boxGeometry args={[0.34, 0.1, 0.03]} />
-        <meshBasicMaterial color="#ff645e" />
-      </mesh>
-      <mesh position={[0.52, 0.47, -1.53]}>
-        <boxGeometry args={[0.34, 0.1, 0.03]} />
-        <meshBasicMaterial color="#ff645e" />
-      </mesh>
+      <PremiumVehicle color="#dce2de" />
     </group>
   );
 }
@@ -316,7 +212,7 @@ function HomeWorld() {
 
       {selectedProblem === "guest-access" && active && (
         <group position={[1.2, 0, 3.2]} rotation-y={Math.PI}>
-          <Car color="#9eb2a5" scale={0.62} />
+          <PremiumVehicle color="#9eb2a5" scale={0.62} lightsOn={false} />
         </group>
       )}
 
@@ -442,9 +338,9 @@ function RetailWorld() {
 
       {active && selectedProblem === "reduce-queues" && (
         <group position={[0, 0, 4.2]}>
-          <Car color="#ccd4cf" scale={0.42} />
-          <group position={[1.8, 0, 1.5]}><Car color="#81938a" scale={0.42} /></group>
-          <group position={[-1.8, 0, 2.8]}><Car color="#b9c1bc" scale={0.42} /></group>
+          <PremiumVehicle color="#ccd4cf" scale={0.42} lightsOn={false} />
+          <group position={[1.8, 0, 1.5]}><PremiumVehicle color="#81938a" scale={0.42} lightsOn={false} /></group>
+          <group position={[-1.8, 0, 2.8]}><PremiumVehicle color="#b9c1bc" scale={0.42} lightsOn={false} /></group>
         </group>
       )}
 
