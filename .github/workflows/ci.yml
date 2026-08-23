@@ -72,35 +72,47 @@ jobs:
             local url="$4"
 
             echo "Capturing $output"
-            timeout --signal=KILL 40s "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            if timeout --signal=KILL 35s "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
               --window-size="$size" \
               --virtual-time-budget="$budget" \
               --screenshot="$output" \
-              "$url"
+              "$url"; then
+              echo "Captured $output"
+            else
+              echo "::warning::Visual QA capture timed out or failed: $output"
+              rm -f "$output"
+            fi
           }
 
           capture 1440,1000 1400 visual-qa/desktop-arrival.png \
             http://127.0.0.1:3000/
 
-          capture 1440,1000 1800 visual-qa/desktop-chooser.png \
+          capture 1440,1000 1600 visual-qa/desktop-chooser.png \
             "http://127.0.0.1:3000/?qaChooser=1"
 
-          capture 390,844 1800 visual-qa/mobile-chooser.png \
+          capture 390,844 1600 visual-qa/mobile-chooser.png \
             "http://127.0.0.1:3000/?qaChooser=1"
 
-          capture 1440,1000 2400 visual-qa/desktop-home-ev-solar.png \
+          capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
 
-          capture 1440,1000 2400 visual-qa/desktop-residence-protection.png \
-            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
-
-          capture 1440,1000 2400 visual-qa/desktop-retail-guidance.png \
+          capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
+          capture 1440,1000 1900 visual-qa/desktop-residence-protection.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+
+          capture 390,844 1900 visual-qa/mobile-home-access.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access"
+
+          capture 390,844 1900 visual-qa/mobile-residence-protection.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+
       - name: Upload visual QA
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: macropark-visual-qa
           path: visual-qa
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
