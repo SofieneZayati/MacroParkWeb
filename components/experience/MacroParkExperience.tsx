@@ -12,7 +12,12 @@ import {
   type ProblemId,
   useExperienceStore,
 } from "./useExperienceStore";
-import { environments, getEnvironment, getProblem } from "@/lib/experienceContent";
+import {
+  environments,
+  getEnvironment,
+  getProblem,
+  getRecommendedProblem,
+} from "@/lib/experienceContent";
 
 export function MacroParkExperience() {
   const {
@@ -32,6 +37,11 @@ export function MacroParkExperience() {
 
   const environment = getEnvironment(selectedEnvironment);
   const problem = getProblem(selectedEnvironment, selectedProblem);
+  const recommendation = getRecommendedProblem(
+    selectedEnvironment,
+    selectedProblem,
+    selectedProblems,
+  );
 
   useEffect(() => {
     if (introComplete) return;
@@ -214,9 +224,20 @@ export function MacroParkExperience() {
                   })}
                 </div>
               ) : (
-                <div className="problem-list">
-                  <button className="problem-button" type="button" onClick={clearProblem}>
-                    Add another need
+                <div className="response-actions">
+                  {recommendation && (
+                    <button
+                      className="recommendation-button"
+                      type="button"
+                      onClick={() => chooseProblem(recommendation.id)}
+                    >
+                      <span>Recommended next</span>
+                      <strong>{recommendation.label}</strong>
+                      <i aria-hidden="true">→</i>
+                    </button>
+                  )}
+                  <button className="secondary-action" type="button" onClick={clearProblem}>
+                    See all needs
                   </button>
                 </div>
               )}
