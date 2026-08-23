@@ -1,6 +1,7 @@
 "use client";
 
 import { RoundedBox } from "@react-three/drei";
+import { useExperienceStore } from "./useExperienceStore";
 
 export function PremiumVehicle({
   color = "#dce2de",
@@ -11,6 +12,11 @@ export function PremiumVehicle({
   scale?: number;
   lightsOn?: boolean;
 }) {
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
+  const introVehicle = lightsOn && scale === 1;
+
+  if (introVehicle && selectedEnvironment) return null;
+
   return (
     <group scale={scale}>
       <mesh position={[0, 0.23, 0]} castShadow>
