@@ -11,15 +11,25 @@ const FOCUS: Record<EnvironmentId, [number, number, number]> = {
   retail: [-8.5, 3.8, -8.5],
 };
 
+const CAMERA_OFFSET: Record<EnvironmentId, [number, number, number]> = {
+  home: [2.8, 0.7, 4.2],
+  residence: [2.7, -0.6, 3.8],
+  retail: [-3.2, 0.6, 4.2],
+};
+
 export function ScenePolish() {
   const reducedMotion = useReducedMotion();
-  if (reducedMotion) return null;
 
   return (
     <>
-      <CameraParallax />
-      <DepthParticles />
-      <EnvironmentGlow />
+      <CameraComposition reducedMotion={reducedMotion} />
+      {!reducedMotion && (
+        <>
+          <CameraParallax />
+          <DepthParticles />
+          <EnvironmentGlow />
+        </>
+      )}
     </>
   );
 }
@@ -37,6 +47,29 @@ function useReducedMotion() {
   }, []);
 
   return reduced;
+}
+
+function CameraComposition({ reducedMotion }: { reducedMotion: boolean }) {
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
+  const previous = useRef(new THREE.Vector3());
+  const next = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame(({ camera }, delta) => {
+    camera.position.sub(previous.current);
+
+    const target = selectedEnvironment ? CAMERA_OFFSET[selectedEnvironment] : ([0, 0, 0] as const);
+    const speed = reducedMotion ? 18 : 3.4;
+    next.set(
+      THREE.MathUtils.damp(previous.current.x, target[0], speed, delta),
+      THREE.MathUtils.damp(previous.current.y, target[1], speed, delta),
+      THREE.MathUtils.damp(previous.current.z, target[2], speed, delta),
+    );
+
+    camera.position.add(next);
+    previous.current.copy(next);
+  });
+
+  return null;
 }
 
 function CameraParallax() {
