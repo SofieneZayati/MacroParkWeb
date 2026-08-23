@@ -114,13 +114,16 @@ jobs:
           capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
-          capture 1440,1000 1900 visual-qa/desktop-residence-protection.png \
+          capture 1440,1000 2200 visual-qa/desktop-residence-recognition.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+
+          capture 1440,1000 5600 visual-qa/desktop-residence-parked.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
 
           capture 390,844 2500 visual-qa/mobile-home-access.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access"
 
-          capture 390,844 1900 visual-qa/mobile-residence-protection.png \
+          capture 390,844 2400 visual-qa/mobile-residence-recognition.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
 
       - name: Upload visual QA
