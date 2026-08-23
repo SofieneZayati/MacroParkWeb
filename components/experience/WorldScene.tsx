@@ -11,39 +11,53 @@ import {
 import { EntranceKit } from "./EntranceKit";
 import { EVCharger, ParkingBlocker } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
+import {
+  HomeArchitecture,
+  ResidenceArchitecture,
+  RetailArchitecture,
+} from "./EnvironmentArchitecture";
 
-const CAMERA: Record<string, { position: [number, number, number]; lookAt: [number, number, number] }> = {
-  arrival: { position: [0, 3.1, 14], lookAt: [0, 0.8, 1] },
-  scan: { position: [3.8, 2.3, 7.2], lookAt: [0, 0.7, 1] },
-  reveal: { position: [0, 10.5, 20], lookAt: [0, 0.7, -8] },
-  choose: { position: [0, 12, 21], lookAt: [0, 0.4, -9] },
-  home: { position: [11.5, 5.5, -2.5], lookAt: [8, 1, -10] },
-  residence: { position: [4.5, 6.6, -4.5], lookAt: [0, 1.5, -13] },
-  retail: { position: [-12.5, 6.6, -2.5], lookAt: [-8.5, 1, -10] },
+type CameraTarget = {
+  position: [number, number, number];
+  lookAt: [number, number, number];
+  fov: number;
+};
+
+const CAMERA: Record<string, CameraTarget> = {
+  arrival: { position: [0, 3.1, 14], lookAt: [0, 0.8, 1], fov: 42 },
+  scan: { position: [3.8, 2.3, 7.2], lookAt: [0, 0.7, 1], fov: 39 },
+  reveal: { position: [0, 10.5, 20], lookAt: [0, 0.7, -8], fov: 47 },
+  choose: { position: [0, 12, 21], lookAt: [0, 0.4, -9], fov: 44 },
+  home: { position: [13.2, 6.25, -0.45], lookAt: [8, 1.25, -9.2], fov: 38 },
+  residence: { position: [7.25, 7.45, -3.7], lookAt: [0, 1.55, -12.7], fov: 39 },
+  retail: { position: [-14.4, 7.25, -0.25], lookAt: [-8.25, 0.95, -8.7], fov: 39 },
 };
 
 export function WorldScene() {
   const phase = useExperienceStore((state) => state.phase);
+  const showArrivalInfrastructure = ["arrival", "scan", "reveal", "choose"].includes(phase);
 
   return (
     <>
       <color attach="background" args={["#0a0e0c"]} />
-      <fog attach="fog" args={["#0a0e0c", 18, 56]} />
-      <ambientLight intensity={0.65} />
+      <fog attach="fog" args={["#0a0e0c", 19, 58]} />
+      <ambientLight intensity={0.62} />
       <directionalLight
         castShadow
         position={[9, 14, 9]}
-        intensity={2.2}
+        intensity={2.25}
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
-      <hemisphereLight args={["#d9f4e3", "#18201b", 0.75]} />
+      <hemisphereLight args={["#dcefe2", "#172019", 0.78]} />
+      <pointLight position={[-11, 7, -8]} color="#dce9e1" intensity={2.2} distance={24} />
+      <pointLight position={[10, 5, -10]} color="#f4e3ba" intensity={1.2} distance={17} />
 
       <CameraRig phase={phase} />
       <Ground />
       <Road />
-      <EntranceKit />
-      <ArrivalCar />
+      {showArrivalInfrastructure && <EntranceKit />}
+      {showArrivalInfrastructure && <ArrivalCar />}
       <WorldBuildings />
     </>
   );
@@ -59,9 +73,11 @@ function CameraRig({ phase }: { phase: string }) {
     targetPosition.set(...target.position);
     targetLookAt.set(...target.lookAt);
 
-    const ease = 1 - Math.exp(-delta * 2.35);
+    const ease = 1 - Math.exp(-delta * 2.2);
     camera.position.lerp(targetPosition, ease);
     lookAt.current.lerp(targetLookAt, ease);
+    camera.fov = THREE.MathUtils.damp(camera.fov, target.fov, 2.7, delta);
+    camera.updateProjectionMatrix();
     camera.lookAt(lookAt.current);
   });
 
@@ -72,12 +88,16 @@ function Ground() {
   return (
     <>
       <mesh rotation-x={-Math.PI / 2} position={[0, -0.035, -8]} receiveShadow>
-        <planeGeometry args={[54, 58]} />
-        <meshStandardMaterial color="#141a16" roughness={0.96} />
+        <planeGeometry args={[56, 60]} />
+        <meshStandardMaterial color="#131915" roughness={0.97} />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position={[0, -0.02, -9]}>
         <circleGeometry args={[25, 80]} />
-        <meshStandardMaterial color="#18201b" roughness={1} />
+        <meshStandardMaterial color="#19221c" roughness={1} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.005, -8]}>
+        <ringGeometry args={[18.5, 24.5, 80]} />
+        <meshBasicMaterial color="#26332b" transparent opacity={0.12} />
       </mesh>
     </>
   );
@@ -98,14 +118,12 @@ function Road() {
           <meshBasicMaterial color="#657069" transparent opacity={0.32} />
         </mesh>
       ))}
-      <mesh rotation-x={-Math.PI / 2} position={[-3.25, 0.018, 5]}>
-        <planeGeometry args={[0.05, 31]} />
-        <meshBasicMaterial color="#bec8c1" transparent opacity={0.16} />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[3.25, 0.018, 5]}>
-        <planeGeometry args={[0.05, 31]} />
-        <meshBasicMaterial color="#bec8c1" transparent opacity={0.16} />
-      </mesh>
+      {[-3.25, 3.25].map((x) => (
+        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.018, 5]}>
+          <planeGeometry args={[0.05, 31]} />
+          <meshBasicMaterial color="#bec8c1" transparent opacity={0.16} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -153,14 +171,22 @@ function InteractiveEnvironment({
 }) {
   const phase = useExperienceStore((state) => state.phase);
   const chooseEnvironment = useExperienceStore((state) => state.chooseEnvironment);
+  const group = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const interactive = phase === "choose";
   useCursor(interactive && hovered);
 
+  useFrame((_, delta) => {
+    if (!group.current) return;
+    const targetScale = interactive && hovered ? 1.028 : 1;
+    const next = THREE.MathUtils.damp(group.current.scale.x, targetScale, 6, delta);
+    group.current.scale.setScalar(next);
+  });
+
   return (
     <group
+      ref={group}
       position={position}
-      scale={interactive && hovered ? 1.035 : 1}
       onPointerOver={(event) => {
         event.stopPropagation();
         if (interactive) setHovered(true);
@@ -172,7 +198,9 @@ function InteractiveEnvironment({
       }}
     >
       {children}
-      {interactive && hovered && <pointLight position={[0, 3.5, 1]} color="#9effbd" intensity={8} distance={9} />}
+      {interactive && hovered && (
+        <pointLight position={[0, 3.6, 1]} color="#9effbd" intensity={7.2} distance={9.5} />
+      )}
     </group>
   );
 }
@@ -184,43 +212,18 @@ function HomeWorld() {
 
   return (
     <InteractiveEnvironment id="home" position={[8, 0, -10]}>
-      <mesh position={[0, 0.12, 0]} receiveShadow>
-        <boxGeometry args={[7.5, 0.22, 7.5]} />
-        <meshStandardMaterial color="#26332a" roughness={0.92} />
-      </mesh>
-      <RoundedBox args={[4.9, 2.25, 3.7]} radius={0.12} position={[0.3, 1.2, -0.5]} castShadow>
-        <meshStandardMaterial color="#d9ddd6" roughness={0.66} />
-      </RoundedBox>
-      <mesh position={[0.3, 2.78, -0.5]} rotation-y={Math.PI / 4} castShadow>
-        <coneGeometry args={[3.1, 1.35, 4]} />
-        <meshStandardMaterial color="#445047" roughness={0.8} />
-      </mesh>
-      <RoundedBox args={[2.05, 1.65, 0.15]} radius={0.05} position={[-0.7, 0.95, 1.39]}>
-        <meshStandardMaterial
-          color={selectedProblem === "automatic-access" ? "#a7f7bd" : "#707b73"}
-          emissive={selectedProblem === "automatic-access" ? "#4fa969" : "#000000"}
-          emissiveIntensity={active ? 0.35 : 0}
-        />
-      </RoundedBox>
-      <mesh position={[2.1, 1.25, 1.4]}>
-        <boxGeometry args={[0.95, 1.15, 0.1]} />
-        <meshStandardMaterial color="#26312b" />
-      </mesh>
-      <mesh position={[0, 0.03, 3.4]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[3, 3.5]} />
-        <meshStandardMaterial color="#39423d" roughness={0.95} />
-      </mesh>
+      <HomeArchitecture garageOpen={active && selectedProblem === "automatic-access"} />
 
       {selectedProblem === "guest-access" && active && (
-        <group position={[1.2, 0, 3.2]} rotation-y={Math.PI}>
-          <PremiumVehicle color="#9eb2a5" scale={0.62} lightsOn={false} />
+        <group position={[1.15, 0, 3.1]} rotation-y={Math.PI}>
+          <PremiumVehicle color="#9eb2a5" scale={0.61} lightsOn={false} />
         </group>
       )}
 
       {selectedProblem === "ev-charging" && active && (
-        <group position={[-2.4, 0, 2.2]}>
+        <group position={[-2.28, 0, 2.15]}>
           <EVCharger compact />
-          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={3} distance={4} />
+          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={2.7} distance={4} />
         </group>
       )}
     </InteractiveEnvironment>
@@ -234,48 +237,38 @@ function ResidenceWorld() {
 
   return (
     <InteractiveEnvironment id="residence" position={[0, 0, -14]}>
-      <mesh position={[0, 0.1, 0]} receiveShadow>
-        <boxGeometry args={[8, 0.2, 7]} />
-        <meshStandardMaterial color="#202923" />
-      </mesh>
-      <RoundedBox args={[5.5, 7.3, 3.2]} radius={0.12} position={[0, 3.72, -1.35]} castShadow>
-        <meshStandardMaterial color="#bfc8c1" roughness={0.72} />
-      </RoundedBox>
-      {[-1.75, 0, 1.75].flatMap((x) =>
-        [0.4, 1.7, 3, 4.3, 5.6].map((y) => (
-          <mesh key={`${x}-${y}`} position={[x, y + 0.5, 0.28]}>
-            <boxGeometry args={[0.72, 0.52, 0.05]} />
-            <meshStandardMaterial color="#e7f4e9" emissive="#d5f4dc" emissiveIntensity={0.18} />
-          </mesh>
-        )),
-      )}
-      <mesh position={[0, 0.04, 2.3]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[7.5, 3.2]} />
-        <meshStandardMaterial color="#333a36" />
-      </mesh>
+      <ResidenceArchitecture />
       <ParkingBay x={-2.45} glow={active && selectedProblem === "protect-space"} />
-      <ParkingBay x={0} glow={active && selectedProblem === "guest-access"} />
+      <ParkingBay x={0} glow={active && ["guest-access", "reservations"].includes(selectedProblem ?? "")} />
       <ParkingBay x={2.45} glow={active && selectedProblem === "ev-charging"} />
-      {active && selectedProblem === "protect-space" && <ParkingBlocker position={[-2.45, 0.1, 2.4]} lowered />}
-      {active && selectedProblem === "ev-charging" && <EVCharger position={[3.1, 0, 1.25]} />}
+      {active && selectedProblem === "protect-space" && (
+        <ParkingBlocker position={[-2.45, 0.1, 2.4]} lowered />
+      )}
+      {active && selectedProblem === "ev-charging" && <EVCharger position={[3.1, 0, 1.15]} />}
     </InteractiveEnvironment>
   );
 }
 
 function ParkingBay({ x, glow }: { x: number; glow?: boolean }) {
   return (
-    <group position={[x, 0.055, 2.4]}>
+    <group position={[x, 0.065, 2.35]}>
       <mesh rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[2.15, 2.75]} />
+        <planeGeometry args={[2.12, 2.92]} />
         <meshStandardMaterial
-          color={glow ? "#4f765b" : "#303834"}
-          emissive={glow ? "#55b871" : "#000000"}
-          emissiveIntensity={glow ? 0.35 : 0}
+          color={glow ? "#456c51" : "#303834"}
+          emissive={glow ? "#4eac65" : "#000000"}
+          emissiveIntensity={glow ? 0.34 : 0}
         />
       </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}>
-        <ringGeometry args={[0.6, 0.63, 32, 1, 0, Math.PI]} />
-        <meshBasicMaterial color="#e3e9e5" transparent opacity={0.25} />
+      {[-1.02, 1.02].map((xLine) => (
+        <mesh key={xLine} rotation-x={-Math.PI / 2} position={[xLine, 0.012, 0]}>
+          <planeGeometry args={[0.035, 2.72]} />
+          <meshBasicMaterial color="#dce2de" transparent opacity={0.32} />
+        </mesh>
+      ))}
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, -1.36]}>
+        <planeGeometry args={[2.05, 0.035]} />
+        <meshBasicMaterial color="#dce2de" transparent opacity={0.32} />
       </mesh>
     </group>
   );
@@ -289,43 +282,53 @@ function RetailWorld() {
 
   return (
     <InteractiveEnvironment id="retail" position={[-8.5, 0, -10]}>
-      <mesh position={[0, 0.1, 0]} receiveShadow>
-        <boxGeometry args={[9, 0.2, 8]} />
-        <meshStandardMaterial color="#282f2b" />
-      </mesh>
-      <RoundedBox args={[6.8, 2.45, 3.1]} radius={0.12} position={[0, 1.34, -1.95]} castShadow>
-        <meshStandardMaterial color="#cfd4cf" roughness={0.62} />
-      </RoundedBox>
-      <RoundedBox args={[3.5, 0.45, 0.2]} radius={0.08} position={[0, 2.3, -0.36]}>
-        <meshStandardMaterial color="#7c8b81" />
-      </RoundedBox>
+      <RetailArchitecture />
 
       {[-2.7, -0.9, 0.9, 2.7].map((x, index) => (
-        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.06, 1.9]}>
-          <planeGeometry args={[1.42, 3.05]} />
-          <meshStandardMaterial
-            color={guidance && index === 2 ? "#4c7c59" : "#303834"}
-            emissive={guidance && index === 2 ? "#5ecb78" : "#000000"}
-            emissiveIntensity={guidance && index === 2 ? 0.45 : 0}
-          />
-        </mesh>
+        <RetailBay key={x} x={x} active={guidance && index === 2} />
       ))}
 
       {active && selectedProblem === "reduce-queues" && (
-        <group position={[0, 0, 4.2]}>
+        <group position={[-1.15, 0, 4.0]} rotation-y={0.04}>
           <PremiumVehicle color="#ccd4cf" scale={0.42} lightsOn={false} />
-          <group position={[1.8, 0, 1.5]}><PremiumVehicle color="#81938a" scale={0.42} lightsOn={false} /></group>
-          <group position={[-1.8, 0, 2.8]}><PremiumVehicle color="#b9c1bc" scale={0.42} lightsOn={false} /></group>
+          <group position={[2.05, 0, 1.5]}>
+            <PremiumVehicle color="#81938a" scale={0.42} lightsOn={false} />
+          </group>
+          <group position={[-1.65, 0, 2.75]}>
+            <PremiumVehicle color="#b9c1bc" scale={0.42} lightsOn={false} />
+          </group>
         </group>
       )}
 
       {active && selectedProblem === "ev-charging" && (
         <group>
-          <EVCharger position={[2.95, 0, 0.7]} />
-          <EVCharger position={[1.15, 0, 0.7]} />
+          <EVCharger position={[2.95, 0, 0.62]} />
+          <EVCharger position={[1.15, 0, 0.62]} />
         </group>
       )}
     </InteractiveEnvironment>
+  );
+}
+
+function RetailBay({ x, active }: { x: number; active: boolean }) {
+  return (
+    <group position={[x, 0.066, 2.45]}>
+      <mesh rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[1.46, 3.15]} />
+        <meshStandardMaterial
+          color={active ? "#477153" : "#303834"}
+          emissive={active ? "#58c66f" : "#000000"}
+          emissiveIntensity={active ? 0.45 : 0}
+        />
+      </mesh>
+      {[-0.72, 0.72].map((line) => (
+        <mesh key={line} rotation-x={-Math.PI / 2} position={[line, 0.012, 0]}>
+          <planeGeometry args={[0.025, 3]} />
+          <meshBasicMaterial color="#dce2de" transparent opacity={0.28} />
+        </mesh>
+      ))}
+      {active && <pointLight position={[0, 0.8, 0]} color="#8ff2aa" intensity={1.8} distance={3.2} />}
+    </group>
   );
 }
 
@@ -353,7 +356,7 @@ function DecorativeCity() {
             <meshStandardMaterial color="#4a574e" />
           </mesh>
           <mesh position={[0, 1.9, 0]}>
-            <sphereGeometry args={[0.85, 10, 8]} />
+            <icosahedronGeometry args={[0.85, 1]} />
             <meshStandardMaterial color="#314b39" roughness={1} />
           </mesh>
         </group>
