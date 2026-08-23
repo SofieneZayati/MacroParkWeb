@@ -52,6 +52,16 @@ export function MacroParkExperience() {
         shadows
         camera={{ position: [0, 3.1, 14], fov: 42, near: 0.1, far: 120 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
+        fallback={
+          <div className="webgl-fallback">
+            <span>MacroPark</span>
+            <strong>Parking should just happen.</strong>
+            <p>
+              This browser cannot show the interactive 3D experience, but you can still explore the
+              parking solutions below.
+            </p>
+          </div>
+        }
       >
         <Suspense fallback={null}>
           <WorldScene />
