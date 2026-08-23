@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     env:
       NEXT_PUBLIC_VISUAL_QA: "1"
 
@@ -53,47 +53,48 @@ jobs:
             --headless=new
             --no-sandbox
             --disable-dev-shm-usage
+            --disable-background-networking
+            --disable-component-update
+            --disable-default-apps
             --hide-scrollbars
+            --no-first-run
             --enable-webgl
+            --enable-unsafe-swiftshader
             --ignore-gpu-blocklist
             --use-angle=swiftshader
             --run-all-compositor-stages-before-draw
           )
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=1440,1000 \
-            --virtual-time-budget=1400 \
-            --screenshot=visual-qa/desktop-arrival.png \
+          capture() {
+            local size="$1"
+            local budget="$2"
+            local output="$3"
+            local url="$4"
+
+            echo "Capturing $output"
+            timeout --signal=KILL 40s "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+              --window-size="$size" \
+              --virtual-time-budget="$budget" \
+              --screenshot="$output" \
+              "$url"
+          }
+
+          capture 1440,1000 1400 visual-qa/desktop-arrival.png \
             http://127.0.0.1:3000/
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=1440,1000 \
-            --virtual-time-budget=7800 \
-            --screenshot=visual-qa/desktop-chooser.png \
-            http://127.0.0.1:3000/
+          capture 1440,1000 1800 visual-qa/desktop-chooser.png \
+            "http://127.0.0.1:3000/?qaChooser=1"
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=390,844 \
-            --virtual-time-budget=7800 \
-            --screenshot=visual-qa/mobile-chooser.png \
-            http://127.0.0.1:3000/
+          capture 390,844 1800 visual-qa/mobile-chooser.png \
+            "http://127.0.0.1:3000/?qaChooser=1"
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=1440,1000 \
-            --virtual-time-budget=3200 \
-            --screenshot=visual-qa/desktop-home-ev-solar.png \
+          capture 1440,1000 2400 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=1440,1000 \
-            --virtual-time-budget=3200 \
-            --screenshot=visual-qa/desktop-residence-protection.png \
+          capture 1440,1000 2400 visual-qa/desktop-residence-protection.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
 
-          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
-            --window-size=1440,1000 \
-            --virtual-time-budget=3200 \
-            --screenshot=visual-qa/desktop-retail-guidance.png \
+          capture 1440,1000 2400 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
       - name: Upload visual QA
