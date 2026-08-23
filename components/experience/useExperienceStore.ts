@@ -22,6 +22,8 @@ export type ProblemId =
   | "reduce-queues"
   | "ev-charging";
 
+export type GuestAccessPreview = "active" | "expired";
+
 type ExperienceState = {
   phase: ExperiencePhase;
   selectedEnvironment: EnvironmentId | null;
@@ -30,6 +32,7 @@ type ExperienceState = {
   solarEnabled: boolean;
   summaryOpen: boolean;
   introComplete: boolean;
+  guestAccessPreview: GuestAccessPreview;
   setPhase: (phase: ExperiencePhase) => void;
   chooseEnvironment: (environment: EnvironmentId) => void;
   chooseProblem: (problem: ProblemId) => void;
@@ -40,6 +43,7 @@ type ExperienceState = {
   closeSummary: () => void;
   backToChooser: () => void;
   completeIntro: () => void;
+  setGuestAccessPreview: (preview: GuestAccessPreview) => void;
   reset: () => void;
 };
 
@@ -51,6 +55,7 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
   solarEnabled: false,
   summaryOpen: false,
   introComplete: false,
+  guestAccessPreview: "active",
   setPhase: (phase) => set({ phase }),
   chooseEnvironment: (selectedEnvironment) =>
     set({
@@ -59,6 +64,7 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       selectedProblems: [],
       solarEnabled: false,
       summaryOpen: false,
+      guestAccessPreview: "active",
       phase: selectedEnvironment,
     }),
   chooseProblem: (selectedProblem) =>
@@ -68,8 +74,9 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
         ? state.selectedProblems
         : [...state.selectedProblems, selectedProblem],
       summaryOpen: false,
+      guestAccessPreview: "active",
     })),
-  clearProblem: () => set({ selectedProblem: null }),
+  clearProblem: () => set({ selectedProblem: null, guestAccessPreview: "active" }),
   removeProblem: (problem) =>
     set((state) => {
       const selectedProblems = state.selectedProblems.filter((item) => item !== problem);
@@ -79,13 +86,14 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
         selectedProblems,
         selectedProblem: state.selectedProblem === problem ? null : state.selectedProblem,
         solarEnabled: evStillSelected ? state.solarEnabled : false,
+        guestAccessPreview: "active",
       };
     }),
   toggleSolar: () =>
     set((state) => ({
       solarEnabled: state.selectedProblems.includes("ev-charging") ? !state.solarEnabled : false,
     })),
-  openSummary: () => set({ summaryOpen: true, selectedProblem: null }),
+  openSummary: () => set({ summaryOpen: true, selectedProblem: null, guestAccessPreview: "active" }),
   closeSummary: () => set({ summaryOpen: false }),
   backToChooser: () =>
     set({
@@ -94,9 +102,11 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       selectedProblems: [],
       solarEnabled: false,
       summaryOpen: false,
+      guestAccessPreview: "active",
       phase: "choose",
     }),
   completeIntro: () => set({ introComplete: true, phase: "choose" }),
+  setGuestAccessPreview: (guestAccessPreview) => set({ guestAccessPreview }),
   reset: () =>
     set({
       phase: "arrival",
@@ -106,5 +116,6 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       solarEnabled: false,
       summaryOpen: false,
       introComplete: false,
+      guestAccessPreview: "active",
     }),
 }));
