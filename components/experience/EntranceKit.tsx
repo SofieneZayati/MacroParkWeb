@@ -11,6 +11,7 @@ export function EntranceKit() {
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const arm = useRef<THREE.Group>(null);
   const isOpen = phase !== "arrival" || selectedProblem === "automatic-access";
+  const environmentActive = phase === "home" || phase === "residence" || phase === "retail";
 
   useFrame((_, delta) => {
     if (!arm.current) return;
@@ -21,6 +22,8 @@ export function EntranceKit() {
       1 - Math.exp(-delta * 4.6),
     );
   });
+
+  if (environmentActive) return null;
 
   return (
     <group position={[0, 0, 0.25]}>
