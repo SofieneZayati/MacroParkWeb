@@ -121,38 +121,48 @@ function AvailableBayMarker() {
   useFrame(({ clock }) => {
     if (!pulse.current) return;
     const material = pulse.current.material as THREE.MeshBasicMaterial;
-    material.opacity = 0.2 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.08;
+    material.opacity = 0.23 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.09;
   });
 
   return (
     <group position={[-0.9, 0, 2.45]}>
       <mesh ref={pulse} rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
         <planeGeometry args={[1.42, 3.02]} />
-        <meshBasicMaterial color="#8dffab" transparent opacity={0.28} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#8dffab" transparent opacity={0.32} side={THREE.DoubleSide} />
       </mesh>
 
       {[-0.68, 0.68].map((x) => (
-        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.115, 0]}>
+        <mesh key={`line-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.115, 0]}>
           <planeGeometry args={[0.055, 2.9]} />
-          <meshBasicMaterial color="#c7ffd5" transparent opacity={0.9} />
+          <meshBasicMaterial color="#d5ffdf" transparent opacity={0.92} />
         </mesh>
       ))}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.115, -1.42]}>
         <planeGeometry args={[1.38, 0.055]} />
-        <meshBasicMaterial color="#c7ffd5" transparent opacity={0.9} />
+        <meshBasicMaterial color="#d5ffdf" transparent opacity={0.92} />
       </mesh>
 
-      <group position={[0, 0, -1.15]}>
-        <mesh position={[0, 0.72, 0]}>
-          <cylinderGeometry args={[0.03, 0.045, 1.42, 10]} />
-          <meshStandardMaterial color="#68736c" metalness={0.45} roughness={0.45} />
+      {[-0.62, 0.62].map((x) => (
+        <mesh key={`post-${x}`} position={[x, 0.78, -1.28]}>
+          <cylinderGeometry args={[0.032, 0.045, 1.5, 10]} />
+          <meshStandardMaterial color="#66726b" metalness={0.48} roughness={0.44} />
         </mesh>
-        <mesh position={[0, 1.44, 0]}>
-          <sphereGeometry args={[0.105, 16, 12]} />
-          <meshStandardMaterial color="#b8ffc8" emissive="#62d77e" emissiveIntensity={2.2} />
-        </mesh>
-        <pointLight position={[0, 1.35, 0]} color="#8fffaa" intensity={2.3} distance={4.1} />
-      </group>
+      ))}
+      <mesh position={[0, 1.5, -1.28]}>
+        <boxGeometry args={[1.38, 0.12, 0.14]} />
+        <meshStandardMaterial
+          color="#bfffd0"
+          emissive="#5dd979"
+          emissiveIntensity={1.65}
+          metalness={0.2}
+          roughness={0.3}
+        />
+      </mesh>
+      <mesh position={[0, 1.5, -1.355]}>
+        <boxGeometry args={[0.74, 0.035, 0.012]} />
+        <meshBasicMaterial color="#effff3" />
+      </mesh>
+      <pointLight position={[0, 1.38, -1.05]} color="#8fffaa" intensity={3} distance={4.6} />
     </group>
   );
 }
