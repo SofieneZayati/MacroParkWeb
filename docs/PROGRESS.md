@@ -1,304 +1,189 @@
 # MacroPark Web — Progress Log
 
-This file is the persistent checkpoint for the project. Update it after meaningful implementation or design decisions so work can resume without relying on chat history.
+This file is the persistent project checkpoint. Keep it current after meaningful implementation, validation or product-direction changes so work can resume from GitHub without relying on chat history.
 
 ## Current status
 
-**Project stage:** Phase 0 foundation complete; Phase 1 vertical slice implemented and in active visual polish.
+**Project stage:** Phase 1 complete and merged. Phase 2 begins with the Home experience.
 
-**Current branch:** `phase-1-interactive-foundation`
+**Stable branch:** `main`
 
-**Pull request:** Draft PR #1 — `Phase 1: interactive MacroPark foundation`
+**Phase 1 PR:** #1 — merged into `main` as `d3794e5de78e672b4c5b5871c6ab880d9abebef4`.
 
-**Build status:** Passing on Node 24 with the current GitHub Actions runtime.
+**Latest Phase 1 validation:** GitHub Actions run #70 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, headless WebGL visual QA and screenshot artifact upload.
 
-**Current priority:** Browser/device visual review of the upgraded entrance and hero vehicle, then selective parking-blocker / EV-kit polish instead of adding more feature breadth.
+**Current performance baseline:** approximately 349 kB First Load JS on `/`, versus approximately 340 kB for the original vertical-slice baseline.
 
-**Repository state at planning start:** Empty repository.
+**Current priority:** deepen Home into an end-to-end physical arrival story before expanding more environments.
 
-## Locked direction
+## Locked product direction
 
 - Client-facing, not technical.
 - 3D interactive and visually guided.
-- The experience should behave like an intelligent parking consultant.
-- `gta.shrid.site` is inspiration only for interaction quality/polish, not a template to copy.
-- The existing MacroPark project/site is product context only, not a design/template to reproduce.
-- GitHub is the source of truth for this new website.
-- Visitors should choose their environment and real-world needs, then see the solution happen visually.
-- Features should be expressed as physical outcomes instead of technical terminology.
-- Initial core environments: Home, Residence, Retail/Mall.
-- EV charging and solar should be contextual add-ons within environments rather than isolated technical pages.
-- Desktop should be cinematic; mobile must receive a deliberately adapted experience.
-- Performance, reduced-motion behavior and fallback support are requirements from the beginning.
-- The first prototype uses procedural geometry so interaction quality can be validated before investing in heavy production 3D assets.
-- Experience navigation is driven by an explicit state machine rather than being hard-wired to scroll position.
-- Client choices accumulate into one solution instead of resetting after each demonstration.
-- Technical configuration remains hidden; the visitor expresses needs and MacroPark assembles the setup.
-- Reservation and guest access are separate concepts: a guest can be authorized at the entrance while a reservation holds a specific parking bay.
-- Never show a fake successful lead submission. Until a real email/CRM destination is configured, the project handoff creates a useful copyable brief instead.
-- High-impact procedural assets can be upgraded before introducing GLB payloads when that lets us validate visual hierarchy first.
+- The site behaves like an intelligent parking consultant rather than a feature catalog.
+- `gta.shrid.site` is inspiration only for interaction quality/polish; it is not a template to copy.
+- The previous MacroPark project page is product context only; this repository is the new website.
+- The environment is the primary navigation: Home, Residence and Retail/Mall.
+- Visitors express real-life needs; MacroPark demonstrates physical outcomes.
+- Client choices accumulate into one coherent solution.
+- Reservation and guest access remain separate concepts.
+- EV charging and solar are contextual additions inside each environment.
+- Desktop receives cinematic composition; mobile receives intentionally different camera/UI composition.
+- Reduced motion, WebGL fallback and performance remain requirements.
+- Never fake a successful lead submission. The project brief remains useful even before a real CRM/email destination is connected.
+- Procedural-first remains the asset strategy until a heavier GLB clearly produces a worthwhile visual gain.
 
-## Core experience
+## Phase 1 — COMPLETE
 
-1. Visitor enters a cinematic 3D scene.
-2. A vehicle approaches a controlled parking entrance.
-3. The entrance opens automatically for the vehicle.
-4. The camera reveals the wider MacroPark world.
-5. Visitor selects Home, Residence or Retail/Mall spatially.
-6. Camera travels into the chosen environment.
-7. Visitor chooses real-life parking needs one by one.
-8. Each need creates a persistent physical response in the 3D environment.
-9. The visitor can combine multiple needs into a single configuration.
-10. If EV charging is selected, solar becomes an optional contextual upgrade.
-11. The visitor reviews a personalized `Your MacroPark` summary built from those choices.
-12. The visitor can turn the setup into a structured project brief with location, scale and project timing.
-13. If a MacroPark contact email is configured, the brief opens as a prefilled consultation request; otherwise it remains copyable and useful without pretending it was submitted.
+Phase 1 established the full client journey and reusable 3D architecture.
 
-## Implementation checklist
+### Experience
 
-### Phase 0 — Foundation
-
-- [x] Initialize Next.js + TypeScript.
-- [x] Add GitHub Actions production-build validation workflow.
-- [x] Add React Three Fiber / Three.js foundation.
-- [x] Add Drei and animation tooling dependencies.
-- [x] Establish scene/state architecture.
-- [x] Establish first-pass visual system and typography treatment.
-- [x] Build responsive canvas/app shell.
-- [x] Define first asset strategy: procedural-first, optimized custom GLB later.
-- [ ] Validate performance baseline on real devices.
-- [x] Add reduced-motion behavior.
-- [x] Add explicit WebGL-unavailable fallback.
-
-### Phase 1 — Vertical slice
-
-- [x] Create opening environment.
-- [x] Add procedural hero vehicle.
-- [x] Add entrance/gate and recognition camera.
-- [x] Add automatic arrival demonstration.
-- [x] Build world reveal.
-- [x] Build spatial environment selector.
-- [x] Create camera choreography.
-- [x] Build transitions into Home, Residence and Retail viewpoints.
-- [x] Add environment-specific problem selection.
-- [x] Add first physical solution reactions in 3D.
-- [x] Add first-pass responsive/mobile treatment.
-- [x] Validate initial production build in CI.
-- [x] Add persistent multi-need configuration state.
-- [x] Add personalized `Your MacroPark` summary.
-- [x] Add contextual solar option after EV charging selection.
-- [x] Add persistent 3D solution effects for guidance, protected spaces, access flow and solar.
-- [x] Add explicit reserved-space scenarios for Residence and Retail/Mall.
-- [x] Add a distinct 3D reserved-bay state instead of reusing guest access visuals.
-- [x] Add functional project/consultation handoff from the personalized setup.
-- [x] Add copyable structured project brief fallback when no contact destination is configured.
-- [x] Document optional `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` configuration in `.env.example`.
-- [x] Validate the multi-need configurator production build in CI.
-- [x] Add subtle pointer parallax, depth particles and active-environment lighting.
-- [x] Ensure canvas-only cinematic polish disables itself for reduced-motion users.
-- [x] Modernize CI to current Node 24 / Actions v7 runtime.
-- [x] Validate the complete current client journey under Node 24.
-- [x] Upgrade the hero car from the original blockout to a reusable premium brand-neutral procedural vehicle.
-- [x] Upgrade the entrance to a reusable barrier / recognition-camera / intercom kit with induction-loop and improved scan detail.
-- [x] Reuse the upgraded vehicle for Home guest and Retail queue scenarios.
-- [x] Validate the first visual-asset upgrade milestone in CI.
-- [ ] Performance-check the complete vertical slice on real devices.
-- [ ] Refine transition timing and scene composition after browser review.
-
-## Implemented interaction examples
+- [x] Cinematic arrival with vehicle recognition and controlled barrier.
+- [x] 3D world reveal.
+- [x] Spatial Home / Residence / Retail selector.
+- [x] Environment-specific client questions and problem selection.
+- [x] Contextual recommended-next-step behavior.
+- [x] Persistent multi-need configuration.
+- [x] Personalized `Your MacroPark` summary.
+- [x] Functional project/consultation brief handoff.
+- [x] Honest copy/share fallback before CRM integration.
 
 ### Home
 
-- Automatic garage/access concept.
-- Temporary guest arrival visualization.
-- EV charger visualization.
-- EV + solar canopy configuration path.
+- [x] Automatic-access concept.
+- [x] Animated garage door.
+- [x] Guest-arrival visualization.
+- [x] EV charger.
+- [x] EV + solar canopy path.
 
 ### Residence
 
-- Protected assigned-space concept.
-- Explicit time-window parking reservation scenario.
-- Guest-access scenario separate from reservation logic.
-- Shared EV charging scenario.
-- Persistent protected-bay, reserved-bay and access indicators.
-- EV + solar canopy configuration path.
+- [x] Assigned-space protection.
+- [x] Motorized parking blocker.
+- [x] Guest-access scenario.
+- [x] Explicit parking reservations distinct from guest access.
+- [x] Shared EV charging.
+- [x] EV + solar path.
 
 ### Retail / mall
 
-- Entrance-flow / queue-reduction scenario.
-- Free-space guidance visualization.
-- Reserved / premium parking scenario.
-- Customer EV charging visualization.
-- Persistent guidance, reservation and flow effects.
-- EV + solar canopy configuration path.
+- [x] Queue / entrance-flow scenario.
+- [x] Free-space guidance.
+- [x] Vehicle physically follows the guidance route.
+- [x] Illuminated free-space destination indicator.
+- [x] Premium/reserved parking.
+- [x] Customer EV charging.
+- [x] EV + solar path.
 
-## Personalized configuration behavior
+### Visual system
 
-- Selecting a need adds it to the current setup rather than replacing previous choices.
-- The visitor can return to the environment question and add additional needs.
-- Previously selected needs are visibly marked.
-- A compact `Your setup` dock appears once at least one need is selected.
-- `Review setup` opens a personalized summary for the chosen environment.
-- Individual needs can be removed from the summary.
-- Solar is only offered when EV charging is part of the configuration.
-- Removing EV charging automatically removes the solar add-on.
-- Configured choices produce persistent visual effects in the 3D environment.
-- Reservations use a warm amber physical bay state to remain visually distinct from access/availability green.
+- [x] Reusable premium procedural vehicle.
+- [x] Reusable barrier / recognition-camera entrance kit.
+- [x] Reusable parking blocker, EV charger and solar canopy family.
+- [x] Upgraded villa, residence and retail architecture.
+- [x] Landscaping, glazing, parking surfaces and environmental lighting.
+- [x] Pointer parallax, depth particles and environment-focused lighting.
+- [x] Problem-specific camera framing where required.
+- [x] Mobile-specific camera framing.
+- [x] MacroPark application/favicon mark.
 
-## Client handoff behavior
+### Engineering / QA
 
-- `Turn this into a project` continues from the personalized setup instead of starting a generic contact form.
-- The client can add project location/name, approximate parking scale and project timing.
-- Name and email are optional at this prototype stage.
-- A structured MacroPark project brief is generated from the selected environment and needs.
-- The brief can always be copied.
-- If `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` is configured, `Request a consultation` opens the visitor's email app with the subject and complete project brief prefilled.
-- Without a configured contact destination, the interface explicitly says delivery is not configured and copies the brief instead of faking a submission.
+- [x] Next.js + TypeScript + React Three Fiber / Three.js architecture.
+- [x] Explicit Zustand experience state machine.
+- [x] Node 24 GitHub Actions production-build validation.
+- [x] Automated deterministic visual-QA states.
+- [x] Desktop arrival / chooser / Home / Residence / Retail captures.
+- [x] Mobile chooser / Home / Residence captures.
+- [x] Resilient screenshot capture so flaky headless Chrome does not falsely fail a healthy production build.
+- [x] Reduced-motion canvas behavior.
+- [x] WebGL-unavailable fallback.
+- [ ] Real-device FPS / thermal / loading test remains outstanding.
 
-## Visual asset milestone
+## Phase 2 — HOME EXPERIENCE
 
-- `PremiumVehicle.tsx` is now the shared brand-neutral procedural car component.
-- The vehicle has a more automotive silhouette, separate cabin/glass treatment, wheels/rims, mirrors, front/rear lighting, lower trim and a neutral plate area.
-- `EntranceKit.tsx` is now the shared controlled-entry component.
-- The entrance kit includes a more believable barrier housing, segmented arm, status light, ANPR-style camera head, IR details, compact fallback/intercom surface and induction-loop marking.
-- Scan mode now uses paired moving scan lines instead of a single flat line.
-- No external model payload was added for this milestone; the purpose is to validate perceived quality before choosing a final GLB asset.
+Goal: turn the Home environment from a feature demonstration into a short cinematic story that visually proves how MacroPark works in daily life.
+
+### Phase 2A — Authorized arrival — CURRENT
+
+- [ ] Add a dedicated Home arrival vehicle that enters the driveway.
+- [ ] Add a discreet driveway recognition camera / sensor.
+- [ ] Animate recognition as the car reaches the scan point.
+- [ ] Trigger the garage opening only after recognition instead of immediately on selection.
+- [ ] Continue the vehicle toward the garage after authorization.
+- [ ] Add problem-specific desktop camera choreography for the sequence.
+- [ ] Add a dedicated mobile Home automatic-access QA capture.
+- [ ] Validate full production build and visual artifacts.
+
+### Phase 2B — Guest and denied access
+
+- [ ] Animate a temporary guest arrival rather than showing only a static guest car.
+- [ ] Visually communicate the temporary access window without exposing technical controls.
+- [ ] Add an unknown/expired vehicle denial demonstration.
+- [ ] Keep denial calm and premium rather than alarm/security-dashboard styled.
+
+### Phase 2C — Home charging / energy
+
+- [ ] Make the EV connection/charging state more physical.
+- [ ] Add a clearer battery/energy-flow story without technical telemetry.
+- [ ] Improve solar-canopy transformation and relationship to the driveway.
+- [ ] Decide whether optional battery storage materially improves the client story.
+
+## After Home
+
+Once Home reaches the desired quality bar:
+
+1. Deepen Residence: gate → resident arrival → assigned bay → blocker lowers → visitor/reservation flow.
+2. Deepen Retail: entrance flow → occupancy/guidance → vehicle parking → premium reservation → EV.
+3. Add the MacroPark system/digital-twin reveal only after the physical client stories are strong.
+4. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
+5. Performance-test representative desktop and mobile hardware.
+6. Connect the project handoff to the final MacroPark email/CRM destination.
+
+## Open decisions
+
+- Final opening copy.
+- Final brand accent palette.
+- Whether the procedural hero vehicle remains or becomes a compressed GLB.
+- Whether optional sound improves the experience enough to justify it.
+- Final contact email / CRM destination.
+- Final deployment/domain configuration.
 
 ## Validation notes
 
-- React Three Fiber is aligned to v9 for React 19 compatibility; Drei is on the compatible v10 line.
-- The first scene has no required remote HDR/model dependency, so the initial render is self-contained apart from npm packages.
-- The original CI failure was caused by `setup-node` npm caching requiring a lockfile before the new repository had one. Cache configuration was removed until a lockfile is committed.
-- GitHub Actions run #11 completed successfully for the baseline vertical slice.
-- Baseline build reported `/` at 238 kB route size and 340 kB First Load JS.
-- GitHub Actions run #17 completed successfully after the multi-need configurator, personalized summary and persistent 3D solution effects were added.
-- Configurator build reported `/` at 240 kB route size and 342 kB First Load JS.
-- The CSS compatibility warning from that run was corrected.
-- CI was modernized to `actions/checkout@v7`, `actions/setup-node@v7` and Node 24 with package-manager caching explicitly disabled while no lockfile is committed.
-- Node 24 exposed a stricter TypeScript tuple-spread inference issue in `ScenePolish`; it was corrected by using explicit tuple typing/indexed vector assignment.
-- GitHub Actions run #26 completed successfully under Node 24 after that correction.
-- The first consultation-handoff CI attempt exposed a nullable-environment TypeScript issue inside the nested contact action; the environment name was stabilized before the callback and the rerun passed.
-- GitHub Actions run #33 completed successfully for the consultation handoff.
-- GitHub Actions run #36 completed successfully for the cumulative branch including explicit reservations and the 3D reserved-bay effect.
-- GitHub Actions run #40 completed successfully after the premium procedural vehicle and entrance-kit refactor.
-- Current build reports `/` at 244 kB route size and 346 kB First Load JS.
-- The current client experience remains about +6 kB First Load JS above the original 340 kB baseline despite the configurator, summary, solar, cinematic polish, handoff, reservations and first high-impact visual asset upgrades.
-- npm currently emits a non-blocking `sharp` install-script approval warning under npm 11; the production build itself succeeds.
-
-## Art direction
-
-Production 3D replacement priorities and visual rules are recorded in `docs/ART_DIRECTION.md`.
-
-Highest-impact replacement order after visual review:
-
-1. Hero vehicle — premium procedural upgrade complete; final GLB decision pending rendered review.
-2. Entrance / camera / barrier kit — premium procedural upgrade complete; final GLB decision pending rendered review.
-3. Residence parking blocker.
-4. EV charger + solar canopy.
-5. Architecture only after the first four prove worthwhile.
-
-## Decisions still intentionally open
-
-These should be decided through iteration based on what produces the strongest client experience:
-
-- Final opening copy.
-- Final architectural/art direction of the shared world within the documented visual rules.
-- Whether the upgraded procedural hero vehicle is sufficient or should be replaced by a compressed GLB.
-- Final balance of scroll versus direct interaction.
-- Whether subtle optional sound materially improves the experience.
-- Final brand accent palette.
-- Actual MacroPark consultation email / CRM destination.
-
-## Next action
-
-1. Browser-review the upgraded entrance and hero vehicle on desktop.
-2. Review mobile composition separately rather than assuming desktop scales down correctly.
-3. Performance-check representative real hardware.
-4. Tune camera timing, object placement and text timing from the actual rendered experience.
-5. If the first two upgraded assets read well, polish the Residence parking blocker and EV / solar hardware next.
-6. Only introduce external GLB assets where the rendered quality gain justifies the payload.
-7. Connect the project handoff to the final MacroPark email/CRM destination once chosen.
-8. Expand beyond Home / Residence / Retail only after the core journey feels premium.
+- React Three Fiber remains aligned to the React 19-compatible v9 line; Drei uses the compatible v10 line.
+- CI uses Node 24 and current Actions v7 runtimes.
+- npm 11 may emit a non-blocking `sharp` install-script approval warning; production builds pass.
+- The app intentionally has no required remote HDR/model dependency for the core render.
+- Phase 1 was merged only after the final Retail-guidance sequence passed production build and visual QA.
 
 ## Change log
 
-### 2026-08-23 — First production-style visual asset upgrade
+### 2026-08-23 — Phase 1 locked and merged
 
-- Replaced the original blockout hero car with a reusable premium procedural vehicle.
-- Added separate automotive body/cabin/glass treatment, detailed wheels, mirrors, lights, lower trim and neutral plate detail.
-- Replaced the original gate blockout with a reusable entrance kit.
-- Added improved barrier housing and arm, status feedback, ANPR-style recognition camera, IR details, fallback/intercom surface and induction-loop marking.
-- Upgraded scan visualization from one flat line to a paired moving recognition field.
-- Reused the new vehicle in guest and retail queue scenes for visual consistency.
-- Removed the superseded car/entrance blockout implementations from `WorldScene.tsx`.
-- GitHub Actions run #40 passed the full Node 24 production build and reported 346 kB First Load JS.
+- Completed the Retail guidance story with a moving vehicle following the route toward the selected free space.
+- Added a physical illuminated availability structure so the destination reads as a real parking space rather than an abstract glow.
+- Final Phase 1 CI run #70 passed build and visual QA.
+- PR #1 was marked ready and squash-merged to `main`.
+- Phase 2 was defined around a deeper Home client story instead of adding more environments.
 
-### 2026-08-23 — Client handoff and reservations milestone
+### 2026-08-23 — Phase 1 visual / intelligent-client milestone
 
-- Added `Turn this into a project` from the personalized MacroPark setup.
-- Added project location, parking scale and project-timing context.
-- Added automatic structured project-brief generation.
-- Added copyable fallback so the prototype remains honest and functional before CRM/email integration.
-- Added optional `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` configuration for a prefilled consultation email.
-- Added explicit parking reservations to Residence and Retail/Mall.
-- Kept guest access separate from reserved-space behavior.
-- Added a persistent amber reserved-bay visualization to the 3D scene.
-- Fixed the TypeScript issue surfaced by the first handoff CI attempt.
-- Completed a clean cumulative Node 24 production build after all changes.
-- Current First Load JS at that milestone: 345 kB.
+- Upgraded Home, Residence and Retail architecture.
+- Added an actually opening Home garage.
+- Added contextual recommended-next-step behavior after each demonstrated need.
+- Added mobile-specific environment cameras.
+- Added reliable automated visual QA with deep desktop and mobile states.
+- Added the MacroPark application icon.
 
-### 2026-08-23 — Clean Node 24 validation checkpoint
+### 2026-08-23 — Phase 1 functional foundation
 
-- Updated GitHub Actions to current checkout/setup-node v7 runtime and Node 24.
-- Synchronized the Phase 1 branch with the new `main` CI baseline without losing feature work.
-- Fixed the TypeScript tuple inference issue surfaced only by the newer toolchain.
-- Completed a clean production build on Node 24.
-- Added `docs/ART_DIRECTION.md` to preserve the production-asset strategy.
-
-### 2026-08-23 — Cinematic polish
-
-- Added subtle pointer-driven camera parallax.
-- Added low-cost depth particles to improve scale and atmosphere.
-- Added environment-focused moving light so selected places feel physically emphasized.
-- Explicitly disabled the canvas-only polish when `prefers-reduced-motion` is enabled.
-- Cleaned the CSS compatibility warning surfaced by CI.
-
-### 2026-08-23 — Intelligent configurator polish
-
-- Changed one-feature-at-a-time state into an accumulating multi-need configuration.
-- Added persistent selected-needs behavior and selected-state feedback.
-- Added compact `Your setup` review dock.
-- Added personalized `Your MacroPark` configuration summary.
-- Added ability to remove individual needs from the configuration.
-- Added contextual solar upgrade that only exists when EV charging is selected.
-- Added 3D solution effects that persist across selections: guidance trail, protected-bay glow, guest-access indicator, access/flow pulse and solar canopy energy flow.
-- Kept the interaction client-facing and plain-language; no technical configuration UI was introduced.
-- Production CI passed after these additions.
-
-### 2026-08-23 — CI repair and first validated build
-
-- Diagnosed the initial CI failure as a missing lockfile conflict with `setup-node` npm caching.
-- Removed premature cache configuration.
-- GitHub Actions subsequently completed a full production build successfully.
-
-### 2026-08-23 — Phase 0 / first vertical slice implementation
-
-- Created `phase-1-interactive-foundation` development branch.
-- Initialized Next.js + TypeScript application.
-- Added React Three Fiber, Drei, Three.js, Zustand and GSAP dependencies.
-- Added an explicit experience state machine.
-- Added client-focused branching content for Home, Residence and Retail/Mall.
-- Built procedural 3D arrival scene, vehicle, gate, recognition camera and scan effect.
-- Built cinematic camera choreography and shared 3D world reveal.
-- Added three interactive environments with problem-specific visual responses.
-- Added responsive HUD, reduced-motion behavior and first-pass mobile treatment.
-- Added a graceful WebGL fallback.
-- Added GitHub Actions CI.
-- Opened draft PR #1 for the phase.
+- Built the initial 3D journey, recognition entrance, three environments, multi-need configuration, reservations, EV/solar, project handoff, responsive UI, reduced-motion support and WebGL fallback.
+- Added premium procedural vehicle/entrance/hardware components.
+- Established GitHub Actions validation and persistent project documentation.
 
 ### 2026-08-23 — Planning baseline
 
-- Created repository vision in `README.md`.
-- Added full product/experience/implementation roadmap in `docs/ROADMAP.md`.
-- Added this persistent progress checkpoint.
-- No application code had been created at that point.
+- Repository started empty.
+- Added product vision, roadmap and persistent progress documentation.
