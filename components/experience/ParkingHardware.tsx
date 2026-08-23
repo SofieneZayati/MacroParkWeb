@@ -97,9 +97,15 @@ export function EVCharger({
   );
 }
 
-export function SolarCanopy() {
+export function SolarCanopy({
+  position = [0, 0, 2.1],
+  scale = 1,
+}: {
+  position?: [number, number, number];
+  scale?: number;
+}) {
   return (
-    <group position={[0, 0, 2.1]}>
+    <group position={position} scale={scale}>
       {[-2.35, 2.35].map((x) => (
         <group key={x} position={[x, 0, 0]}>
           <mesh position={[0, 1.58, 0]} castShadow>
