@@ -24,11 +24,11 @@ export function ResidenceAccessSequence() {
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-2.45, 0, 6.45),
-        new THREE.Vector3(-2.45, 0, 5.35),
-        new THREE.Vector3(-2.45, 0, 4.45),
-        new THREE.Vector3(-2.45, 0, 3.35),
-        new THREE.Vector3(-2.45, 0, 2.42),
+        new THREE.Vector3(-2.45, 0.23, 6.45),
+        new THREE.Vector3(-2.45, 0.23, 5.35),
+        new THREE.Vector3(-2.45, 0.23, 4.45),
+        new THREE.Vector3(-2.45, 0.23, 3.35),
+        new THREE.Vector3(-2.45, 0.23, 2.42),
       ]),
     [],
   );
@@ -107,11 +107,11 @@ export function ResidenceAccessSequence() {
 
   return (
     <group>
-      <group ref={vehicle} position={[-2.45, 0, 6.45]}>
+      <group ref={vehicle} position={[-2.45, 0.23, 6.45]}>
         <PremiumVehicle color="#cfd8d2" scale={0.5} lightsOn />
       </group>
 
-      <group position={[-0.82, 0, 4.45]}>
+      <group position={[-0.82, 0.22, 4.45]}>
         <mesh position={[0, 0.66, 0]} castShadow>
           <cylinderGeometry args={[0.045, 0.065, 1.32, 12]} />
           <meshStandardMaterial color="#4d5851" metalness={0.45} roughness={0.48} />
@@ -137,7 +137,7 @@ export function ResidenceAccessSequence() {
         )}
       </group>
 
-      <mesh ref={scanField} position={[-2.45, 0.72, 4.45]}>
+      <mesh ref={scanField} position={[-2.45, 0.86, 4.45]}>
         <boxGeometry args={[2.18, 1.22, 0.02]} />
         <meshBasicMaterial
           color="#a9f7bd"
@@ -148,7 +148,7 @@ export function ResidenceAccessSequence() {
         />
       </mesh>
 
-      <mesh rotation-x={-Math.PI / 2} position={[-2.45, 0.085, 4.45]}>
+      <mesh rotation-x={-Math.PI / 2} position={[-2.45, 0.245, 4.45]}>
         <ringGeometry args={[0.68, 0.76, 48]} />
         <meshBasicMaterial
           color={recognized ? "#b8ffc9" : "#718078"}
