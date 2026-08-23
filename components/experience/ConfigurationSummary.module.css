@@ -276,6 +276,35 @@
   font-size: 15px;
 }
 
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.footer .primaryAction {
+  border-color: rgba(167, 248, 190, 0.72);
+  background: #a7f8be;
+  color: #08100a;
+  font-weight: 750;
+}
+
+.footer .primaryAction:hover {
+  border-color: #c6fbd5;
+  background: #c6fbd5;
+  box-shadow: 0 10px 30px rgba(114, 243, 153, 0.12);
+}
+
+.footer .primaryAction span {
+  margin: 0;
+  color: currentColor;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 @keyframes summaryIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -309,6 +338,11 @@
   .footer {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .footerActions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .footer button {
