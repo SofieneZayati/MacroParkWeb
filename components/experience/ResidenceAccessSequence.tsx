@@ -1,23 +1,26 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useExperienceStore } from "./useExperienceStore";
 
-export function ResidenceAccessSequence({
-  onRecognized,
-}: {
-  onRecognized: () => void;
-}) {
+export function ResidenceAccessSequence() {
   const vehicle = useRef<THREE.Group>(null);
   const scanField = useRef<THREE.Mesh>(null);
+  const cameraLookAt = useRef(new THREE.Vector3(-2.45, 0.8, -9.7));
+  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
+  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
   const progress = useRef(0);
   const recognitionHold = useRef(0);
   const recognizedOnce = useRef(false);
   const [recognized, setRecognized] = useState(false);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
+  const setResidenceAccessAuthorized = useExperienceStore(
+    (state) => state.setResidenceAccessAuthorized,
+  );
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -30,7 +33,12 @@ export function ResidenceAccessSequence({
     [],
   );
 
-  useFrame(({ clock }, delta) => {
+  useEffect(() => {
+    setResidenceAccessAuthorized(false);
+    return () => setResidenceAccessAuthorized(false);
+  }, [setResidenceAccessAuthorized]);
+
+  useFrame(({ clock, camera, size }, delta) => {
     if (!vehicle.current) return;
 
     if (recognizedOnce.current && recognitionHold.current < 0.72) {
@@ -42,7 +50,7 @@ export function ResidenceAccessSequence({
     if (!recognizedOnce.current && progress.current >= 0.39) {
       recognizedOnce.current = true;
       setRecognized(true);
-      onRecognized();
+      setResidenceAccessAuthorized(true);
     }
 
     const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
@@ -63,6 +71,37 @@ export function ResidenceAccessSequence({
       const proximity = Math.max(0, 0.3 - distanceFromScan * 0.27);
       material.opacity = proximity * (0.78 + Math.sin(clock.elapsedTime * 8.2) * 0.22);
     }
+
+    const mobile = size.width <= 760;
+    const targetPosition = mobile
+      ? recognized
+        ? [5.1, 7.0, -5.8]
+        : [5.6, 7.4, -4.6]
+      : recognized
+        ? [6.25, 4.45, -7.15]
+        : [6.9, 4.7, -6.15];
+    const targetLookAt = mobile
+      ? recognized
+        ? [-2.3, 1.0, -11.3]
+        : [-2.2, 1.15, -10.15]
+      : recognized
+        ? [-2.4, 0.7, -11.35]
+        : [-2.45, 0.82, -9.7];
+
+    cameraPosition.set(...(targetPosition as [number, number, number]));
+    cameraTarget.set(...(targetLookAt as [number, number, number]));
+
+    const cameraEase = 1 - Math.exp(-delta * 5.4);
+    camera.position.lerp(cameraPosition, cameraEase);
+    cameraLookAt.current.lerp(cameraTarget, cameraEase);
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const targetFov = mobile ? 48 : 37;
+      camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
+      camera.updateProjectionMatrix();
+    }
+
+    camera.lookAt(cameraLookAt.current);
   });
 
   return (
