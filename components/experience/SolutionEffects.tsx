@@ -67,18 +67,24 @@ function ActiveBeacon() {
 
 function GuidanceTrail() {
   return (
-    <group position={[0, 0.055, 2.8]}>
+    <group>
       {[0, 1, 2, 3, 4].map((step) => (
-        <mesh key={step} rotation-x={-Math.PI / 2} position={[0, 0, step * 0.72]}>
-          <planeGeometry args={[0.7, 0.18]} />
+        <mesh
+          key={step}
+          rotation-x={-Math.PI / 2}
+          rotation-z={-0.7}
+          position={[-1.9 + step * 0.7, 0.07, 5.3 - step * 0.8]}
+        >
+          <planeGeometry args={[0.72, 0.19]} />
           <meshBasicMaterial
             color="#a7f8be"
             transparent
-            opacity={0.75 - step * 0.09}
+            opacity={0.42 + step * 0.08}
             side={THREE.DoubleSide}
           />
         </mesh>
       ))}
+      <pointLight position={[0.9, 0.65, 2.1]} color="#9effbd" intensity={1.5} distance={2.8} />
     </group>
   );
 }
