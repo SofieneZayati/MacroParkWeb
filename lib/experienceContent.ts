@@ -70,6 +70,13 @@ export const environments: Environment[] = [
           "A private parking blocker keeps the bay protected and lowers only when the authorized resident arrives.",
       },
       {
+        id: "reservations",
+        label: "Reserve spaces for visitors or residents",
+        resultTitle: "A space can wait for the right car.",
+        resultBody:
+          "Hold a specific bay for a chosen time window. It stays visibly reserved until the authorized vehicle arrives or the reservation ends.",
+      },
+      {
         id: "guest-access",
         label: "Visitors keep calling at the gate",
         resultTitle: "Invite once. No gate calls.",
@@ -108,6 +115,13 @@ export const environments: Environment[] = [
         resultTitle: "Guide them to what is free.",
         resultBody:
           "Available areas become visible immediately and arriving drivers can be guided toward useful open spaces instead of circling.",
+      },
+      {
+        id: "reservations",
+        label: "Offer reserved or premium parking",
+        resultTitle: "Save the right space before arrival.",
+        resultBody:
+          "Customers, VIP guests or event visitors can reserve a designated bay before they arrive, with the space released automatically when the window ends.",
       },
       {
         id: "ev-charging",
