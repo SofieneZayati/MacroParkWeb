@@ -73,30 +73,31 @@ export function ResidenceAccessSequence() {
     }
 
     const mobile = size.width <= 760;
-    const targetPosition = mobile
-      ? recognized
-        ? [5.1, 7.0, -5.8]
+    const parkingFocus = progress.current >= 0.68;
+    const targetPosition: [number, number, number] = mobile
+      ? parkingFocus
+        ? [2.8, 7.2, -4.65]
         : [5.6, 7.4, -4.6]
-      : recognized
-        ? [6.25, 4.45, -7.15]
+      : parkingFocus
+        ? [2.45, 5.35, -5.55]
         : [6.9, 4.7, -6.15];
-    const targetLookAt = mobile
-      ? recognized
-        ? [-2.3, 1.0, -11.3]
+    const targetLookAt: [number, number, number] = mobile
+      ? parkingFocus
+        ? [-2.35, 0.85, -11.55]
         : [-2.2, 1.15, -10.15]
-      : recognized
-        ? [-2.4, 0.7, -11.35]
+      : parkingFocus
+        ? [-2.4, 0.3, -11.62]
         : [-2.45, 0.82, -9.7];
 
-    cameraPosition.set(...(targetPosition as [number, number, number]));
-    cameraTarget.set(...(targetLookAt as [number, number, number]));
+    cameraPosition.set(...targetPosition);
+    cameraTarget.set(...targetLookAt);
 
-    const cameraEase = 1 - Math.exp(-delta * 5.4);
+    const cameraEase = 1 - Math.exp(-delta * (parkingFocus ? 3.8 : 5.4));
     camera.position.lerp(cameraPosition, cameraEase);
     cameraLookAt.current.lerp(cameraTarget, cameraEase);
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? 48 : 37;
+      const targetFov = mobile ? (parkingFocus ? 49 : 48) : parkingFocus ? 35 : 37;
       camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
       camera.updateProjectionMatrix();
     }
