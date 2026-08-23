@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { Preload } from "@react-three/drei";
 import { WorldScene } from "./WorldScene";
 import { SolutionEffects } from "./SolutionEffects";
+import { ScenePolish } from "./ScenePolish";
 import { ConfigurationSummary } from "./ConfigurationSummary";
 import { useExperienceStore } from "./useExperienceStore";
 import { environments, getEnvironment, getProblem } from "@/lib/experienceContent";
@@ -69,6 +70,7 @@ export function MacroParkExperience() {
         <Suspense fallback={null}>
           <WorldScene />
           <SolutionEffects />
+          <ScenePolish />
           <Preload all />
         </Suspense>
       </Canvas>
