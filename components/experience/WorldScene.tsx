@@ -13,6 +13,7 @@ import { EVCharger, ParkingBlocker } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { HomeAccessSequence } from "./HomeAccessSequence";
 import { HomeGuestSequence } from "./HomeGuestSequence";
+import { HomeChargingSequence } from "./HomeChargingSequence";
 import {
   HomeArchitecture,
   ResidenceArchitecture,
@@ -46,6 +47,11 @@ const PROBLEM_CAMERA: Record<string, CameraTarget> = {
     lookAt: [9.1, 0.82, -6.35],
     fov: 37,
   },
+  "home:ev-charging": {
+    position: [13.1, 5.65, -1.65],
+    lookAt: [7.55, 1.18, -7.35],
+    fov: 39,
+  },
   "retail:parking-guidance": {
     position: [-13.55, 4.95, -2.15],
     lookAt: [-9.65, 0.32, -7.18],
@@ -69,6 +75,11 @@ const MOBILE_PROBLEM_CAMERA: Record<string, CameraTarget> = {
     position: [11.45, 7.75, 1.15],
     lookAt: [8.7, 1.18, -6.95],
     fov: 48,
+  },
+  "home:ev-charging": {
+    position: [11.4, 8.15, 1.05],
+    lookAt: [7.75, 1.55, -7.3],
+    fov: 50,
   },
   "retail:parking-guidance": {
     position: [-12.35, 7.25, 0.15],
@@ -262,6 +273,7 @@ function HomeWorld() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
+  const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const active = selectedEnvironment === "home";
   const automaticAccessActive = active && selectedProblem === "automatic-access";
   const guestAccessActive = active && selectedProblem === "guest-access";
@@ -284,10 +296,7 @@ function HomeWorld() {
       )}
 
       {selectedProblem === "ev-charging" && active && (
-        <group position={[-2.28, 0, 2.15]}>
-          <EVCharger compact />
-          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={2.7} distance={4} />
-        </group>
+        <HomeChargingSequence solarEnabled={solarEnabled} />
       )}
     </InteractiveEnvironment>
   );
