@@ -7,7 +7,11 @@ import { WorldScene } from "./WorldScene";
 import { SolutionEffects } from "./SolutionEffects";
 import { ScenePolish } from "./ScenePolish";
 import { ConfigurationSummary } from "./ConfigurationSummary";
-import { useExperienceStore } from "./useExperienceStore";
+import {
+  type EnvironmentId,
+  type ProblemId,
+  useExperienceStore,
+} from "./useExperienceStore";
 import { environments, getEnvironment, getProblem } from "@/lib/experienceContent";
 
 export function MacroParkExperience() {
@@ -22,6 +26,7 @@ export function MacroParkExperience() {
     chooseEnvironment,
     chooseProblem,
     clearProblem,
+    toggleSolar,
     backToChooser,
   } = useExperienceStore();
 
@@ -47,6 +52,31 @@ export function MacroParkExperience() {
       window.clearTimeout(choose);
     };
   }, [completeIntro, introComplete, setPhase]);
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_VISUAL_QA !== "1") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const environmentParam = params.get("qaEnvironment");
+    const problemParam = params.get("qaProblem");
+    const wantsSolar = params.get("qaSolar") === "1";
+
+    const validEnvironment = environments.find((item) => item.id === environmentParam);
+    if (!validEnvironment) return;
+
+    const environmentId = validEnvironment.id as EnvironmentId;
+    const validProblem = problemParam
+      ? validEnvironment.problems.find((item) => item.id === problemParam)
+      : null;
+
+    completeIntro();
+    chooseEnvironment(environmentId);
+
+    if (validProblem) {
+      chooseProblem(validProblem.id as ProblemId);
+      if (wantsSolar && validProblem.id === "ev-charging") toggleSolar();
+    }
+  }, [chooseEnvironment, chooseProblem, completeIntro, toggleSolar]);
 
   return (
     <main className="experience-shell">
