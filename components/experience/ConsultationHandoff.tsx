@@ -35,6 +35,7 @@ export function ConsultationHandoff({ onBack }: { onBack: () => void }) {
   const [copied, setCopied] = useState(false);
 
   const environment = getEnvironment(selectedEnvironment);
+  const environmentName = environment?.name ?? "Parking";
   const selected = environment?.problems.filter((problem) => selectedProblems.includes(problem.id)) ?? [];
 
   const brief = useMemo(() => {
@@ -45,7 +46,7 @@ export function ConsultationHandoff({ onBack }: { onBack: () => void }) {
     return [
       "MACROPARK PROJECT BRIEF",
       "",
-      `Project type: ${environment.name}`,
+      `Project type: ${environmentName}`,
       `Location: ${location.trim() || "To be confirmed"}`,
       `Parking scale: ${SCALE_LABELS[scale]}`,
       `Project timing: ${TIMING_LABELS[timing]}`,
@@ -59,7 +60,7 @@ export function ConsultationHandoff({ onBack }: { onBack: () => void }) {
       "",
       "Generated from the MacroPark interactive configurator.",
     ].join("\n");
-  }, [contactEmail, contactName, environment, location, scale, selected, solarEnabled, timing]);
+  }, [contactEmail, contactName, environment, environmentName, location, scale, selected, solarEnabled, timing]);
 
   if (!environment) return null;
 
@@ -90,7 +91,7 @@ export function ConsultationHandoff({ onBack }: { onBack: () => void }) {
       return;
     }
 
-    const subject = encodeURIComponent(`MacroPark project — ${environment.name}${location.trim() ? ` — ${location.trim()}` : ""}`);
+    const subject = encodeURIComponent(`MacroPark project — ${environmentName}${location.trim() ? ` — ${location.trim()}` : ""}`);
     const body = encodeURIComponent(brief);
     window.location.href = `mailto:${configuredRecipient}?subject=${subject}&body=${body}`;
   }
@@ -171,7 +172,7 @@ export function ConsultationHandoff({ onBack }: { onBack: () => void }) {
       <div className={styles.briefPreview}>
         <div>
           <span>Project brief ready</span>
-          <strong>{environment.name} · {selected.length + (solarEnabled ? 1 : 0)} configured needs</strong>
+          <strong>{environmentName} · {selected.length + (solarEnabled ? 1 : 0)} configured needs</strong>
         </div>
         <button type="button" onClick={copyBrief}>{copied ? "Copied" : "Copy brief"}</button>
       </div>
