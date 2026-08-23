@@ -10,7 +10,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 **Pull request:** Draft PR #1 — `Phase 1: interactive MacroPark foundation`
 
-**Current priority:** Validate the production build, then improve the first interactive sequence before expanding content breadth.
+**Current priority:** Validate the production build, then browser-review and polish the first interactive sequence before expanding content breadth.
 
 **Repository state at planning start:** Empty repository.
 
@@ -48,7 +48,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 ### Phase 0 — Foundation
 
 - [x] Initialize Next.js + TypeScript.
-- [x] Add GitHub Actions production-build validation.
+- [x] Add GitHub Actions production-build validation workflow.
 - [x] Add React Three Fiber / Three.js foundation.
 - [x] Add Drei and animation tooling dependencies.
 - [x] Establish scene/state architecture.
@@ -57,7 +57,7 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - [x] Define first asset strategy: procedural-first, optimized custom GLB later.
 - [ ] Validate performance baseline on real devices.
 - [x] Add reduced-motion behavior.
-- [ ] Add explicit WebGL-unavailable fallback.
+- [x] Add explicit WebGL-unavailable fallback.
 
 ### Phase 1 — Vertical slice
 
@@ -109,13 +109,21 @@ These should be decided through iteration based on what produces the strongest c
 - Which procedural assets should be replaced by custom GLB models first.
 - How the personalized solution summary and lead-capture flow should look.
 
+## Validation notes
+
+- React Three Fiber was aligned to v9 for React 19 compatibility; Drei is on the compatible v10 line.
+- The first scene has no required remote HDR/model dependency, so the initial render is self-contained apart from npm packages.
+- CI is configured on pull requests to `main` and installs dependencies before running the production build.
+- This session's local execution environment cannot resolve GitHub/npm hosts, so a local dependency install/build was not possible here.
+- The GitHub connector has not surfaced an Actions run for PR #1 yet; build validation remains open rather than being assumed successful.
+
 ## Next action
 
-1. Confirm PR #1 passes the GitHub Actions production build.
-2. Fix any type/build issues revealed by CI.
+1. Confirm PR #1 receives and passes the GitHub Actions production build.
+2. Fix any type/build issues revealed by CI or the first local checkout.
 3. Browser-review the first vertical slice and refine camera/animation composition.
-4. Add WebGL fallback and initial performance instrumentation.
-5. Begin the next polish pass: richer environment behavior, solar/energy visualizations, and personalized solution summary.
+4. Performance-check desktop and mobile.
+5. Begin the next polish pass: richer environment behavior, solar/energy visualization, accumulated client choices, and a personalized solution summary.
 
 ## Change log
 
@@ -130,9 +138,10 @@ These should be decided through iteration based on what produces the strongest c
 - Built cinematic camera choreography and shared 3D world reveal.
 - Added three interactive environments with problem-specific visual responses.
 - Added responsive HUD, reduced-motion behavior and first-pass mobile treatment.
-- Added GitHub Actions CI.
+- Added a graceful WebGL fallback.
+- Added GitHub Actions CI and corrected the workflow so it does not depend on a lockfile that does not exist yet.
 - Opened draft PR #1 for the phase.
-- Local build validation could not run because the execution environment could not resolve external package hosts; CI is now the authoritative build check.
+- Local build validation could not run because the execution environment could not resolve external package hosts.
 
 ### 2026-08-23 — Planning baseline
 
