@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      NEXT_PUBLIC_VISUAL_QA: "1"
 
     steps:
       - name: Checkout
@@ -75,6 +77,24 @@ jobs:
             --virtual-time-budget=7800 \
             --screenshot=visual-qa/mobile-chooser.png \
             http://127.0.0.1:3000/
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=1440,1000 \
+            --virtual-time-budget=3200 \
+            --screenshot=visual-qa/desktop-home-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=1440,1000 \
+            --virtual-time-budget=3200 \
+            --screenshot=visual-qa/desktop-residence-protection.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+
+          "$CHROME_BIN" "${COMMON_FLAGS[@]}" \
+            --window-size=1440,1000 \
+            --virtual-time-budget=3200 \
+            --screenshot=visual-qa/desktop-retail-guidance.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
       - name: Upload visual QA
         uses: actions/upload-artifact@v7
