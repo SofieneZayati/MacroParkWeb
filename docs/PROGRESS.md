@@ -4,9 +4,13 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 ## Current status
 
-**Project stage:** Planning complete, implementation not started.
+**Project stage:** Phase 0 foundation implemented; Phase 1 vertical slice in active development.
 
-**Current priority:** Phase 0 foundation followed immediately by the Phase 1 interaction prototype.
+**Current branch:** `phase-1-interactive-foundation`
+
+**Pull request:** Draft PR #1 — `Phase 1: interactive MacroPark foundation`
+
+**Current priority:** Validate the production build, then improve the first interactive sequence before expanding content breadth.
 
 **Repository state at planning start:** Empty repository.
 
@@ -24,6 +28,8 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 - EV charging and solar should be contextual add-ons within environments rather than isolated technical pages.
 - Desktop should be cinematic; mobile must receive a deliberately adapted experience.
 - Performance, reduced-motion behavior and fallback support are requirements from the beginning.
+- The first prototype uses procedural geometry so interaction quality can be validated before investing in heavy production 3D assets.
+- Experience navigation is driven by an explicit state machine rather than being hard-wired to scroll position.
 
 ## Core experience to prove first
 
@@ -41,54 +47,96 @@ This file is the persistent checkpoint for the project. Update it after meaningf
 
 ### Phase 0 — Foundation
 
-- [ ] Initialize Next.js + TypeScript.
-- [ ] Configure project quality tooling.
-- [ ] Add React Three Fiber / Three.js foundation.
-- [ ] Add Drei and animation tooling.
-- [ ] Establish scene/state architecture.
-- [ ] Establish design tokens and typography.
-- [ ] Build responsive canvas/app shell.
-- [ ] Define asset-loading strategy.
-- [ ] Define performance baseline.
-- [ ] Define reduced-motion and WebGL fallback behavior.
+- [x] Initialize Next.js + TypeScript.
+- [x] Add GitHub Actions production-build validation.
+- [x] Add React Three Fiber / Three.js foundation.
+- [x] Add Drei and animation tooling dependencies.
+- [x] Establish scene/state architecture.
+- [x] Establish first-pass visual system and typography treatment.
+- [x] Build responsive canvas/app shell.
+- [x] Define first asset strategy: procedural-first, optimized custom GLB later.
+- [ ] Validate performance baseline on real devices.
+- [x] Add reduced-motion behavior.
+- [ ] Add explicit WebGL-unavailable fallback.
 
 ### Phase 1 — Vertical slice
 
-- [ ] Create opening environment.
-- [ ] Add hero vehicle.
-- [ ] Add entrance/gate.
-- [ ] Add automatic arrival demonstration.
-- [ ] Build world reveal.
-- [ ] Build spatial environment selector.
-- [ ] Create camera choreography.
-- [ ] Build first environment transition.
-- [ ] Add one problem-selection interaction.
-- [ ] Add one physical solution demonstration.
-- [ ] Add first-pass responsive/mobile treatment.
+- [x] Create opening environment.
+- [x] Add procedural hero vehicle.
+- [x] Add entrance/gate and recognition camera.
+- [x] Add automatic arrival demonstration.
+- [x] Build world reveal.
+- [x] Build spatial environment selector.
+- [x] Create camera choreography.
+- [x] Build transitions into Home, Residence and Retail viewpoints.
+- [x] Add environment-specific problem selection.
+- [x] Add first physical solution reactions in 3D.
+- [x] Add first-pass responsive/mobile treatment.
+- [ ] Validate production build in CI.
 - [ ] Performance-check the complete vertical slice.
+- [ ] Refine transition timing and scene composition after browser review.
+
+## Implemented interaction examples
+
+### Home
+
+- Automatic garage/access concept.
+- Temporary guest arrival visualization.
+- EV charger visualization.
+
+### Residence
+
+- Protected assigned-space concept.
+- Guest-access scenario.
+- Shared EV charging scenario.
+
+### Retail / mall
+
+- Entrance-flow / queue-reduction scenario.
+- Free-space guidance visualization.
+- Customer EV charging visualization.
 
 ## Decisions still intentionally open
 
-These should be decided during implementation based on what produces the strongest experience:
+These should be decided through iteration based on what produces the strongest client experience:
 
-- Exact opening copy.
-- Exact architectural style of the shared world.
-- Whether the first fully implemented environment is Home or Residence.
-- Exact vehicle model/style.
-- How much scroll versus direct interaction controls progression.
-- Whether subtle sound is valuable enough to include.
-- Exact final brand accent colors.
-- Whether generated imagery is needed beyond supporting textures/background assets.
+- Final opening copy.
+- Final architectural/art direction of the shared world.
+- Production vehicle model/style.
+- Final balance of scroll versus direct interaction.
+- Whether subtle optional sound materially improves the experience.
+- Final brand accent palette.
+- Which procedural assets should be replaced by custom GLB models first.
+- How the personalized solution summary and lead-capture flow should look.
 
 ## Next action
 
-Start implementation with **Phase 0** on a dedicated development branch, then build the smallest convincing Phase 1 vertical slice before expanding to additional environments.
+1. Confirm PR #1 passes the GitHub Actions production build.
+2. Fix any type/build issues revealed by CI.
+3. Browser-review the first vertical slice and refine camera/animation composition.
+4. Add WebGL fallback and initial performance instrumentation.
+5. Begin the next polish pass: richer environment behavior, solar/energy visualizations, and personalized solution summary.
 
 ## Change log
+
+### 2026-08-23 — Phase 0 / first vertical slice implementation
+
+- Created `phase-1-interactive-foundation` development branch.
+- Initialized Next.js + TypeScript application.
+- Added React Three Fiber, Drei, Three.js, Zustand and GSAP dependencies.
+- Added an explicit experience state machine.
+- Added client-focused branching content for Home, Residence and Retail/Mall.
+- Built procedural 3D arrival scene, vehicle, gate, recognition camera and scan effect.
+- Built cinematic camera choreography and shared 3D world reveal.
+- Added three interactive environments with problem-specific visual responses.
+- Added responsive HUD, reduced-motion behavior and first-pass mobile treatment.
+- Added GitHub Actions CI.
+- Opened draft PR #1 for the phase.
+- Local build validation could not run because the execution environment could not resolve external package hosts; CI is now the authoritative build check.
 
 ### 2026-08-23 — Planning baseline
 
 - Created repository vision in `README.md`.
 - Added full product/experience/implementation roadmap in `docs/ROADMAP.md`.
 - Added this persistent progress checkpoint.
-- No application code has been created yet.
+- No application code had been created at that point.
