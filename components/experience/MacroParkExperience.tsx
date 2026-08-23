@@ -26,6 +26,7 @@ export function MacroParkExperience() {
     selectedEnvironment,
     selectedProblem,
     selectedProblems,
+    guestAccessPreview,
     setPhase,
     completeIntro,
     chooseEnvironment,
@@ -33,6 +34,7 @@ export function MacroParkExperience() {
     clearProblem,
     toggleSolar,
     backToChooser,
+    setGuestAccessPreview,
   } = useExperienceStore();
 
   const environment = getEnvironment(selectedEnvironment);
@@ -42,6 +44,7 @@ export function MacroParkExperience() {
     selectedProblem,
     selectedProblems,
   );
+  const showingHomeGuestAccess = selectedEnvironment === "home" && selectedProblem === "guest-access";
 
   useEffect(() => {
     if (introComplete) return;
@@ -76,6 +79,7 @@ export function MacroParkExperience() {
     const environmentParam = params.get("qaEnvironment");
     const problemParam = params.get("qaProblem");
     const wantsSolar = params.get("qaSolar") === "1";
+    const guestPreviewParam = params.get("qaGuest");
 
     const validEnvironment = environments.find((item) => item.id === environmentParam);
     if (!validEnvironment) return;
@@ -91,8 +95,21 @@ export function MacroParkExperience() {
     if (validProblem) {
       chooseProblem(validProblem.id as ProblemId);
       if (wantsSolar && validProblem.id === "ev-charging") toggleSolar();
+      if (
+        environmentId === "home" &&
+        validProblem.id === "guest-access" &&
+        guestPreviewParam === "expired"
+      ) {
+        setGuestAccessPreview("expired");
+      }
     }
-  }, [chooseEnvironment, chooseProblem, completeIntro, toggleSolar]);
+  }, [
+    chooseEnvironment,
+    chooseProblem,
+    completeIntro,
+    setGuestAccessPreview,
+    toggleSolar,
+  ]);
 
   return (
     <main className="experience-shell">
@@ -205,6 +222,35 @@ export function MacroParkExperience() {
               <h2>{problem ? problem.resultTitle : environment.question}</h2>
               <p>{problem ? problem.resultBody : environment.description}</p>
 
+              {showingHomeGuestAccess && (
+                <div className={`guest-access-preview guest-access-preview-${guestAccessPreview}`}>
+                  <div className="guest-access-state">
+                    <span className="guest-access-dot" aria-hidden="true" />
+                    <strong>
+                      {guestAccessPreview === "active"
+                        ? "Temporary access · active for this visit"
+                        : "Access window ended · entrance stays closed"}
+                    </strong>
+                  </div>
+                  <div className="guest-access-toggle" aria-label="Guest access demonstration">
+                    <button
+                      type="button"
+                      aria-pressed={guestAccessPreview === "active"}
+                      onClick={() => setGuestAccessPreview("active")}
+                    >
+                      Guest expected
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={guestAccessPreview === "expired"}
+                      onClick={() => setGuestAccessPreview("expired")}
+                    >
+                      After visit
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {!problem ? (
                 <div className="problem-list">
                   {environment.problems.map((item) => {
@@ -243,7 +289,7 @@ export function MacroParkExperience() {
               )}
             </div>
 
-            <div className="corner-caption">Interactive concept · Phase 1</div>
+            <div className="corner-caption">Interactive experience · Phase 2</div>
           </>
         )}
       </section>

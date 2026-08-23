@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./fallback.css";
+import "./phase2.css";
 
 export const metadata: Metadata = {
   title: "MacroPark — Parking that adapts to you",

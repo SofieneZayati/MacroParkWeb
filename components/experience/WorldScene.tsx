@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, useCursor } from "@react-three/drei";
 import * as THREE from "three";
@@ -11,6 +11,9 @@ import {
 import { EntranceKit } from "./EntranceKit";
 import { EVCharger, ParkingBlocker } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { HomeAccessSequence } from "./HomeAccessSequence";
+import { HomeGuestSequence } from "./HomeGuestSequence";
+import { HomeChargingSequence } from "./HomeChargingSequence";
 import {
   HomeArchitecture,
   ResidenceArchitecture,
@@ -34,6 +37,21 @@ const CAMERA: Record<string, CameraTarget> = {
 };
 
 const PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "home:automatic-access": {
+    position: [12.3, 4.35, -2.55],
+    lookAt: [7.35, 0.9, -6.95],
+    fov: 36,
+  },
+  "home:guest-access": {
+    position: [13.25, 4.8, -1.95],
+    lookAt: [9.1, 0.82, -6.35],
+    fov: 37,
+  },
+  "home:ev-charging": {
+    position: [13.1, 5.65, -1.65],
+    lookAt: [7.55, 1.18, -7.35],
+    fov: 39,
+  },
   "retail:parking-guidance": {
     position: [-13.55, 4.95, -2.15],
     lookAt: [-9.65, 0.32, -7.18],
@@ -48,6 +66,21 @@ const MOBILE_CAMERA: Partial<Record<string, CameraTarget>> = {
 };
 
 const MOBILE_PROBLEM_CAMERA: Record<string, CameraTarget> = {
+  "home:automatic-access": {
+    position: [10.95, 7.5, 0.75],
+    lookAt: [7.45, 1.25, -7.55],
+    fov: 47,
+  },
+  "home:guest-access": {
+    position: [11.45, 7.75, 1.15],
+    lookAt: [8.7, 1.18, -6.95],
+    fov: 48,
+  },
+  "home:ev-charging": {
+    position: [11.4, 8.15, 1.05],
+    lookAt: [7.75, 1.55, -7.3],
+    fov: 50,
+  },
   "retail:parking-guidance": {
     position: [-12.35, 7.25, 0.15],
     lookAt: [-9.45, 0.72, -7.25],
@@ -239,23 +272,31 @@ function InteractiveEnvironment({
 function HomeWorld() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
+  const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
+  const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const active = selectedEnvironment === "home";
+  const automaticAccessActive = active && selectedProblem === "automatic-access";
+  const guestAccessActive = active && selectedProblem === "guest-access";
+  const [garageAuthorized, setGarageAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (!automaticAccessActive) setGarageAuthorized(false);
+  }, [automaticAccessActive]);
 
   return (
     <InteractiveEnvironment id="home" position={[8, 0, -10]}>
-      <HomeArchitecture garageOpen={active && selectedProblem === "automatic-access"} />
+      <HomeArchitecture garageOpen={automaticAccessActive && garageAuthorized} />
 
-      {selectedProblem === "guest-access" && active && (
-        <group position={[1.15, 0, 3.1]} rotation-y={Math.PI}>
-          <PremiumVehicle color="#9eb2a5" scale={0.61} lightsOn={false} />
-        </group>
+      {automaticAccessActive && (
+        <HomeAccessSequence onRecognized={() => setGarageAuthorized(true)} />
+      )}
+
+      {guestAccessActive && (
+        <HomeGuestSequence allowed={guestAccessPreview === "active"} />
       )}
 
       {selectedProblem === "ev-charging" && active && (
-        <group position={[-2.28, 0, 2.15]}>
-          <EVCharger compact />
-          <pointLight position={[0, 1.2, 0]} color="#80ffad" intensity={2.7} distance={4} />
-        </group>
+        <HomeChargingSequence solarEnabled={solarEnabled} />
       )}
     </InteractiveEnvironment>
   );
