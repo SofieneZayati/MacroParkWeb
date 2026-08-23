@@ -96,6 +96,15 @@ jobs:
           capture 1440,1000 2500 visual-qa/desktop-home-access.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access"
 
+          capture 1440,1000 2300 visual-qa/desktop-home-guest-active.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access"
+
+          capture 1440,1000 2300 visual-qa/desktop-home-guest-expired.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access&qaGuest=expired"
+
+          capture 390,844 2300 visual-qa/mobile-home-guest-active.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access"
+
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
 
