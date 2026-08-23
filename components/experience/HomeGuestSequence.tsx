@@ -28,7 +28,7 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
 
     const stopAt = allowed ? 1 : 0.47;
     progress.current = Math.min(stopAt, progress.current + delta * 0.24);
-    const normalized = stopAt === 0 ? 0 : progress.current / stopAt;
+    const normalized = progress.current / stopAt;
     const t = allowed
       ? THREE.MathUtils.smoothstep(progress.current, 0, 1)
       : THREE.MathUtils.smoothstep(normalized, 0, 1) * stopAt;
