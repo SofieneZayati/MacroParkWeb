@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
@@ -59,11 +59,29 @@ export function ParkingBlocker({
 export function EVCharger({
   position = [0, 0, 0],
   compact = false,
+  charging = false,
 }: {
   position?: [number, number, number];
   compact?: boolean;
+  charging?: boolean;
 }) {
   const height = compact ? 1.08 : 1.42;
+  const status = useRef<THREE.Mesh>(null);
+  const light = useRef<THREE.PointLight>(null);
+
+  useFrame(({ clock }) => {
+    if (status.current) {
+      const material = status.current.material as THREE.MeshStandardMaterial;
+      material.emissiveIntensity = charging
+        ? 1.3 + (Math.sin(clock.elapsedTime * 3.1) + 1) * 0.48
+        : 1.25;
+    }
+    if (light.current) {
+      light.current.intensity = charging
+        ? 2.1 + (Math.sin(clock.elapsedTime * 2.7) + 1) * 0.55
+        : 2.1;
+    }
+  });
 
   return (
     <group position={position} scale={compact ? 0.9 : 1}>
@@ -77,7 +95,7 @@ export function EVCharger({
       <RoundedBox args={[0.34, 0.46, 0.035]} radius={0.045} position={[0, height * 0.68, 0.205]}>
         <meshStandardMaterial color="#17211d" metalness={0.18} roughness={0.18} />
       </RoundedBox>
-      <mesh position={[0, height * 0.74, 0.226]}>
+      <mesh ref={status} position={[0, height * 0.74, 0.226]}>
         <boxGeometry args={[0.2, 0.12, 0.012]} />
         <meshStandardMaterial color="#8ff3aa" emissive="#46b961" emissiveIntensity={1.25} />
       </mesh>
@@ -92,7 +110,7 @@ export function EVCharger({
       <RoundedBox args={[0.11, 0.25, 0.09]} radius={0.025} position={[0.31, height * 0.34, 0.16]} rotation={[0, 0, -0.18]}>
         <meshStandardMaterial color="#313a35" metalness={0.34} roughness={0.46} />
       </RoundedBox>
-      <pointLight position={[0, height * 0.72, 0.48]} color="#91f5ac" intensity={2.1} distance={2.8} />
+      <pointLight ref={light} position={[0, height * 0.72, 0.48]} color="#91f5ac" intensity={2.1} distance={2.8} />
     </group>
   );
 }
@@ -104,8 +122,24 @@ export function SolarCanopy({
   position?: [number, number, number];
   scale?: number;
 }) {
+  const root = useRef<THREE.Group>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  useFrame((_, delta) => {
+    if (!root.current) return;
+    root.current.scale.x = scale;
+    root.current.scale.z = scale;
+    root.current.scale.y = reducedMotion
+      ? scale
+      : THREE.MathUtils.damp(root.current.scale.y, scale, 3.4, delta);
+  });
+
   return (
-    <group position={position} scale={scale}>
+    <group ref={root} position={position} scale={[scale, reducedMotion ? scale : scale * 0.08, scale]}>
       {[-2.35, 2.35].map((x) => (
         <group key={x} position={[x, 0, 0]}>
           <mesh position={[0, 1.58, 0]} castShadow>
