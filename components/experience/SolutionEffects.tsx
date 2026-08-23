@@ -38,7 +38,7 @@ export function SolutionEffects() {
     <group position={origin}>
       {selectedProblem && <ActiveBeacon />}
       {hasGuidance && <GuidanceTrail />}
-      {hasProtectedSpace && <ProtectedBay />}
+      {hasProtectedSpace && <ProtectedBay showHardware={selectedProblem !== "protect-space"} />}
       {hasReservation && <ReservedBay />}
       {hasGuestAccess && <GuestWindow />}
       {hasFlow && <FlowPulse />}
@@ -57,7 +57,12 @@ function ActiveBeacon() {
     ring.current.rotation.z += 0.002;
   });
 
-  return null;
+  return (
+    <mesh ref={ring} rotation-x={Math.PI / 2} position={[0, 0.08, 0]}>
+      <torusGeometry args={[3.4, 0.035, 10, 72]} />
+      <meshBasicMaterial color="#9df4b7" transparent opacity={0.35} />
+    </mesh>
+  );
 }
 
 function GuidanceTrail() {
@@ -78,7 +83,7 @@ function GuidanceTrail() {
   );
 }
 
-function ProtectedBay() {
+function ProtectedBay({ showHardware }: { showHardware: boolean }) {
   const glow = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
@@ -93,7 +98,7 @@ function ProtectedBay() {
         <planeGeometry args={[2.15, 3.15]} />
         <meshBasicMaterial color="#a7f8be" transparent opacity={0.17} side={THREE.DoubleSide} />
       </mesh>
-      <ParkingBlocker position={[0, 0.04, -1.05]} />
+      {showHardware && <ParkingBlocker position={[0, 0.04, -1.05]} />}
     </group>
   );
 }
