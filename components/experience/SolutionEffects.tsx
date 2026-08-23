@@ -18,6 +18,18 @@ const SOLAR_PLACEMENT: Record<EnvironmentId, { position: [number, number, number
   retail: { position: [0, 0, 2.2], scale: 0.9 },
 };
 
+const RESERVATION_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
+  home: [0, 0, 2.5],
+  residence: [0, 0, 2.35],
+  retail: [-2.7, 0, 2.45],
+};
+
+const GUEST_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
+  home: [1.15, 0.04, 3.1],
+  residence: [0, 0.04, 2.35],
+  retail: [0, 0.04, 2.45],
+};
+
 export function SolutionEffects() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
@@ -37,11 +49,19 @@ export function SolutionEffects() {
   return (
     <group position={origin}>
       {selectedProblem && <ActiveBeacon />}
-      {hasGuidance && <GuidanceTrail />}
-      {hasProtectedSpace && <ProtectedBay showHardware={selectedProblem !== "protect-space"} />}
-      {hasReservation && <ReservedBay />}
-      {hasGuestAccess && <GuestWindow />}
-      {hasFlow && <FlowPulse />}
+      {hasGuidance && selectedEnvironment === "retail" && <GuidanceTrail />}
+      {hasProtectedSpace && selectedEnvironment === "residence" && (
+        <ProtectedBay showHardware={selectedProblem !== "protect-space"} />
+      )}
+      {hasReservation && <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />}
+      {hasGuestAccess && <GuestWindow position={GUEST_PLACEMENT[selectedEnvironment]} />}
+      {hasFlow && (
+        <FlowPulse
+          x={selectedEnvironment === "retail" ? -1.9 : -0.75}
+          startZ={selectedEnvironment === "retail" ? 5.7 : 4.8}
+          endZ={selectedEnvironment === "retail" ? 1.2 : 1.15}
+        />
+      )}
       {solarEnabled && <SolarCanopy position={solar.position} scale={solar.scale} />}
     </group>
   );
@@ -68,23 +88,33 @@ function ActiveBeacon() {
 function GuidanceTrail() {
   return (
     <group>
-      {[0, 1, 2, 3, 4].map((step) => (
-        <mesh
-          key={step}
-          rotation-x={-Math.PI / 2}
-          rotation-z={-0.7}
-          position={[-1.9 + step * 0.7, 0.07, 5.3 - step * 0.8]}
-        >
-          <planeGeometry args={[0.72, 0.19]} />
-          <meshBasicMaterial
-            color="#a7f8be"
-            transparent
-            opacity={0.42 + step * 0.08}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+      {[0, 1, 2, 3, 4, 5].map((step) => (
+        <group key={step} position={[-3.2 + step * 0.46, 0.075, 5.65 - step * 0.64]}>
+          <mesh rotation-x={-Math.PI / 2} rotation-z={-0.23} position={[-0.12, 0, 0]}>
+            <planeGeometry args={[0.5, 0.1]} />
+            <meshBasicMaterial
+              color="#a7f8be"
+              transparent
+              opacity={0.34 + step * 0.075}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+          <mesh rotation-x={-Math.PI / 2} rotation-z={-1.05} position={[0.12, 0, 0]}>
+            <planeGeometry args={[0.5, 0.1]} />
+            <meshBasicMaterial
+              color="#a7f8be"
+              transparent
+              opacity={0.34 + step * 0.075}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </group>
       ))}
-      <pointLight position={[0.9, 0.65, 2.1]} color="#9effbd" intensity={1.5} distance={2.8} />
+      <mesh rotation-x={-Math.PI / 2} position={[-0.9, 0.07, 2.45]}>
+        <ringGeometry args={[0.48, 0.56, 36]} />
+        <meshBasicMaterial color="#a7f8be" transparent opacity={0.55} side={THREE.DoubleSide} />
+      </mesh>
+      <pointLight position={[-0.9, 0.72, 2.45]} color="#9effbd" intensity={2} distance={3.5} />
     </group>
   );
 }
@@ -109,7 +139,7 @@ function ProtectedBay({ showHardware }: { showHardware: boolean }) {
   );
 }
 
-function ReservedBay() {
+function ReservedBay({ position }: { position: [number, number, number] }) {
   const marker = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
@@ -120,17 +150,17 @@ function ReservedBay() {
   });
 
   return (
-    <group position={[-2.7, 0, 0.55]}>
+    <group position={position}>
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 0]}>
-        <planeGeometry args={[2.05, 4]} />
+        <planeGeometry args={[1.7, 3.1]} />
         <meshBasicMaterial color="#f2c76f" transparent opacity={0.1} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={marker} rotation-x={Math.PI / 2} position={[0, 0.11, 0]}>
         <torusGeometry args={[0.55, 0.045, 10, 48, Math.PI * 1.62]} />
         <meshBasicMaterial color="#f6cf79" transparent opacity={0.4} />
       </mesh>
-      <mesh position={[0, 0.16, -1.62]}>
-        <boxGeometry args={[1.5, 0.08, 0.12]} />
+      <mesh position={[0, 0.16, -1.28]}>
+        <boxGeometry args={[1.35, 0.08, 0.12]} />
         <meshStandardMaterial color="#d8aa50" emissive="#7d5720" emissiveIntensity={0.45} />
       </mesh>
       <pointLight position={[0, 1.1, 0]} color="#f2ca77" intensity={1.8} distance={3.2} />
@@ -138,9 +168,9 @@ function ReservedBay() {
   );
 }
 
-function GuestWindow() {
+function GuestWindow({ position }: { position: [number, number, number] }) {
   return (
-    <group position={[-2.65, 0.04, 2.65]}>
+    <group position={position}>
       <mesh rotation-x={-Math.PI / 2}>
         <ringGeometry args={[0.62, 0.7, 40]} />
         <meshBasicMaterial color="#d6f7df" transparent opacity={0.44} side={THREE.DoubleSide} />
@@ -150,18 +180,18 @@ function GuestWindow() {
   );
 }
 
-function FlowPulse() {
+function FlowPulse({ x, startZ, endZ }: { x: number; startZ: number; endZ: number }) {
   const pulse = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!pulse.current) return;
     const progress = (clock.elapsedTime * 0.65) % 1;
-    pulse.current.position.z = 6 - progress * 9;
+    pulse.current.position.z = THREE.MathUtils.lerp(startZ, endZ, progress);
     pulse.current.position.y = 0.18 + Math.sin(progress * Math.PI) * 0.18;
   });
 
   return (
-    <mesh ref={pulse} position={[0, 0.2, 5]}>
+    <mesh ref={pulse} position={[x, 0.2, startZ]}>
       <sphereGeometry args={[0.1, 14, 14]} />
       <meshBasicMaterial color="#a7f8be" />
       <pointLight color="#9effbd" intensity={2.8} distance={2.5} />
