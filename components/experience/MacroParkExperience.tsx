@@ -57,6 +57,12 @@ export function MacroParkExperience() {
     if (process.env.NEXT_PUBLIC_VISUAL_QA !== "1") return;
 
     const params = new URLSearchParams(window.location.search);
+
+    if (params.get("qaChooser") === "1") {
+      completeIntro();
+      return;
+    }
+
     const environmentParam = params.get("qaEnvironment");
     const problemParam = params.get("qaProblem");
     const wantsSolar = params.get("qaSolar") === "1";
