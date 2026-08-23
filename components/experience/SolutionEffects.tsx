@@ -8,8 +8,14 @@ import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
   home: [8, 0, -10],
-  residence: [0, 0, -13],
+  residence: [0, 0, -14],
   retail: [-8.5, 0, -10],
+};
+
+const SOLAR_PLACEMENT: Record<EnvironmentId, { position: [number, number, number]; scale: number }> = {
+  home: { position: [0, 0, 2.35], scale: 0.68 },
+  residence: { position: [0, 0, 2.15], scale: 0.82 },
+  retail: { position: [0, 0, 2.2], scale: 0.9 },
 };
 
 export function SolutionEffects() {
@@ -21,6 +27,7 @@ export function SolutionEffects() {
   if (!selectedEnvironment) return null;
 
   const origin = ORIGIN[selectedEnvironment];
+  const solar = SOLAR_PLACEMENT[selectedEnvironment];
   const hasGuidance = selectedProblems.includes("parking-guidance");
   const hasProtectedSpace = selectedProblems.includes("protect-space");
   const hasReservation = selectedProblems.includes("reservations");
@@ -35,7 +42,7 @@ export function SolutionEffects() {
       {hasReservation && <ReservedBay />}
       {hasGuestAccess && <GuestWindow />}
       {hasFlow && <FlowPulse />}
-      {solarEnabled && <SolarCanopy />}
+      {solarEnabled && <SolarCanopy position={solar.position} scale={solar.scale} />}
     </group>
   );
 }
@@ -50,12 +57,7 @@ function ActiveBeacon() {
     ring.current.rotation.z += 0.002;
   });
 
-  return (
-    <mesh ref={ring} rotation-x={Math.PI / 2} position={[0, 0.08, 0]}>
-      <torusGeometry args={[3.4, 0.035, 10, 72]} />
-      <meshBasicMaterial color="#9df4b7" transparent opacity={0.35} />
-    </mesh>
-  );
+  return null;
 }
 
 function GuidanceTrail() {
@@ -86,12 +88,12 @@ function ProtectedBay() {
   });
 
   return (
-    <group position={[2.8, 0, 2.4]}>
+    <group position={[-2.45, 0, 2.4]}>
       <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.045, 0]}>
-        <planeGeometry args={[2.15, 4.1]} />
+        <planeGeometry args={[2.15, 3.15]} />
         <meshBasicMaterial color="#a7f8be" transparent opacity={0.17} side={THREE.DoubleSide} />
       </mesh>
-      <ParkingBlocker position={[0, 0.04, -1.45]} />
+      <ParkingBlocker position={[0, 0.04, -1.05]} />
     </group>
   );
 }
