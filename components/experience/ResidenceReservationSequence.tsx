@@ -64,11 +64,11 @@ export function ResidenceReservationSequence() {
     const parkingFocus = progress.current >= 0.68;
     const targetPosition: [number, number, number] = mobile
       ? parkingFocus
-        ? [5.1, 6.9, -6.0]
-        : [6.1, 7.2, -4.1]
+        ? [2.6, 7.1, -5.25]
+        : [3.2, 7.1, -4.0]
       : parkingFocus
-        ? [5.4, 3.75, -7.35]
-        : [7.2, 4.25, -5.25];
+        ? [2.35, 3.85, -6.75]
+        : [3.05, 4.25, -5.1];
     const targetLookAt: [number, number, number] = parkingFocus
       ? [0, 0.55, -11.65]
       : [0, 0.9, -9.55];
@@ -80,7 +80,7 @@ export function ResidenceReservationSequence() {
     cameraLookAt.current.lerp(cameraTarget, ease);
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? 49 : parkingFocus ? 38 : 37;
+      const targetFov = mobile ? 49 : parkingFocus ? 39 : 38;
       camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5.4, delta);
       camera.updateProjectionMatrix();
     }
