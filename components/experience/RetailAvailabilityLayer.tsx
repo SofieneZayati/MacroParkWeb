@@ -7,6 +7,7 @@ import { useExperienceStore } from "./useExperienceStore";
 
 const BAY_STATUS = ["free", "selected", "occupied", "free"] as const;
 const BAY_X = [-2.7, -0.9, 0.9, 2.7] as const;
+const APPROACH_POSITION: [number, number, number] = [-2.72, 0, 6.35];
 
 export function RetailAvailabilityLayer() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
@@ -20,11 +21,11 @@ export function RetailAvailabilityLayer() {
 
     if (selectedPulse.current) {
       const material = selectedPulse.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.52 + (Math.sin(clock.elapsedTime * 2.8) + 1) * 0.12;
+      material.opacity = 0.42 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.1;
     }
     if (approachPulse.current) {
       const material = approachPulse.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.34 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.08;
+      material.opacity = 0.24 + (Math.sin(clock.elapsedTime * 2) + 1) * 0.06;
     }
   });
 
@@ -42,26 +43,26 @@ export function RetailAvailabilityLayer() {
 
         return (
           <group key={x} position={[x, 0, 2.45]}>
-            <mesh position={[0, 1.25, -1.15]}>
-              <cylinderGeometry args={[0.028, 0.04, 2.35, 7]} />
+            <mesh position={[0, 0.93, -1.12]}>
+              <cylinderGeometry args={[0.022, 0.032, 1.72, 7]} />
               <meshStandardMaterial color="#56615b" metalness={0.4} roughness={0.48} />
             </mesh>
-            <mesh position={[0, 2.38, -1.15]}>
-              <boxGeometry args={[0.58, 0.11, 0.14]} />
+            <mesh position={[0, 1.75, -1.12]}>
+              <boxGeometry args={[0.42, 0.075, 0.1]} />
               <meshBasicMaterial color={color} />
             </mesh>
-            <mesh position={[0, 2.38, -1.23]}>
-              <boxGeometry args={[0.28, 0.035, 0.012]} />
+            <mesh position={[0, 1.75, -1.18]}>
+              <boxGeometry args={[0.2, 0.024, 0.01]} />
               <meshBasicMaterial color={free ? "#effff3" : "#8a958f"} />
             </mesh>
 
             {selected && (
-              <mesh ref={selectedPulse} rotation-x={-Math.PI / 2} position={[0, 0.12, 0]}>
-                <ringGeometry args={[0.62, 0.72, 36]} />
+              <mesh ref={selectedPulse} rotation-x={-Math.PI / 2} position={[0, 0.115, 0]}>
+                <ringGeometry args={[0.54, 0.62, 30]} />
                 <meshBasicMaterial
                   color="#b9ffca"
                   transparent
-                  opacity={0.62}
+                  opacity={0.52}
                   side={THREE.DoubleSide}
                 />
               </mesh>
@@ -70,12 +71,16 @@ export function RetailAvailabilityLayer() {
         );
       })}
 
-      <mesh ref={approachPulse} rotation-x={-Math.PI / 2} position={[-2.05, 0.085, 5.18]}>
-        <ringGeometry args={[0.52, 0.62, 34]} />
+      <mesh
+        ref={approachPulse}
+        rotation-x={-Math.PI / 2}
+        position={[APPROACH_POSITION[0], 0.082, APPROACH_POSITION[2]]}
+      >
+        <ringGeometry args={[0.4, 0.47, 28]} />
         <meshBasicMaterial
           color="#a9f7bd"
           transparent
-          opacity={0.42}
+          opacity={0.3}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -85,35 +90,35 @@ export function RetailAvailabilityLayer() {
 
 function AvailabilityGantry() {
   return (
-    <group position={[-2.05, 0, 5.18]}>
-      <mesh position={[-1.22, 1.35, 0]}>
-        <cylinderGeometry args={[0.035, 0.05, 2.65, 8]} />
+    <group position={APPROACH_POSITION} scale={0.72}>
+      <mesh position={[-0.94, 1.05, 0]}>
+        <cylinderGeometry args={[0.035, 0.045, 2.05, 8]} />
         <meshStandardMaterial color="#525d57" metalness={0.45} roughness={0.44} />
       </mesh>
-      <mesh position={[1.22, 1.35, 0]}>
-        <cylinderGeometry args={[0.035, 0.05, 2.65, 8]} />
+      <mesh position={[0.94, 1.05, 0]}>
+        <cylinderGeometry args={[0.035, 0.045, 2.05, 8]} />
         <meshStandardMaterial color="#525d57" metalness={0.45} roughness={0.44} />
       </mesh>
-      <mesh position={[0, 2.58, 0]}>
-        <boxGeometry args={[2.62, 0.5, 0.16]} />
+      <mesh position={[0, 1.98, 0]}>
+        <boxGeometry args={[2.05, 0.34, 0.13]} />
         <meshStandardMaterial color="#202824" metalness={0.28} roughness={0.42} />
       </mesh>
 
-      <group position={[0, 2.58, 0.09]}>
-        {[-0.72, -0.24, 0.24, 0.72].map((x, index) => {
+      <group position={[0, 1.99, 0.075]}>
+        {[-0.55, -0.18, 0.18, 0.55].map((x, index) => {
           const free = index !== 2;
           return (
             <mesh key={x} position={[x, 0, 0]}>
-              <boxGeometry args={[0.28, 0.14, 0.018]} />
+              <boxGeometry args={[0.21, 0.09, 0.015]} />
               <meshBasicMaterial color={free ? "#a9f7bd" : "#66716b"} />
             </mesh>
           );
         })}
       </group>
 
-      <mesh position={[0, 2.35, 0.09]}>
-        <boxGeometry args={[1.9, 0.035, 0.018]} />
-        <meshBasicMaterial color="#d9e5de" transparent opacity={0.38} />
+      <mesh position={[0, 1.81, 0.075]}>
+        <boxGeometry args={[1.45, 0.026, 0.015]} />
+        <meshBasicMaterial color="#d9e5de" transparent opacity={0.32} />
       </mesh>
     </group>
   );
