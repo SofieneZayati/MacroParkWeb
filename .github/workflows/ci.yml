@@ -118,9 +118,9 @@ jobs:
           capture 1440,1000 2600 visual-qa/desktop-residence-guest-expired.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaGuest=expired"
 
-          # Residence shared EV charging and portrait regression
-          capture 1440,1000 2300 visual-qa/desktop-residence-ev.png \
-            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging"
+          # Residence shared EV charging + solar and portrait regression
+          capture 1440,1000 2500 visual-qa/desktop-residence-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging&qaSolar=1"
           capture 390,844 2700 visual-qa/mobile-residence-guest-expired.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaGuest=expired"
           capture 390,844 2400 visual-qa/mobile-residence-ev.png \
