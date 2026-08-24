@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { RetailAvailabilityLayer } from "./RetailAvailabilityLayer";
+import { RetailChargingSequence } from "./RetailChargingSequence";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
 
 const CAMERA_OFFSET: Record<EnvironmentId, [number, number, number]> = {
@@ -20,6 +21,7 @@ export function ScenePolish() {
       <CameraComposition reducedMotion={reducedMotion} />
       {!reducedMotion && <CameraParallax />}
       <RetailAvailabilityLayer />
+      <RetailChargingSequence />
     </>
   );
 }
