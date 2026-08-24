@@ -5,6 +5,9 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ParkingBlocker, SolarCanopy } from "./ParkingHardware";
 import { ResidenceAccessSequence } from "./ResidenceAccessSequence";
+import { ResidenceReservationSequence } from "./ResidenceReservationSequence";
+import { ResidenceGuestSequence } from "./ResidenceGuestSequence";
+import { ResidenceChargingSequence } from "./ResidenceChargingSequence";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
@@ -27,7 +30,7 @@ const RESERVATION_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
 
 const GUEST_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
   home: [1.15, 0.04, 3.1],
-  residence: [0, 0.04, 2.35],
+  residence: [0, 0.24, 2.35],
   retail: [0, 0.04, 2.45],
 };
 
@@ -50,16 +53,23 @@ export function SolutionEffects() {
   const hasReservation = selectedProblems.includes("reservations");
   const hasGuestAccess = selectedProblems.includes("guest-access");
   const hasFlow = selectedProblems.includes("reduce-queues") || selectedProblems.includes("automatic-access");
-  const guestPreviewActive =
-    selectedEnvironment !== "home" || selectedProblem !== "guest-access" || guestAccessPreview === "active";
+  const guestPreviewActive = guestAccessPreview === "active";
+
   const residenceProtectionStory =
     selectedEnvironment === "residence" && selectedProblem === "protect-space";
+  const residenceReservationStory =
+    selectedEnvironment === "residence" && selectedProblem === "reservations";
+  const residenceGuestStory =
+    selectedEnvironment === "residence" && selectedProblem === "guest-access";
+  const residenceChargingStory =
+    selectedEnvironment === "residence" && selectedProblem === "ev-charging";
   const residenceBayReady = !residenceProtectionStory || residenceAccessAuthorized;
 
   return (
     <group position={origin}>
       {selectedProblem && <ActiveBeacon />}
       {hasGuidance && selectedEnvironment === "retail" && <GuidanceTrail />}
+
       {hasProtectedSpace && selectedEnvironment === "residence" && (
         <ProtectedBay
           showHardware={selectedProblem !== "protect-space"}
@@ -67,8 +77,14 @@ export function SolutionEffects() {
         />
       )}
       {residenceProtectionStory && <ResidenceAccessSequence />}
-      {hasReservation && <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />}
-      {hasGuestAccess && (
+      {residenceReservationStory && <ResidenceReservationSequence />}
+      {residenceGuestStory && <ResidenceGuestSequence allowed={guestPreviewActive} />}
+      {residenceChargingStory && <ResidenceChargingSequence />}
+
+      {hasReservation && !residenceReservationStory && (
+        <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />
+      )}
+      {hasGuestAccess && !residenceGuestStory && (
         <GuestWindow position={GUEST_PLACEMENT[selectedEnvironment]} active={guestPreviewActive} />
       )}
       {hasFlow && (
@@ -199,7 +215,7 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
 
   return (
     <group position={[-2.45, 0, 2.4]}>
-      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.125, 0]}>
+      <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.255, 0]}>
         <planeGeometry args={[2.08, 3.02]} />
         <meshBasicMaterial
           color={ready ? "#78e693" : "#222a26"}
@@ -210,13 +226,13 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
       </mesh>
 
       {[-1.01, 1.01].map((x) => (
-        <mesh key={`protected-side-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.145, 0]}>
+        <mesh key={`protected-side-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.27, 0]}>
           <planeGeometry args={[0.055, 3.02]} />
           <meshBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
         </mesh>
       ))}
       {[-1.48, 1.48].map((z) => (
-        <mesh key={`protected-end-${z}`} rotation-x={-Math.PI / 2} position={[0, 0.145, z]}>
+        <mesh key={`protected-end-${z}`} rotation-x={-Math.PI / 2} position={[0, 0.27, z]}>
           <planeGeometry args={[2.08, 0.055]} />
           <meshBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
         </mesh>
@@ -224,14 +240,14 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
 
       {ready && (
         <>
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.155, -0.2]}>
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.28, -0.2]}>
             <ringGeometry args={[0.45, 0.51, 42]} />
             <meshBasicMaterial color="#caffd7" transparent opacity={0.72} side={THREE.DoubleSide} />
           </mesh>
           <pointLight position={[0, 0.85, 0]} color="#9effb7" intensity={2.2} distance={3.8} />
         </>
       )}
-      {showHardware && <ParkingBlocker position={[0, 0.04, -1.05]} />}
+      {showHardware && <ParkingBlocker position={[0, 0.24, -1.05]} />}
     </group>
   );
 }
