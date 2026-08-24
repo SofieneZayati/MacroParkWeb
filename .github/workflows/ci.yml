@@ -97,8 +97,32 @@ jobs:
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access&qaGuest=expired"
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
-          capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
+
+          # Retail entrance flow + two-beat availability/guidance story
+          capture 1440,1000 3300 visual-qa/desktop-retail-entrance-flow.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
+          capture 390,844 3300 visual-qa/mobile-retail-entrance-flow.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
+          capture 1440,1000 1400 visual-qa/desktop-retail-availability.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
+          capture 1440,1000 3200 visual-qa/desktop-retail-guided-bay.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
+          capture 390,844 2800 visual-qa/mobile-retail-guidance.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
+
+          # Retail premium reservation: held bay -> vehicle match -> occupied bay
+          capture 1440,1000 1300 visual-qa/desktop-retail-reserved.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reservations"
+          capture 1440,1000 5600 visual-qa/desktop-retail-reservation-matched.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reservations"
+          capture 390,844 5200 visual-qa/mobile-retail-reservation-matched.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reservations"
+
+          # Retail customer charging + optional solar
+          capture 1440,1000 2600 visual-qa/desktop-retail-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=ev-charging&qaSolar=1"
+          capture 390,844 2600 visual-qa/mobile-retail-ev.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=ev-charging"
 
           # Residence resident / assigned-space journey
           capture 1440,1000 2200 visual-qa/desktop-residence-recognition.png \
