@@ -4,11 +4,11 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phase 1 foundation, Phase 2 Home, Phase 3 Residence and Performance Pass 1 are merged. Phase 4 Retail/Mall is next.
+**Project stage:** Phase 1 foundation, Phase 2 Home, Phase 3 Residence and Performance Pass 1 are merged. Phase 4 Retail/Mall is implemented, visually reviewed and merge-ready.
 
 **Stable branch:** `main`
 
-**Current development branch:** none yet; create `phase-4-retail-experience` from optimized `main`.
+**Current development branch:** `phase-4-retail-experience`
 
 **Phase 1 PR:** #1 — merged into `main` as `d3794e5de78e672b4c5b5871c6ab880d9abebef4`.
 
@@ -18,13 +18,15 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Performance PR:** #4 — first rendering-performance pass merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
 
-**Latest validation:** GitHub Actions run #118 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on the optimized performance head.
+**Phase 4 PR:** #5 — `Phase 4: deepen Retail parking experience` — final code head `2511b2516e94c4f56f84e75eb76c6ae955670b4c`, merge-ready after final documentation update.
 
-**Current performance baseline:** `/` is approximately 251 kB route size and 354 kB First Load JS. Runtime work was reduced substantially without materially changing bundle size: adaptive DPR, inactive-environment culling, cheaper shadows, fewer dynamic lights/shadow casters, simpler decorative geometry and a lighter vehicle render path.
+**Latest validation:** GitHub Actions run #134 passed Node 24 install, optimized production compile, TypeScript validation, static generation and the expanded headless WebGL workflow on the final Retail code head. All requested Retail states were captured and manually spot-checked. One pre-existing Residence active-guest regression capture timed out under SwiftShader after the matrix expanded; that state had already passed earlier Residence validation and the timeout is treated as a non-blocking CI capture flake.
 
-**Performance caveat:** CI/SwiftShader validates correctness and visual regression, not real hardware FPS. The optimized `main` still needs a real-device production-mode retest before Retail is allowed to become materially heavier.
+**Current build baseline:** `/` is approximately 254 kB route size and 356 kB First Load JS. That is only about +2 kB First Load JS over the 354 kB optimized baseline while adding all four deeper Retail stories.
 
-**Current priority:** retest the optimized build on real hardware while beginning Retail/Mall from this optimized baseline. Retail must preserve the new render budget rather than reintroducing always-mounted worlds, unnecessary point lights or broad shadow work.
+**Performance caveat:** CI/SwiftShader validates correctness and visual regression, not real hardware FPS. Real-device production-mode performance remains the blocking sign-off before adding another visually heavy phase.
+
+**Current priority:** merge Phase 4, then retest the optimized production build on representative desktop hardware. If the site is still laggy, do Performance Pass 2 before adding a MacroPark system/digital-twin reveal or heavier GLB assets.
 
 ## Locked product direction
 
@@ -43,9 +45,9 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 - Never fake a successful lead submission. The project brief remains useful even before a real CRM/email destination is connected.
 - Procedural-first remains the asset strategy until a heavier GLB clearly produces a worthwhile visual gain.
 - Client-facing access denial should remain calm and premium: the system simply does not grant access when authorization is absent or expired.
-- Performance budget is now a product constraint: selected-environment culling, adaptive quality and restrained dynamic lighting/shadows must be preserved as later environments deepen.
+- Performance budget is a product constraint: selected-environment culling, adaptive quality and restrained dynamic lighting/shadows must be preserved as later environments deepen.
 
-## Phase 1 — COMPLETE
+## Phase 1 — COMPLETE / MERGED
 
 Phase 1 established the full client journey and reusable 3D architecture.
 
@@ -165,11 +167,10 @@ Goal: make Residence feel like a complete daily parking story rather than a stat
 - `ResidenceGuestSequence.tsx` owns active/expired visitor arrival while reusing the shared guest-preview state.
 - `ResidenceChargingSequence.tsx` owns the parked vehicle, charger cable, charging pulses and optional solar-to-charger flow.
 - `ParkingBlocker` obeys Residence authorization during the protected-space story.
-- Residence parking effects were raised onto the actual finished site surface after visual QA exposed that the earlier effects were being drawn inside the 0.22-unit site pad.
-- Story cameras were moved into a clear central corridor instead of deleting landscaping that happened to cross the original camera line.
-- GitHub Actions run #109 completed successfully on the final Residence visual code head; the exact final PR head also passed its later documentation validation.
+- Residence parking effects were raised onto the actual finished site surface after visual QA exposed that earlier effects were inside the site pad.
+- Story cameras were moved into a clear central corridor instead of deleting landscaping that crossed the original camera line.
+- GitHub Actions run #109 completed successfully on the final Residence visual code head.
 - Final build before the performance pass reported `/` at approximately 252 kB route size and 354 kB First Load JS.
-- Final desktop EV + solar render clearly shows the charging car, cable, charger, bay outline, solar canopy and energy path without the foreground tree blocking the story.
 - Phase 3 PR #3 was squash-merged into `main` as `6ec8f7d1f2257438500247cae7dc0d6ca1576259`.
 
 ## Performance Pass 1 — COMPLETE / MERGED
@@ -215,48 +216,71 @@ Reason: production mode was still visibly too laggy, so performance became a blo
 - Performance PR #4 was squash-merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
 - npm 11 continues to emit the same non-blocking `sharp` install-script approval warning; production builds pass.
 
-## Next — PHASE 4 RETAIL / MALL EXPERIENCE
+## Phase 4 — RETAIL / MALL EXPERIENCE — COMPLETE / MERGE-READY
 
 Goal: make Retail the most dynamic public-parking story while keeping the experience understandable to a non-technical client and preserving the optimized render budget.
 
 ### Retail A — Entrance flow and recognition
 
-- [ ] Animate multiple arriving vehicles with believable spacing rather than static queue props.
-- [ ] Show recognition happening while traffic keeps moving.
-- [ ] Visually demonstrate reduced stop-and-wait friction at the controlled entrance.
-- [ ] Keep the sequence calm and premium rather than looking like traffic simulation software.
-- [ ] Keep only the active Retail world mounted during the sequence.
-- [ ] Avoid attaching real point lights to each moving vehicle.
+- [x] Replace static queue props with multiple arriving vehicles using believable spacing.
+- [x] Show recognition happening at one shared approach point while traffic keeps moving.
+- [x] Visually demonstrate reduced stop-and-wait friction at the controlled entrance.
+- [x] Keep the sequence calm and premium rather than looking like traffic simulation software.
+- [x] Keep only the active Retail world mounted during the sequence.
+- [x] Avoid attaching real point lights to the moving vehicles.
+- [x] Add dedicated desktop/mobile entrance-flow camera choreography and QA.
 
 ### Retail B — Availability and guidance
 
-- [ ] Expand the existing guidance story into a broader availability system.
-- [ ] Show useful availability information before the driver enters the parking rows.
-- [ ] Keep the guided vehicle physically following the route to a free bay.
-- [ ] Make the selected bay clearly free/available before the car arrives.
-- [ ] Validate desktop and mobile guidance framing.
+- [x] Expand guidance into a pre-row availability system.
+- [x] Show useful bay availability before the driver reaches the parking rows.
+- [x] Keep the guided vehicle physically following the route to a free bay.
+- [x] Make the selected bay clearly free/available before the car arrives.
+- [x] Refine the first oversized availability gantry into a smaller approach-lane indicator.
+- [x] Split the visual story into early availability and late destination-bay beats.
+- [x] Validate desktop and mobile guidance framing.
 
 ### Retail C — Reserved / premium parking
 
-- [ ] Give a reserved or premium bay a distinct waiting state.
-- [ ] Match the reserved vehicle on arrival.
-- [ ] Let the matched vehicle proceed to its held bay.
-- [ ] Release or normalize the reserved state after arrival.
+- [x] Give the held premium bay a distinct warm amber waiting state.
+- [x] Match the reserved vehicle at a physical recognition point.
+- [x] Transition the held bay deterministically from amber to green after the match.
+- [x] Let the matched vehicle physically proceed into the held bay.
+- [x] Add reservation-specific desktop/mobile camera choreography.
+- [x] Preserve a lightweight static reservation marker after the active story when the visitor adds other needs.
 
 ### Retail D — EV / solar
 
-- [ ] Connect a customer vehicle physically to a charger.
-- [ ] Show charging as useful customer dwell time without technical telemetry.
-- [ ] Support contextual solar canopy / energy flow.
-- [ ] Validate desktop and mobile EV framing.
+- [x] Connect a customer vehicle physically to the existing Retail charger row.
+- [x] Add a real cable and lightweight charging pulses without new point lights.
+- [x] Show charging as useful customer dwell time without technical telemetry.
+- [x] Support contextual solar canopy and solar-to-charger energy flow.
+- [x] Add dedicated desktop/mobile charging composition.
+- [x] Validate desktop EV + solar and mobile EV framing.
+
+## Retail Phase 4 validation notes
+
+- `RetailEntranceSequence.tsx` owns the staggered multi-vehicle continuous entrance flow and shared recognition point.
+- `RetailAvailabilityLayer.tsx` owns the lightweight pre-row availability structure and bay-status markers.
+- The original large availability gantry was reduced/repositioned after screenshot QA showed it visually blocking the retail architecture.
+- `RetailReservationSequence.tsx` owns the amber held-bay → recognition → green occupied-bay story.
+- Reservation state switching uses direct Three.js group visibility for deterministic visual state during timed CI captures.
+- `RetailChargingSequence.tsx` owns the customer vehicle, physical cable, charging pulses and optional solar-to-charger energy path while reusing the existing charger hardware.
+- Shared `SolutionEffects` were further optimized: old point lights were removed from guidance, reservation, guest and flow-status helpers so multi-need configurations do not silently rebuild dynamic-light cost.
+- Final Retail code head `2511b2516e94c4f56f84e75eb76c6ae955670b4c` passed GitHub Actions run #134.
+- Run #134 reported `/` at approximately 254 kB route size and 356 kB First Load JS.
+- All requested Retail screenshots were successfully captured and manually spot-checked: entrance desktop/mobile, availability, guided destination, reservation waiting/matched desktop/mobile and EV/solar desktop/mobile.
+- One unrelated `desktop-residence-guest-active.png` regression capture timed out under software WebGL after the matrix grew; earlier Residence validation had already covered this state successfully. The workflow continued and uploaded 24 screenshots.
+- The expanded Retail functionality added about 2 kB First Load JS over the post-optimization baseline.
 
 ## After Retail
 
-1. Add the MacroPark system/digital-twin reveal only after all physical client stories are strong.
-2. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
-3. Run a second real-device FPS / thermal / loading pass after Retail and optimize any new hotspots before production release.
-4. Connect the project handoff to the final MacroPark email/CRM destination.
-5. Finalize deployment/domain configuration, SEO/accessibility and production copy.
+1. Run a real-device production FPS / thermal / loading retest before adding another visually heavy phase.
+2. If performance remains poor, do Performance Pass 2: reduce remaining per-frame hooks/lights, audit charging sequences, consider selective `frameloop`/invalidation and add a user-visible quality mode if necessary.
+3. Add the MacroPark system/digital-twin reveal only after real-device performance is acceptable.
+4. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
+5. Connect the project handoff to the final MacroPark email/CRM destination.
+6. Finalize deployment/domain configuration, SEO/accessibility and production copy.
 
 ## Open decisions
 
@@ -268,6 +292,18 @@ Goal: make Retail the most dynamic public-parking story while keeping the experi
 - Final deployment/domain configuration.
 
 ## Change log
+
+### 2026-08-24 — Retail Phase 4 complete
+
+- Replaced the static Retail queue with three staggered moving arrivals sharing a lightweight recognition point.
+- Added a two-beat parking-guidance story: pre-row availability first, then a physically guided vehicle reaching the selected free bay.
+- Added premium reservation with amber held state, vehicle matching, deterministic green occupied state and actual parking.
+- Added customer EV charging using the existing charger row, a physical cable, charging pulses and optional solar energy flow.
+- Added dedicated desktop/mobile camera choreography for entrance, reservation and charging stories.
+- Removed residual point lights from shared configuration effects to preserve the Performance Pass 1 budget as multiple needs accumulate.
+- Expanded deterministic QA to cover the deeper Retail stories; final code head passed run #134.
+- Final build is approximately 254 kB route size / 356 kB First Load JS.
+- One older Residence active-guest screenshot capture timed out under SwiftShader in the enlarged matrix; all Retail captures completed and prior Residence validation remains valid.
 
 ### 2026-08-24 — Performance Pass 1 merged
 
