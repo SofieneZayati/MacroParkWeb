@@ -76,28 +76,24 @@ export function ResidenceAccessSequence() {
     const parkingFocus = progress.current >= 0.68;
     const targetPosition: [number, number, number] = mobile
       ? parkingFocus
-        ? [1.4, 7.05, -3.8]
-        : [5.6, 7.4, -4.6]
+        ? [2.15, 7.0, -4.9]
+        : [2.8, 7.15, -4.0]
       : parkingFocus
-        ? [1.0, 4.6, -4.2]
-        : [6.9, 4.7, -6.15];
-    const targetLookAt: [number, number, number] = mobile
-      ? parkingFocus
-        ? [-2.35, 1.15, -11.4]
-        : [-2.2, 1.15, -10.15]
-      : parkingFocus
-        ? [-2.4, 1.0, -11.45]
-        : [-2.45, 0.82, -9.7];
+        ? [2.0, 4.15, -5.85]
+        : [3.1, 4.35, -5.25];
+    const targetLookAt: [number, number, number] = parkingFocus
+      ? [-2.4, 0.95, -11.45]
+      : [-2.45, 0.82, -9.7];
 
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
 
-    const cameraEase = 1 - Math.exp(-delta * (parkingFocus ? 3.6 : 5.4));
+    const cameraEase = 1 - Math.exp(-delta * (parkingFocus ? 3.8 : 5.4));
     camera.position.lerp(cameraPosition, cameraEase);
     cameraLookAt.current.lerp(cameraTarget, cameraEase);
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? (parkingFocus ? 50 : 48) : parkingFocus ? 40 : 37;
+      const targetFov = mobile ? (parkingFocus ? 50 : 49) : parkingFocus ? 40 : 39;
       camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
       camera.updateProjectionMatrix();
     }
