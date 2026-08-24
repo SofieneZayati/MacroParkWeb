@@ -4,23 +4,27 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phase 1 foundation and Phase 2 Home are merged. Phase 3 Residence is complete, validated and merge-ready. Retail/Mall is next.
+**Project stage:** Phase 1 foundation, Phase 2 Home, Phase 3 Residence and Performance Pass 1 are merged. Phase 4 Retail/Mall is next.
 
 **Stable branch:** `main`
 
-**Current development branch:** `phase-3-residence-experience`
+**Current development branch:** none yet; create `phase-4-retail-experience` from optimized `main`.
 
 **Phase 1 PR:** #1 — merged into `main` as `d3794e5de78e672b4c5b5871c6ab880d9abebef4`.
 
 **Phase 2 PR:** #2 — Home experience merged into `main` as `f576eec0921638ac1b58491e14558eb3658bc603`.
 
-**Phase 3 PR:** #3 — `Phase 3: deepen Residence parking experience` — complete and merge-ready.
+**Phase 3 PR:** #3 — Residence experience merged into `main` as `6ec8f7d1f2257438500247cae7dc0d6ca1576259`.
 
-**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`. Commits after that validated code head only update project documentation.
+**Performance PR:** #4 — first rendering-performance pass merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
 
-**Current performance baseline:** `/` is approximately 252 kB route size and 354 kB First Load JS, versus approximately 340 kB First Load JS for the original vertical-slice baseline and 352 kB after the completed Home phase.
+**Latest validation:** GitHub Actions run #118 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on the optimized performance head.
 
-**Current priority:** merge the completed Residence experience, then deepen Retail/Mall into a multi-car entrance → recognition → availability/guidance → actual parking → reservation/premium → EV story.
+**Current performance baseline:** `/` is approximately 251 kB route size and 354 kB First Load JS. Runtime work was reduced substantially without materially changing bundle size: adaptive DPR, inactive-environment culling, cheaper shadows, fewer dynamic lights/shadow casters, simpler decorative geometry and a lighter vehicle render path.
+
+**Performance caveat:** CI/SwiftShader validates correctness and visual regression, not real hardware FPS. The optimized `main` still needs a real-device production-mode retest before Retail is allowed to become materially heavier.
+
+**Current priority:** retest the optimized build on real hardware while beginning Retail/Mall from this optimized baseline. Retail must preserve the new render budget rather than reintroducing always-mounted worlds, unnecessary point lights or broad shadow work.
 
 ## Locked product direction
 
@@ -39,6 +43,7 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 - Never fake a successful lead submission. The project brief remains useful even before a real CRM/email destination is connected.
 - Procedural-first remains the asset strategy until a heavier GLB clearly produces a worthwhile visual gain.
 - Client-facing access denial should remain calm and premium: the system simply does not grant access when authorization is absent or expired.
+- Performance budget is now a product constraint: selected-environment culling, adaptive quality and restrained dynamic lighting/shadows must be preserved as later environments deepen.
 
 ## Phase 1 — COMPLETE
 
@@ -110,7 +115,7 @@ Goal: turn the Home environment from a feature demonstration into a short cinema
 - [x] Battery storage deferred until it materially improves the client story.
 - [x] Complete Home charging / solar story validated in CI.
 
-## Phase 3 — RESIDENCE EXPERIENCE — COMPLETE
+## Phase 3 — RESIDENCE EXPERIENCE — COMPLETE / MERGED
 
 Goal: make Residence feel like a complete daily parking story rather than a static set of features.
 
@@ -159,18 +164,60 @@ Goal: make Residence feel like a complete daily parking story rather than a stat
 - `ResidenceReservationSequence.tsx` owns the amber waiting → matched green → parked reservation story.
 - `ResidenceGuestSequence.tsx` owns active/expired visitor arrival while reusing the shared guest-preview state.
 - `ResidenceChargingSequence.tsx` owns the parked vehicle, charger cable, charging pulses and optional solar-to-charger flow.
-- `ParkingBlocker` now obeys Residence authorization during the protected-space story.
+- `ParkingBlocker` obeys Residence authorization during the protected-space story.
 - Residence parking effects were raised onto the actual finished site surface after visual QA exposed that the earlier effects were being drawn inside the 0.22-unit site pad.
 - Story cameras were moved into a clear central corridor instead of deleting landscaping that happened to cross the original camera line.
-- GitHub Actions run #109 completed successfully on the final Residence code head.
-- Run #109 produced all 16 requested visual-QA images and uploaded them successfully.
-- Final build reported `/` at approximately 252 kB route size and 354 kB First Load JS.
+- GitHub Actions run #109 completed successfully on the final Residence visual code head; the exact final PR head also passed its later documentation validation.
+- Final build before the performance pass reported `/` at approximately 252 kB route size and 354 kB First Load JS.
 - Final desktop EV + solar render clearly shows the charging car, cable, charger, bay outline, solar canopy and energy path without the foreground tree blocking the story.
+- Phase 3 PR #3 was squash-merged into `main` as `6ec8f7d1f2257438500247cae7dc0d6ca1576259`.
+
+## Performance Pass 1 — COMPLETE / MERGED
+
+Reason: production mode was still visibly too laggy, so performance became a blocker before deepening Retail.
+
+### Runtime quality management
+
+- [x] Replace up-to-1.7x supersampling with adaptive DPR.
+- [x] Allow DPR to fall to 0.75 when sustained FPS is poor.
+- [x] Start mobile on a lighter 0.8 DPR profile.
+- [x] Disable dynamic shadows automatically on persistently struggling devices.
+- [x] Disable shadows in the intro/chooser while all three worlds are visible.
+- [x] Use cheaper basic shadows for selected-environment scenes.
+- [x] Reduce the directional shadow map from 1024 to 512 and tighten its range.
+- [x] Disable unnecessary WebGL MSAA/alpha/stencil overhead.
+
+### Scene / lighting culling
+
+- [x] Unmount Home/Residence/Retail environments that are not currently selected.
+- [x] Unmount the decorative city during selected-environment close-ups.
+- [x] Remove decorative continuous depth-particle and scene-glow animations.
+- [x] Remove two global decorative point lights.
+- [x] Remove duplicate Residence hardware already owned by the Phase 3 stories.
+- [x] Replace decorative parking/path point lights with lightweight luminous geometry.
+
+### Geometry / vehicle cost
+
+- [x] Remove decorative trees, planters and small props from the shadow pass.
+- [x] Simplify repeated façade/window geometry and materials.
+- [x] Reduce decorative tree/plant/column segment counts.
+- [x] Remove two real point lights from every lit procedural vehicle.
+- [x] Restrict vehicle shadow casting to the main body rather than every submesh.
+- [x] Reduce wheel radial segment counts while preserving silhouette.
+
+### Performance validation notes
+
+- GitHub Actions run #118 passed production build, TypeScript/static generation and all 16 deterministic visual-QA captures.
+- Visual spot-checks after optimization remained acceptable for chooser, Home automatic access, Residence EV + solar and Retail guidance.
+- Optimized build reports `/` at approximately 251 kB route size and 354 kB First Load JS.
+- The bundle size is intentionally almost unchanged: this pass targets GPU/render workload rather than JavaScript payload.
+- CI uses software WebGL and cannot establish real-world FPS. A production-mode real-device retest remains required.
+- Performance PR #4 was squash-merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
 - npm 11 continues to emit the same non-blocking `sharp` install-script approval warning; production builds pass.
 
 ## Next — PHASE 4 RETAIL / MALL EXPERIENCE
 
-Goal: make Retail the most dynamic public-parking story while keeping the experience understandable to a non-technical client.
+Goal: make Retail the most dynamic public-parking story while keeping the experience understandable to a non-technical client and preserving the optimized render budget.
 
 ### Retail A — Entrance flow and recognition
 
@@ -178,6 +225,8 @@ Goal: make Retail the most dynamic public-parking story while keeping the experi
 - [ ] Show recognition happening while traffic keeps moving.
 - [ ] Visually demonstrate reduced stop-and-wait friction at the controlled entrance.
 - [ ] Keep the sequence calm and premium rather than looking like traffic simulation software.
+- [ ] Keep only the active Retail world mounted during the sequence.
+- [ ] Avoid attaching real point lights to each moving vehicle.
 
 ### Retail B — Availability and guidance
 
@@ -205,7 +254,7 @@ Goal: make Retail the most dynamic public-parking story while keeping the experi
 
 1. Add the MacroPark system/digital-twin reveal only after all physical client stories are strong.
 2. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
-3. Performance-test representative desktop and mobile hardware.
+3. Run a second real-device FPS / thermal / loading pass after Retail and optimize any new hotspots before production release.
 4. Connect the project handoff to the final MacroPark email/CRM destination.
 5. Finalize deployment/domain configuration, SEO/accessibility and production copy.
 
@@ -220,7 +269,19 @@ Goal: make Retail the most dynamic public-parking story while keeping the experi
 
 ## Change log
 
-### 2026-08-24 — Residence Phase 3 complete
+### 2026-08-24 — Performance Pass 1 merged
+
+- Promoted performance from later polish to a blocking product constraint after production-mode lag was observed.
+- Added adaptive DPR and mobile-first lightweight render settings.
+- Added automatic shadow fallback and removed shadows from the multi-world intro/chooser.
+- Unmounted inactive environments and decorative city geometry during close-up stories.
+- Reduced global/dynamic lighting, shadow-map cost, decorative shadow casting and repeated geometry complexity.
+- Removed per-vehicle point lights and reduced vehicle shadow/geometry cost.
+- GitHub Actions run #118 passed build, TypeScript and the full 16-state WebGL regression matrix.
+- PR #4 was squash-merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
+- Real-device production FPS must still be retested before final performance sign-off.
+
+### 2026-08-24 — Residence Phase 3 complete / merged
 
 - Rebuilt the assigned-space story around recognition-driven authorization rather than instant feature activation.
 - Added resident arrival, assigned-bay illumination, authorization-controlled blocker and physical parking.
@@ -230,7 +291,7 @@ Goal: make Retail the most dynamic public-parking story while keeping the experi
 - Added shared EV charging with a parked vehicle, physical cable, energy pulses and optional solar-to-charger flow.
 - Added dedicated Residence camera choreography and expanded the visual-QA matrix to 16 deterministic desktop/mobile states.
 - GitHub Actions run #109 passed the cumulative Phase 3 production build and full visual-QA workflow.
-- Current First Load JS is approximately 354 kB.
+- PR #3 was squash-merged into `main` as `6ec8f7d1f2257438500247cae7dc0d6ca1576259`.
 
 ### 2026-08-23 — Home Phase 2 complete
 
