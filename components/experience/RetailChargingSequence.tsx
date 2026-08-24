@@ -16,6 +16,9 @@ export function RetailChargingSequence() {
   const solarPulseA = useRef<THREE.Mesh>(null);
   const solarPulseB = useRef<THREE.Mesh>(null);
   const chargeRing = useRef<THREE.Mesh>(null);
+  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
+  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
+  const cameraLookAt = useRef(new THREE.Vector3(-7.8, 0.35, -8.25));
 
   const cableCurve = useMemo(
     () =>
@@ -42,7 +45,7 @@ export function RetailChargingSequence() {
     [],
   );
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera, size }, delta) => {
     if (!active) return;
 
     const animatePulse = (
@@ -70,6 +73,23 @@ export function RetailChargingSequence() {
       const scale = 1 + Math.sin(clock.elapsedTime * 1.7) * 0.03;
       chargeRing.current.scale.setScalar(scale);
     }
+
+    const mobile = size.width <= 760;
+    const targetPosition: [number, number, number] = mobile
+      ? [-10.9, 7.15, -2.3]
+      : [-13.05, 4.25, -2.95];
+    const targetLookAt: [number, number, number] = [-7.8, mobile ? 0.25 : 0.55, -8.2];
+    cameraPosition.set(...targetPosition);
+    cameraTarget.set(...targetLookAt);
+    const ease = 1 - Math.exp(-delta * 4.7);
+    camera.position.lerp(cameraPosition, ease);
+    cameraLookAt.current.lerp(cameraTarget, ease);
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : 39, 5.1, delta);
+      camera.updateProjectionMatrix();
+    }
+    camera.lookAt(cameraLookAt.current);
   });
 
   if (!active) return null;
