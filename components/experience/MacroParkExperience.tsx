@@ -52,6 +52,13 @@ export function MacroParkExperience() {
     selectedProblem === "guest-access";
 
   useEffect(() => {
+    if (window.innerWidth <= 760) {
+      setRenderDpr(0.8);
+      setShadowsEnabled(false);
+    }
+  }, []);
+
+  useEffect(() => {
     if (introComplete) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -116,12 +123,14 @@ export function MacroParkExperience() {
     toggleSolar,
   ]);
 
+  const useShadows = shadowsEnabled && selectedEnvironment !== null;
+
   return (
     <main className="experience-shell">
       <Canvas
         className="experience-canvas"
         dpr={renderDpr}
-        shadows={shadowsEnabled ? "basic" : false}
+        shadows={useShadows ? "basic" : false}
         camera={{ position: [0, 3.1, 14], fov: 42, near: 0.1, far: 120 }}
         gl={{
           antialias: false,
