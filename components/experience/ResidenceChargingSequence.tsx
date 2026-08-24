@@ -73,7 +73,7 @@ export function ResidenceChargingSequence() {
     const mobile = size.width <= 760;
     const targetPosition: [number, number, number] = mobile
       ? [3.1, 7.05, -4.55]
-      : [3.2, 4.05, -6.0];
+      : [1.15, 4.0, -5.7];
     const targetLookAt: [number, number, number] = [2.25, 0.9, -11.4];
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
@@ -81,7 +81,7 @@ export function ResidenceChargingSequence() {
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : 39, 5.2, delta);
+      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : 40, 5.2, delta);
       camera.updateProjectionMatrix();
     }
     camera.lookAt(cameraLookAt.current);
