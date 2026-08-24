@@ -4,7 +4,7 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phase 1 foundation and Phase 2 Home are merged. Phase 3 Residence is complete, validated and ready to merge. Retail/Mall is next.
+**Project stage:** Phase 1 foundation and Phase 2 Home are merged. Phase 3 Residence is complete, validated and merge-ready. Retail/Mall is next.
 
 **Stable branch:** `main`
 
@@ -14,9 +14,9 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Phase 2 PR:** #2 — Home experience merged into `main` as `f576eec0921638ac1b58491e14558eb3658bc603`.
 
-**Phase 3 PR:** #3 — `Phase 3: deepen Residence parking experience` — complete and ready to merge.
+**Phase 3 PR:** #3 — `Phase 3: deepen Residence parking experience` — complete and merge-ready.
 
-**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`.
+**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`. The only commits after that validated code head update persistent documentation.
 
 **Current performance baseline:** `/` is approximately 252 kB route size and 354 kB First Load JS, versus approximately 340 kB First Load JS for the original vertical-slice baseline and 352 kB after the completed Home phase.
 
