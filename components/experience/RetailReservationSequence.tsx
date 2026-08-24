@@ -1,20 +1,23 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 
 export function RetailReservationSequence() {
   const vehicle = useRef<THREE.Group>(null);
-  const bayGlow = useRef<THREE.Mesh>(null);
+  const waitingState = useRef<THREE.Group>(null);
+  const matchedState = useRef<THREE.Group>(null);
   const recognitionRing = useRef<THREE.Mesh>(null);
   const progress = useRef(0);
   const matchHold = useRef(0);
   const matchedOnce = useRef(false);
-  const [matched, setMatched] = useState(false);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
+  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
+  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
+  const cameraLookAt = useRef(new THREE.Vector3(-11.2, 0.4, -6.2));
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -27,7 +30,7 @@ export function RetailReservationSequence() {
     [],
   );
 
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock, camera, size }, delta) => {
     if (!vehicle.current) return;
 
     if (matchedOnce.current && matchHold.current < 0.58) {
@@ -38,7 +41,8 @@ export function RetailReservationSequence() {
 
     if (!matchedOnce.current && progress.current >= 0.37) {
       matchedOnce.current = true;
-      setMatched(true);
+      if (waitingState.current) waitingState.current.visible = false;
+      if (matchedState.current) matchedState.current.visible = true;
     }
 
     const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
@@ -52,20 +56,39 @@ export function RetailReservationSequence() {
       delta,
     );
 
-    if (bayGlow.current) {
-      const material = bayGlow.current.material as THREE.MeshBasicMaterial;
-      const base = matched ? 0.24 : 0.15;
-      material.opacity = base + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.055;
-    }
-
     if (recognitionRing.current) {
       const material = recognitionRing.current.material as THREE.MeshBasicMaterial;
-      material.opacity = matched ? 0.58 : 0.24 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.06;
+      material.color.set(matchedOnce.current ? "#b9ffca" : "#f2c76f");
+      material.opacity = matchedOnce.current
+        ? 0.58
+        : 0.24 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.06;
     }
-  });
 
-  const color = matched ? "#b9ffca" : "#f2c76f";
-  const bodyColor = matched ? "#3f7150" : "#80612a";
+    const mobile = size.width <= 760;
+    const parkingFocus = progress.current >= 0.65;
+    const targetPosition: [number, number, number] = mobile
+      ? parkingFocus
+        ? [-12.75, 6.8, -2.2]
+        : [-13.5, 7.0, -1.0]
+      : parkingFocus
+        ? [-14.4, 4.0, -3.65]
+        : [-15.4, 4.3, -2.4];
+    const targetLookAt: [number, number, number] = parkingFocus
+      ? [-11.1, 0.35, -7.65]
+      : [-11.25, 0.4, -6.15];
+
+    cameraPosition.set(...targetPosition);
+    cameraTarget.set(...targetLookAt);
+    const ease = 1 - Math.exp(-delta * (parkingFocus ? 4.4 : 5.2));
+    camera.position.lerp(cameraPosition, ease);
+    cameraLookAt.current.lerp(cameraTarget, ease);
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : parkingFocus ? 38 : 39, 5.2, delta);
+      camera.updateProjectionMatrix();
+    }
+    camera.lookAt(cameraLookAt.current);
+  });
 
   return (
     <group>
@@ -74,34 +97,11 @@ export function RetailReservationSequence() {
       </group>
 
       <group position={[-2.7, 0, 2.45]}>
-        <mesh ref={bayGlow} rotation-x={-Math.PI / 2} position={[0, 0.255, 0]}>
-          <planeGeometry args={[1.42, 3.02]} />
-          <meshBasicMaterial color={color} transparent opacity={0.2} side={THREE.DoubleSide} />
-        </mesh>
-        {[-0.68, 0.68].map((x) => (
-          <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.27, 0]}>
-            <planeGeometry args={[0.05, 2.9]} />
-            <meshBasicMaterial color={color} transparent opacity={0.9} />
-          </mesh>
-        ))}
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.27, -1.42]}>
-          <planeGeometry args={[1.38, 0.05]} />
-          <meshBasicMaterial color={color} transparent opacity={0.9} />
-        </mesh>
-
-        <group position={[0, 0, -1.24]}>
-          <mesh position={[0, 0.82, 0]}>
-            <cylinderGeometry args={[0.028, 0.04, 1.5, 8]} />
-            <meshStandardMaterial color="#59635e" metalness={0.42} roughness={0.46} />
-          </mesh>
-          <mesh position={[0, 1.54, 0]}>
-            <boxGeometry args={[1.02, 0.11, 0.13]} />
-            <meshStandardMaterial color={color} emissive={bodyColor} emissiveIntensity={0.9} />
-          </mesh>
-          <mesh position={[0, 1.54, -0.07]}>
-            <boxGeometry args={[0.56, 0.026, 0.01]} />
-            <meshBasicMaterial color={matched ? "#effff3" : "#fff1cf"} />
-          </mesh>
+        <group ref={waitingState}>
+          <ReservationBayState color="#f2c76f" emissive="#80612a" />
+        </group>
+        <group ref={matchedState} visible={false}>
+          <ReservationBayState color="#b9ffca" emissive="#3f7150" />
         </group>
       </group>
 
@@ -116,13 +116,49 @@ export function RetailReservationSequence() {
         </mesh>
         <mesh position={[0.58, 1.56, -0.4]} rotation-x={-0.12}>
           <circleGeometry args={[0.022, 12]} />
-          <meshBasicMaterial color={color} />
+          <meshBasicMaterial color="#dce8e1" />
         </mesh>
         <mesh ref={recognitionRing} rotation-x={-Math.PI / 2} position={[0, 0.255, 0]}>
           <ringGeometry args={[0.52, 0.6, 34]} />
-          <meshBasicMaterial color={color} transparent opacity={0.32} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#f2c76f" transparent opacity={0.32} side={THREE.DoubleSide} />
         </mesh>
       </group>
     </group>
+  );
+}
+
+function ReservationBayState({ color, emissive }: { color: string; emissive: string }) {
+  return (
+    <>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.255, 0]}>
+        <planeGeometry args={[1.42, 3.02]} />
+        <meshBasicMaterial color={color} transparent opacity={0.2} side={THREE.DoubleSide} />
+      </mesh>
+      {[-0.68, 0.68].map((x) => (
+        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.27, 0]}>
+          <planeGeometry args={[0.05, 2.9]} />
+          <meshBasicMaterial color={color} transparent opacity={0.9} />
+        </mesh>
+      ))}
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.27, -1.42]}>
+        <planeGeometry args={[1.38, 0.05]} />
+        <meshBasicMaterial color={color} transparent opacity={0.9} />
+      </mesh>
+
+      <group position={[0, 0, -1.24]}>
+        <mesh position={[0, 0.82, 0]}>
+          <cylinderGeometry args={[0.028, 0.04, 1.5, 8]} />
+          <meshStandardMaterial color="#59635e" metalness={0.42} roughness={0.46} />
+        </mesh>
+        <mesh position={[0, 1.54, 0]}>
+          <boxGeometry args={[1.02, 0.11, 0.13]} />
+          <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={0.9} />
+        </mesh>
+        <mesh position={[0, 1.54, -0.07]}>
+          <boxGeometry args={[0.56, 0.026, 0.01]} />
+          <meshBasicMaterial color={color === "#b9ffca" ? "#effff3" : "#fff1cf"} />
+        </mesh>
+      </group>
+    </>
   );
 }
