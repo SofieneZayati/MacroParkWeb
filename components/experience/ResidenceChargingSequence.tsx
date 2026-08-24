@@ -5,8 +5,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { EVCharger } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useExperienceStore } from "./useExperienceStore";
 
-export function ResidenceChargingSequence({ solarEnabled }: { solarEnabled: boolean }) {
+export function ResidenceChargingSequence() {
+  const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const cablePulseA = useRef<THREE.Mesh>(null);
   const cablePulseB = useRef<THREE.Mesh>(null);
   const solarPulseA = useRef<THREE.Mesh>(null);
