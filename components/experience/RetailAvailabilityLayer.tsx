@@ -3,15 +3,21 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useExperienceStore } from "./useExperienceStore";
 
 const BAY_STATUS = ["free", "selected", "occupied", "free"] as const;
 const BAY_X = [-2.7, -0.9, 0.9, 2.7] as const;
 
 export function RetailAvailabilityLayer() {
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
+  const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const selectedPulse = useRef<THREE.Mesh>(null);
   const approachPulse = useRef<THREE.Mesh>(null);
+  const active = selectedEnvironment === "retail" && selectedProblem === "parking-guidance";
 
   useFrame(({ clock }) => {
+    if (!active) return;
+
     if (selectedPulse.current) {
       const material = selectedPulse.current.material as THREE.MeshBasicMaterial;
       material.opacity = 0.52 + (Math.sin(clock.elapsedTime * 2.8) + 1) * 0.12;
@@ -22,8 +28,10 @@ export function RetailAvailabilityLayer() {
     }
   });
 
+  if (!active) return null;
+
   return (
-    <group>
+    <group position={[-8.5, 0, -10]}>
       <AvailabilityGantry />
 
       {BAY_X.map((x, index) => {
