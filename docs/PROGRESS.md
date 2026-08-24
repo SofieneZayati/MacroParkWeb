@@ -4,21 +4,23 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phase 1 is merged. Phase 2 Home experience is complete and ready to merge. Residence is next.
+**Project stage:** Phase 1 foundation and Phase 2 Home are merged. Phase 3 Residence is complete, validated and ready to merge. Retail/Mall is next.
 
 **Stable branch:** `main`
 
-**Current development branch:** `phase-2-home-experience`
+**Current development branch:** `phase-3-residence-experience`
 
 **Phase 1 PR:** #1 — merged into `main` as `d3794e5de78e672b4c5b5871c6ab880d9abebef4`.
 
-**Phase 2 PR:** #2 — `Phase 2: deepen Home arrival experience`.
+**Phase 2 PR:** #2 — Home experience merged into `main` as `f576eec0921638ac1b58491e14558eb3658bc603`.
 
-**Latest validation:** GitHub Actions run #87 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, headless WebGL visual QA and artifact upload.
+**Phase 3 PR:** #3 — `Phase 3: deepen Residence parking experience` — complete and ready to merge.
 
-**Current performance baseline:** `/` is approximately 249 kB route size and 352 kB First Load JS, versus approximately 340 kB First Load JS for the original vertical-slice baseline.
+**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`.
 
-**Current priority:** merge the completed Home experience, then deepen Residence into a resident-arrival → assigned-bay → blocker-lowers → vehicle-parks story.
+**Current performance baseline:** `/` is approximately 252 kB route size and 354 kB First Load JS, versus approximately 340 kB First Load JS for the original vertical-slice baseline and 352 kB after the completed Home phase.
+
+**Current priority:** merge the completed Residence experience, then deepen Retail/Mall into a multi-car entrance → recognition → availability/guidance → actual parking → reservation/premium → EV story.
 
 ## Locked product direction
 
@@ -67,96 +69,145 @@ Phase 1 established the full client journey and reusable 3D architecture.
 - [x] WebGL-unavailable fallback.
 - [ ] Real-device FPS / thermal / loading test remains outstanding.
 
-## Phase 2 — HOME EXPERIENCE — COMPLETE
+## Phase 2 — HOME EXPERIENCE — COMPLETE / MERGED
 
 Goal: turn the Home environment from a feature demonstration into a short cinematic story that visually proves how MacroPark works in daily life.
 
 ### Phase 2A — Authorized arrival
 
-- [x] Add a dedicated Home arrival vehicle that enters the driveway.
-- [x] Add a discreet driveway recognition camera / sensor.
-- [x] Animate recognition as the car reaches the scan point.
-- [x] Trigger the garage opening only after recognition instead of immediately on selection.
-- [x] Continue the vehicle toward the garage after authorization.
-- [x] Add problem-specific desktop camera choreography for the sequence.
-- [x] Add a dedicated mobile Home automatic-access QA capture.
-- [x] Replace the floating-door motion with a rolling/compressing garage-door behavior.
-- [x] Validate full production build and visual artifacts.
+- [x] Dedicated Home arrival vehicle enters the driveway.
+- [x] Discreet driveway recognition camera / sensor.
+- [x] Recognition animates as the car reaches the scan point.
+- [x] Garage opening is triggered only after recognition.
+- [x] Authorized vehicle continues toward the garage.
+- [x] Problem-specific desktop camera choreography.
+- [x] Dedicated mobile Home automatic-access QA capture.
+- [x] Rolling/compressing garage-door behavior.
+- [x] Full production build and visual validation.
 
 ### Phase 2B — Guest and denied access
 
-- [x] Animate a temporary guest arrival rather than showing only a static guest car.
-- [x] Visually communicate the temporary access window without exposing technical controls.
-- [x] Add a client-facing `Guest expected` / `After visit` comparison.
-- [x] Let an authorized guest continue after recognition.
-- [x] Stop an expired guest at the recognition point.
-- [x] Use green for active temporary access and warm amber for expired access.
-- [x] Keep denial calm and premium rather than alarm/security-dashboard styled.
-- [x] Add deterministic desktop active/expired and mobile guest visual-QA states.
-- [x] Validate the complete guest flow in production CI.
+- [x] Animated temporary guest arrival.
+- [x] Temporary access window communicated without technical controls.
+- [x] Client-facing `Guest expected` / `After visit` comparison.
+- [x] Authorized guest continues after recognition.
+- [x] Expired guest stops at recognition.
+- [x] Green for active access; warm amber for expired access.
+- [x] Calm, premium denial rather than alarm/security-dashboard styling.
+- [x] Deterministic desktop active/expired and mobile guest QA states.
+- [x] Complete guest flow validated in CI.
 
 ### Phase 2C — Home charging / energy
 
-- [x] Make the EV connection physical with a parked vehicle, charger and visible cable.
-- [x] Add animated charging pulses through the cable.
-- [x] Add a client-friendly charging halo and charger-status pulse without technical telemetry.
-- [x] Animate the solar canopy deployment instead of making it pop into the scene.
-- [x] Add a visible solar-to-charger energy path when solar is enabled.
-- [x] Give Home EV charging dedicated desktop and mobile camera composition.
-- [x] Add desktop and mobile EV + solar visual-QA captures.
-- [x] Keep solar deployment compatible with `prefers-reduced-motion`.
-- [x] Decide on optional battery storage: defer it for now because it adds complexity without improving the current client story enough.
-- [x] Validate the complete charging / solar story in production CI.
+- [x] Physical parked vehicle, charger and cable.
+- [x] Animated charging pulses through the cable.
+- [x] Client-friendly charging halo and charger status.
+- [x] Progressive solar-canopy deployment.
+- [x] Visible solar-to-charger energy path.
+- [x] Dedicated desktop/mobile charging composition.
+- [x] Desktop/mobile EV + solar QA states.
+- [x] Solar deployment respects `prefers-reduced-motion`.
+- [x] Battery storage deferred until it materially improves the client story.
+- [x] Complete Home charging / solar story validated in CI.
 
-## Home Phase 2 validation notes
-
-- Phase 2A introduced `HomeAccessSequence.tsx` and recognition-triggered garage behavior.
-- Phase 2B introduced `HomeGuestSequence.tsx`, active/expired guest preview state and a simple client-facing comparison control.
-- Phase 2C introduced `HomeChargingSequence.tsx`, an actual cable, charging pulses and solar-to-charger energy flow.
-- The shared `EVCharger` now supports an animated charging state.
-- The shared `SolarCanopy` now deploys progressively and respects reduced motion.
-- GitHub Actions run #87 completed successfully after all Home Phase 2 work.
-- Latest build reported `/` at approximately 249 kB route size and 352 kB First Load JS.
-- In run #87, one redundant `mobile-home-access` headless Chrome capture hit its per-shot timeout; the production build remained green and the other 12 visual-QA images, including mobile Home guest and mobile Home EV + solar, uploaded successfully. Earlier mobile Home automatic-access captures had already been reviewed successfully.
-- npm 11 still emits a non-blocking `sharp` install-script approval warning; production builds pass.
-
-## Next — RESIDENCE EXPERIENCE
+## Phase 3 — RESIDENCE EXPERIENCE — COMPLETE
 
 Goal: make Residence feel like a complete daily parking story rather than a static set of features.
 
 ### Residence A — Resident arrival and protected bay
 
-- [ ] Animate a resident vehicle entering the residence parking area.
-- [ ] Add a discreet resident recognition moment.
-- [ ] Illuminate the resident's assigned bay after recognition.
-- [ ] Keep the motorized blocker raised until authorization is confirmed.
-- [ ] Lower the blocker only for the authorized resident.
-- [ ] Continue the vehicle physically into the assigned bay.
-- [ ] Add problem-specific desktop and mobile camera choreography.
-- [ ] Validate with deterministic Residence protection screenshots.
+- [x] Animate a resident vehicle entering the residence parking area.
+- [x] Add a discreet resident recognition moment.
+- [x] Illuminate the resident's assigned bay only after recognition.
+- [x] Keep the motorized blocker raised until authorization is confirmed.
+- [x] Lower the blocker only for the authorized resident.
+- [x] Continue the vehicle physically into the assigned bay.
+- [x] Move the blocker to the bay entrance rather than underneath the parked car.
+- [x] Raise bay, sensor and blocker effects above the actual finished parking surface.
+- [x] Add clear assigned-bay outline / status lighting.
+- [x] Add problem-specific desktop and mobile camera choreography.
+- [x] Validate recognition and parked-result states with deterministic screenshots.
 
 ### Residence B — Visitors and reservations
 
-- [ ] Animate a pre-authorized visitor arrival.
-- [ ] Visually separate gate access from a reserved parking bay.
-- [ ] Show a specific reserved bay waiting for the visitor.
-- [ ] Show an expired/unreserved arrival leaving the protected bay unavailable.
-- [ ] Keep the time-window story understandable without technical controls.
+- [x] Add an animated reservation arrival for a specific vehicle.
+- [x] Keep reservation visually distinct from gate access.
+- [x] Start the reserved bay in warm amber while it waits for the correct car.
+- [x] Match the arriving vehicle at the recognition point.
+- [x] Transition the reservation from amber waiting state to green authorized/occupied state.
+- [x] Let the matched vehicle physically continue into the reserved bay.
+- [x] Reuse the Home `Guest expected` / `After visit` interaction for Residence guest access.
+- [x] Allow an active guest to proceed into the residence parking area.
+- [x] Stop an expired guest calmly at recognition with warm amber feedback.
+- [x] Validate reservation waiting/matched and guest active/expired states in desktop QA.
+- [x] Validate expired guest behavior in portrait/mobile QA.
 
-### Residence C — Shared EV
+### Residence C — Shared EV / solar
 
-- [ ] Turn shared residence charging into a connected car/charger interaction.
-- [ ] Show charging access following resident/reservation authorization.
-- [ ] Reuse the simplified energy-flow language established in Home.
+- [x] Turn shared residence charging into a connected car/charger interaction.
+- [x] Add a physical charging cable and animated charging pulses.
+- [x] Add an illuminated shared charging bay and charger status.
+- [x] Reuse the simplified energy-flow language established in Home.
+- [x] Support optional Residence solar canopy through the normal configuration flow.
+- [x] Add warm solar-to-shared-charger energy pulses when solar is enabled.
+- [x] Add dedicated desktop and mobile charging composition.
+- [x] Validate desktop EV + solar and mobile EV states.
 
-## After Residence
+## Residence Phase 3 validation notes
 
-1. Deepen Retail: entrance flow → occupancy/guidance → vehicle parking → premium reservation → EV.
-2. Add the MacroPark system/digital-twin reveal only after the physical client stories are strong.
-3. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
-4. Performance-test representative desktop and mobile hardware.
-5. Connect the project handoff to the final MacroPark email/CRM destination.
-6. Finalize deployment/domain configuration, SEO/accessibility and production copy.
+- `ResidenceAccessSequence.tsx` owns recognition-driven resident arrival and cinematic framing.
+- `ResidenceReservationSequence.tsx` owns the amber waiting → matched green → parked reservation story.
+- `ResidenceGuestSequence.tsx` owns active/expired visitor arrival while reusing the shared guest-preview state.
+- `ResidenceChargingSequence.tsx` owns the parked vehicle, charger cable, charging pulses and optional solar-to-charger flow.
+- `ParkingBlocker` now obeys Residence authorization during the protected-space story.
+- Residence parking effects were raised onto the actual finished site surface after visual QA exposed that the earlier effects were being drawn inside the 0.22-unit site pad.
+- Story cameras were moved into a clear central corridor instead of deleting landscaping that happened to cross the original camera line.
+- GitHub Actions run #109 completed successfully on the final Residence code head.
+- Run #109 produced all 16 requested visual-QA images and uploaded them successfully.
+- Final build reported `/` at approximately 252 kB route size and 354 kB First Load JS.
+- Final desktop EV + solar render clearly shows the charging car, cable, charger, bay outline, solar canopy and energy path without the foreground tree blocking the story.
+- npm 11 continues to emit the same non-blocking `sharp` install-script approval warning; production builds pass.
+
+## Next — PHASE 4 RETAIL / MALL EXPERIENCE
+
+Goal: make Retail the most dynamic public-parking story while keeping the experience understandable to a non-technical client.
+
+### Retail A — Entrance flow and recognition
+
+- [ ] Animate multiple arriving vehicles with believable spacing rather than static queue props.
+- [ ] Show recognition happening while traffic keeps moving.
+- [ ] Visually demonstrate reduced stop-and-wait friction at the controlled entrance.
+- [ ] Keep the sequence calm and premium rather than looking like traffic simulation software.
+
+### Retail B — Availability and guidance
+
+- [ ] Expand the existing guidance story into a broader availability system.
+- [ ] Show useful availability information before the driver enters the parking rows.
+- [ ] Keep the guided vehicle physically following the route to a free bay.
+- [ ] Make the selected bay clearly free/available before the car arrives.
+- [ ] Validate desktop and mobile guidance framing.
+
+### Retail C — Reserved / premium parking
+
+- [ ] Give a reserved or premium bay a distinct waiting state.
+- [ ] Match the reserved vehicle on arrival.
+- [ ] Let the matched vehicle proceed to its held bay.
+- [ ] Release or normalize the reserved state after arrival.
+
+### Retail D — EV / solar
+
+- [ ] Connect a customer vehicle physically to a charger.
+- [ ] Show charging as useful customer dwell time without technical telemetry.
+- [ ] Support contextual solar canopy / energy flow.
+- [ ] Validate desktop and mobile EV framing.
+
+## After Retail
+
+1. Add the MacroPark system/digital-twin reveal only after all physical client stories are strong.
+2. Selectively replace procedural hero objects with optimized GLB assets only where screenshots prove the gain is worth the payload.
+3. Performance-test representative desktop and mobile hardware.
+4. Connect the project handoff to the final MacroPark email/CRM destination.
+5. Finalize deployment/domain configuration, SEO/accessibility and production copy.
 
 ## Open decisions
 
@@ -169,6 +220,18 @@ Goal: make Residence feel like a complete daily parking story rather than a stat
 
 ## Change log
 
+### 2026-08-24 — Residence Phase 3 complete
+
+- Rebuilt the assigned-space story around recognition-driven authorization rather than instant feature activation.
+- Added resident arrival, assigned-bay illumination, authorization-controlled blocker and physical parking.
+- Corrected Residence parking effects to the actual finished site elevation and moved the blocker to the bay entrance.
+- Added a dedicated reservation journey with amber waiting state, vehicle match, green authorization and physical parking.
+- Added Residence active/expired guest access using the same client-facing comparison language established in Home.
+- Added shared EV charging with a parked vehicle, physical cable, energy pulses and optional solar-to-charger flow.
+- Added dedicated Residence camera choreography and expanded the visual-QA matrix to 16 deterministic desktop/mobile states.
+- GitHub Actions run #109 passed the cumulative Phase 3 production build and full visual-QA workflow.
+- Current First Load JS is approximately 354 kB.
+
 ### 2026-08-23 — Home Phase 2 complete
 
 - Completed recognition-triggered Home arrival with a moving vehicle and rolling garage response.
@@ -179,7 +242,7 @@ Goal: make Residence feel like a complete daily parking story rather than a stat
 - Added dedicated desktop/mobile cameras and deterministic visual-QA states for the deeper Home experience.
 - Deferred battery storage until it materially improves the client story.
 - GitHub Actions run #87 passed the cumulative Home Phase 2 production build and visual-QA workflow.
-- Current First Load JS is approximately 352 kB.
+- Current First Load JS was approximately 352 kB.
 
 ### 2026-08-23 — Phase 1 locked and merged
 
