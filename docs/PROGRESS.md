@@ -16,7 +16,7 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Phase 3 PR:** #3 — `Phase 3: deepen Residence parking experience` — complete and merge-ready.
 
-**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`. The only commits after that validated code head update persistent documentation.
+**Latest validation:** GitHub Actions run #109 passed Node 24 install, production compile, TypeScript validation, static generation, optimization, the 16-state headless WebGL visual-QA matrix and artifact upload on final Residence code commit `575aa46ec29626de87075888f15abfcb1e72814a`. Commits after that validated code head only update project documentation.
 
 **Current performance baseline:** `/` is approximately 252 kB route size and 354 kB First Load JS, versus approximately 340 kB First Load JS for the original vertical-slice baseline and 352 kB after the completed Home phase.
 
