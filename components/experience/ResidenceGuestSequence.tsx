@@ -55,8 +55,8 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
 
     const mobile = size.width <= 760;
     const targetPosition: [number, number, number] = mobile
-      ? [5.7, 7.35, -4.35]
-      : [7.0, 4.4, -5.35];
+      ? [3.05, 7.05, -4.1]
+      : [3.0, 4.15, -5.15];
     const targetLookAt: [number, number, number] = allowed && progress.current > 0.7
       ? [0, 0.7, -11.4]
       : [0, 0.9, -9.55];
@@ -66,7 +66,7 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 49 : 38, 5.2, delta);
+      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 49 : 39, 5.2, delta);
       camera.updateProjectionMatrix();
     }
     camera.lookAt(cameraLookAt.current);
