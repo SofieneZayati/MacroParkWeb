@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Preload } from "@react-three/drei";
+import { PerformanceMonitor } from "@react-three/drei";
 import { WorldScene } from "./WorldScene";
 import { SolutionEffects } from "./SolutionEffects";
 import { ScenePolish } from "./ScenePolish";
@@ -37,6 +37,9 @@ export function MacroParkExperience() {
     setGuestAccessPreview,
   } = useExperienceStore();
 
+  const [renderDpr, setRenderDpr] = useState(1);
+  const [shadowsEnabled, setShadowsEnabled] = useState(true);
+
   const environment = getEnvironment(selectedEnvironment);
   const problem = getProblem(selectedEnvironment, selectedProblem);
   const recommendation = getRecommendedProblem(
@@ -47,6 +50,13 @@ export function MacroParkExperience() {
   const showingGuestAccess =
     (selectedEnvironment === "home" || selectedEnvironment === "residence") &&
     selectedProblem === "guest-access";
+
+  useEffect(() => {
+    if (window.innerWidth <= 760) {
+      setRenderDpr(0.8);
+      setShadowsEnabled(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (introComplete) return;
@@ -113,14 +123,21 @@ export function MacroParkExperience() {
     toggleSolar,
   ]);
 
+  const useShadows = shadowsEnabled && selectedEnvironment !== null;
+
   return (
     <main className="experience-shell">
       <Canvas
         className="experience-canvas"
-        dpr={[1, 1.7]}
-        shadows
+        dpr={renderDpr}
+        shadows={useShadows ? "basic" : false}
         camera={{ position: [0, 3.1, 14], fov: 42, near: 0.1, far: 120 }}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        gl={{
+          antialias: false,
+          alpha: false,
+          stencil: false,
+          powerPreference: "high-performance",
+        }}
         fallback={
           <div className="webgl-fallback">
             <span>MacroPark</span>
@@ -132,11 +149,25 @@ export function MacroParkExperience() {
           </div>
         }
       >
+        <PerformanceMonitor
+          factor={0.5}
+          step={0.15}
+          flipflops={2}
+          bounds={(refreshRate) => (refreshRate > 90 ? [48, 78] : [42, 58])}
+          onChange={({ factor }) => {
+            const nextDpr = Math.round((0.75 + factor * 0.35) * 100) / 100;
+            setRenderDpr(nextDpr);
+            if (factor < 0.35) setShadowsEnabled(false);
+          }}
+          onFallback={() => {
+            setRenderDpr(0.75);
+            setShadowsEnabled(false);
+          }}
+        />
         <Suspense fallback={null}>
           <WorldScene />
           <SolutionEffects />
           <ScenePolish />
-          <Preload all />
         </Suspense>
       </Canvas>
 

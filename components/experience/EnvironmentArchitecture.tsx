@@ -62,7 +62,7 @@ export function HomeArchitecture({ garageOpen }: { garageOpen: boolean }) {
           <meshStandardMaterial color="#151a18" roughness={0.78} />
         </RoundedBox>
         <group ref={garageDoor} position={[0, 0.98, 0.06]}>
-          <RoundedBox args={[1.94, 1.5, 0.07]} radius={0.025} castShadow>
+          <RoundedBox args={[1.94, 1.5, 0.07]} radius={0.025}>
             <meshStandardMaterial color="#727a75" metalness={0.28} roughness={0.46} />
           </RoundedBox>
           {[-0.48, 0, 0.48].map((y) => (
@@ -74,25 +74,23 @@ export function HomeArchitecture({ garageOpen }: { garageOpen: boolean }) {
         </group>
         <mesh position={[1.19, 1.24, 0.07]}>
           <boxGeometry args={[0.09, 0.09, 0.025]} />
-          <meshStandardMaterial
-            color={garageOpen ? "#9df4b7" : "#8c958f"}
-            emissive={garageOpen ? "#4fc36d" : "#000000"}
-            emissiveIntensity={garageOpen ? 1.1 : 0}
-          />
+          <meshBasicMaterial color={garageOpen ? "#9df4b7" : "#8c958f"} />
         </mesh>
       </group>
 
-      <RoundedBox args={[1.24, 1.5, 0.06]} radius={0.04} position={[1.58, 1.22, 0.95]}>
-        <meshStandardMaterial color="#1a2924" metalness={0.22} roughness={0.16} />
-      </RoundedBox>
+      <mesh position={[1.58, 1.22, 0.95]}>
+        <boxGeometry args={[1.24, 1.5, 0.06]} />
+        <meshBasicMaterial color="#1a2924" />
+      </mesh>
       <mesh position={[1.58, 1.22, 0.99]}>
         <boxGeometry args={[0.035, 1.34, 0.015]} />
         <meshBasicMaterial color="#728b7d" transparent opacity={0.55} />
       </mesh>
 
-      <RoundedBox args={[0.82, 1.5, 0.08]} radius={0.035} position={[2.45, 0.87, 0.9]}>
+      <mesh position={[2.45, 0.87, 0.9]}>
+        <boxGeometry args={[0.82, 1.5, 0.08]} />
         <meshStandardMaterial color="#27312d" roughness={0.5} />
-      </RoundedBox>
+      </mesh>
       <mesh position={[2.2, 2.22, 0.65]}>
         <boxGeometry args={[2.15, 0.16, 1.15]} />
         <meshStandardMaterial color="#818b84" metalness={0.22} roughness={0.54} />
@@ -139,16 +137,17 @@ export function ResidenceArchitecture() {
       ))}
 
       <group position={[0.08, 0, 0.12]}>
-        <RoundedBox args={[1.42, 1.72, 0.1]} radius={0.04} position={[0, 0.9, 0]}>
-          <meshStandardMaterial color="#18251f" metalness={0.2} roughness={0.18} />
-        </RoundedBox>
+        <mesh position={[0, 0.9, 0]}>
+          <boxGeometry args={[1.42, 1.72, 0.1]} />
+          <meshBasicMaterial color="#18251f" />
+        </mesh>
         <mesh position={[0, 1.88, 0.34]}>
           <boxGeometry args={[2.2, 0.16, 0.82]} />
           <meshStandardMaterial color="#68746c" metalness={0.28} roughness={0.46} />
         </mesh>
         <mesh position={[0, 1.89, 0.75]}>
           <boxGeometry args={[1.2, 0.045, 0.03]} />
-          <meshStandardMaterial color="#a5efb8" emissive="#376e47" emissiveIntensity={0.65} />
+          <meshBasicMaterial color="#a5efb8" />
         </mesh>
       </group>
 
@@ -185,9 +184,10 @@ export function RetailArchitecture() {
       </mesh>
 
       {[-2.75, -1.65, -0.55, 0.55, 1.65, 2.75].map((x) => (
-        <RoundedBox key={x} args={[0.92, 1.3, 0.06]} radius={0.025} position={[x, 1.18, -0.34]}>
-          <meshStandardMaterial color="#1a2a24" metalness={0.22} roughness={0.15} />
-        </RoundedBox>
+        <mesh key={x} position={[x, 1.18, -0.34]}>
+          <boxGeometry args={[0.92, 1.3, 0.06]} />
+          <meshBasicMaterial color="#1a2a24" />
+        </mesh>
       ))}
       {[-2.2, -1.1, 1.1, 2.2].map((x) => (
         <mesh key={`mullion-${x}`} position={[x, 1.18, -0.3]}>
@@ -196,16 +196,17 @@ export function RetailArchitecture() {
         </mesh>
       ))}
 
-      <RoundedBox args={[1.35, 1.75, 0.09]} radius={0.04} position={[0, 1.03, -0.27]}>
-        <meshStandardMaterial color="#16251f" metalness={0.24} roughness={0.14} />
-      </RoundedBox>
+      <mesh position={[0, 1.03, -0.27]}>
+        <boxGeometry args={[1.35, 1.75, 0.09]} />
+        <meshBasicMaterial color="#16251f" />
+      </mesh>
       <mesh position={[0, 2.25, -0.2]}>
         <boxGeometry args={[2.65, 0.34, 0.12]} />
         <meshStandardMaterial color="#26322c" roughness={0.46} />
       </mesh>
       <mesh position={[-0.35, 2.25, -0.13]} rotation-z={Math.PI / 4}>
         <boxGeometry args={[0.16, 0.16, 0.035]} />
-        <meshStandardMaterial color="#9bf2b5" emissive="#3d7f50" emissiveIntensity={0.75} />
+        <meshBasicMaterial color="#9bf2b5" />
       </mesh>
 
       <mesh position={[0, 1.82, 0.08]}>
@@ -213,8 +214,8 @@ export function RetailArchitecture() {
         <meshStandardMaterial color="#707b74" metalness={0.3} roughness={0.44} />
       </mesh>
       {[-2.9, -1.45, 0, 1.45, 2.9].map((x) => (
-        <mesh key={`column-${x}`} position={[x, 0.88, 0.22]} castShadow>
-          <cylinderGeometry args={[0.055, 0.065, 1.7, 12]} />
+        <mesh key={`column-${x}`} position={[x, 0.88, 0.22]}>
+          <cylinderGeometry args={[0.055, 0.065, 1.7, 8]} />
           <meshStandardMaterial color="#68736c" metalness={0.38} roughness={0.48} />
         </mesh>
       ))}
@@ -253,15 +254,10 @@ function FacadeWindows({
     <>
       {xValues.flatMap((x) =>
         yValues.map((y) => (
-          <RoundedBox key={`${x}-${y}`} args={[0.62, 0.48, 0.045]} radius={0.025} position={[x, y, z]}>
-            <meshStandardMaterial
-              color={warm ? "#d5e5d9" : "#24332c"}
-              emissive={warm ? "#cbe8d2" : "#1c3326"}
-              emissiveIntensity={warm ? 0.13 : 0.08}
-              metalness={0.12}
-              roughness={0.2}
-            />
-          </RoundedBox>
+          <mesh key={`${x}-${y}`} position={[x, y, z]}>
+            <boxGeometry args={[0.62, 0.48, 0.045]} />
+            <meshBasicMaterial color={warm ? "#c4d7ca" : "#24332c"} />
+          </mesh>
         )),
       )}
     </>
@@ -271,13 +267,13 @@ function FacadeWindows({
 function Planter({ position, length }: { position: [number, number, number]; length: number }) {
   return (
     <group position={position}>
-      <RoundedBox args={[0.68, 0.34, length]} radius={0.07} position={[0, 0.17, 0]} castShadow>
+      <RoundedBox args={[0.68, 0.34, length]} radius={0.07} position={[0, 0.17, 0]}>
         <meshStandardMaterial color="#616a64" roughness={0.82} />
       </RoundedBox>
       {[-0.34, 0.34].map((z) => (
         <mesh key={z} position={[0, 0.52, z * Math.min(length, 2)]}>
-          <sphereGeometry args={[0.36, 10, 8]} />
-          <meshStandardMaterial color="#36503d" roughness={1} />
+          <sphereGeometry args={[0.36, 7, 5]} />
+          <meshLambertMaterial color="#36503d" />
         </mesh>
       ))}
     </group>
@@ -287,17 +283,17 @@ function Planter({ position, length }: { position: [number, number, number]; len
 function SiteTree({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
   return (
     <group position={position} scale={scale}>
-      <mesh position={[0, 0.78, 0]} castShadow>
-        <cylinderGeometry args={[0.09, 0.13, 1.55, 9]} />
-        <meshStandardMaterial color="#515a52" roughness={0.95} />
+      <mesh position={[0, 0.78, 0]}>
+        <cylinderGeometry args={[0.09, 0.13, 1.55, 7]} />
+        <meshLambertMaterial color="#515a52" />
       </mesh>
-      <mesh position={[0, 1.95, 0]} castShadow>
-        <icosahedronGeometry args={[0.78, 1]} />
-        <meshStandardMaterial color="#35513e" roughness={1} />
+      <mesh position={[0, 1.95, 0]}>
+        <icosahedronGeometry args={[0.78, 0]} />
+        <meshLambertMaterial color="#35513e" />
       </mesh>
-      <mesh position={[0.38, 1.72, 0.08]} castShadow>
-        <icosahedronGeometry args={[0.48, 1]} />
-        <meshStandardMaterial color="#3c5944" roughness={1} />
+      <mesh position={[0.38, 1.72, 0.08]}>
+        <icosahedronGeometry args={[0.48, 0]} />
+        <meshLambertMaterial color="#3c5944" />
       </mesh>
     </group>
   );
@@ -307,12 +303,12 @@ function PathLight({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       <mesh position={[0, 0.28, 0]}>
-        <cylinderGeometry args={[0.035, 0.05, 0.56, 10]} />
+        <cylinderGeometry args={[0.035, 0.05, 0.56, 7]} />
         <meshStandardMaterial color="#39413d" metalness={0.42} roughness={0.5} />
       </mesh>
       <mesh position={[0, 0.55, 0]}>
         <boxGeometry args={[0.12, 0.05, 0.12]} />
-        <meshStandardMaterial color="#d9ffe2" emissive="#8edaa2" emissiveIntensity={0.8} />
+        <meshBasicMaterial color="#bff7ce" />
       </mesh>
     </group>
   );
@@ -322,14 +318,13 @@ function ParkingLight({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       <mesh position={[0, 1.55, 0]}>
-        <cylinderGeometry args={[0.045, 0.065, 3.1, 10]} />
+        <cylinderGeometry args={[0.045, 0.065, 3.1, 8]} />
         <meshStandardMaterial color="#414a45" metalness={0.5} roughness={0.46} />
       </mesh>
       <mesh position={[0, 3.08, 0]} rotation-z={0.08}>
         <boxGeometry args={[0.76, 0.08, 0.22]} />
-        <meshStandardMaterial color="#b9c0bb" metalness={0.35} roughness={0.4} />
+        <meshBasicMaterial color="#dce9e1" />
       </mesh>
-      <pointLight position={[0, 2.95, 0.15]} color="#deeee2" intensity={1.2} distance={4.6} />
     </group>
   );
 }

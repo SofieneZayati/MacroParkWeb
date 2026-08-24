@@ -19,7 +19,7 @@ export function PremiumVehicle({
 
   return (
     <group scale={scale}>
-      <mesh position={[0, 0.23, 0]} castShadow>
+      <mesh position={[0, 0.23, 0]}>
         <boxGeometry args={[1.66, 0.16, 3.12]} />
         <meshStandardMaterial color="#121715" metalness={0.35} roughness={0.52} />
       </mesh>
@@ -28,11 +28,11 @@ export function PremiumVehicle({
         <meshStandardMaterial color={color} metalness={0.58} roughness={0.24} />
       </RoundedBox>
 
-      <RoundedBox args={[1.52, 0.18, 1.18]} radius={0.16} position={[0, 0.7, -0.98]} castShadow>
+      <RoundedBox args={[1.52, 0.18, 1.18]} radius={0.16} position={[0, 0.7, -0.98]}>
         <meshStandardMaterial color={color} metalness={0.56} roughness={0.25} />
       </RoundedBox>
 
-      <RoundedBox args={[1.42, 0.5, 1.56]} radius={0.22} position={[0, 0.88, 0.08]} castShadow>
+      <RoundedBox args={[1.42, 0.5, 1.56]} radius={0.22} position={[0, 0.88, 0.08]}>
         <meshStandardMaterial color="#17211d" metalness={0.3} roughness={0.18} />
       </RoundedBox>
 
@@ -61,18 +61,14 @@ export function PremiumVehicle({
       {[-0.55, 0.55].map((x) => (
         <mesh key={`head-${x}`} position={[x, 0.55, -1.64]}>
           <boxGeometry args={[0.34, 0.09, 0.035]} />
-          <meshStandardMaterial
-            color="#effff5"
-            emissive={lightsOn ? "#d8ffe6" : "#4a544e"}
-            emissiveIntensity={lightsOn ? 2.2 : 0.2}
-          />
+          <meshBasicMaterial color={lightsOn ? "#effff5" : "#657069"} />
         </mesh>
       ))}
 
       {[-0.54, 0.54].map((x) => (
         <mesh key={`tail-${x}`} position={[x, 0.53, 1.64]}>
           <boxGeometry args={[0.3, 0.085, 0.035]} />
-          <meshStandardMaterial color="#8e211f" emissive="#ff4f49" emissiveIntensity={0.9} />
+          <meshBasicMaterial color="#d1443f" />
         </mesh>
       ))}
 
@@ -98,13 +94,6 @@ export function PremiumVehicle({
         <boxGeometry args={[0.84, 0.07, 0.03]} />
         <meshStandardMaterial color="#0c100e" metalness={0.7} roughness={0.32} />
       </mesh>
-
-      {lightsOn && (
-        <>
-          <pointLight position={[-0.5, 0.55, -1.82]} color="#e8fff0" intensity={1.6} distance={4.2} />
-          <pointLight position={[0.5, 0.55, -1.82]} color="#e8fff0" intensity={1.6} distance={4.2} />
-        </>
-      )}
     </group>
   );
 }
@@ -112,16 +101,16 @@ export function PremiumVehicle({
 function Wheel({ x, z }: { x: number; z: number }) {
   return (
     <group position={[x, 0.29, z]} rotation-z={Math.PI / 2}>
-      <mesh castShadow>
-        <cylinderGeometry args={[0.3, 0.3, 0.18, 24]} />
+      <mesh>
+        <cylinderGeometry args={[0.3, 0.3, 0.18, 16]} />
         <meshStandardMaterial color="#070908" roughness={0.86} />
       </mesh>
       <mesh position={[0, 0.095, 0]}>
-        <cylinderGeometry args={[0.18, 0.18, 0.02, 18]} />
+        <cylinderGeometry args={[0.18, 0.18, 0.02, 12]} />
         <meshStandardMaterial color="#606963" metalness={0.78} roughness={0.28} />
       </mesh>
       <mesh position={[0, 0.108, 0]}>
-        <cylinderGeometry args={[0.055, 0.055, 0.018, 16]} />
+        <cylinderGeometry args={[0.055, 0.055, 0.018, 10]} />
         <meshStandardMaterial color="#1b211e" metalness={0.7} roughness={0.34} />
       </mesh>
     </group>
