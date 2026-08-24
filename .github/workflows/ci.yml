@@ -84,44 +84,47 @@ jobs:
             fi
           }
 
+          # Core regression coverage
           capture 1440,1000 1400 visual-qa/desktop-arrival.png \
             http://127.0.0.1:3000/
-
           capture 1440,1000 1600 visual-qa/desktop-chooser.png \
             "http://127.0.0.1:3000/?qaChooser=1"
-
           capture 390,844 1600 visual-qa/mobile-chooser.png \
             "http://127.0.0.1:3000/?qaChooser=1"
-
           capture 1440,1000 2500 visual-qa/desktop-home-access.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access"
-
-          capture 1440,1000 2300 visual-qa/desktop-home-guest-active.png \
-            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access"
-
           capture 1440,1000 2300 visual-qa/desktop-home-guest-expired.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access&qaGuest=expired"
-
-          capture 390,844 2300 visual-qa/mobile-home-guest-active.png \
-            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access"
-
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
-
-          capture 390,844 2100 visual-qa/mobile-home-ev-solar.png \
-            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
-
           capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
-          capture 1440,1000 1900 visual-qa/desktop-residence-protection.png \
+          # Residence resident / assigned-space journey
+          capture 1440,1000 2200 visual-qa/desktop-residence-recognition.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+          capture 1440,1000 5600 visual-qa/desktop-residence-parked.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
 
-          capture 390,844 2500 visual-qa/mobile-home-access.png \
-            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access"
+          # Residence reservation journey: amber waiting state -> matched/parked state
+          capture 1440,1000 1700 visual-qa/desktop-residence-reserved.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=reservations"
+          capture 1440,1000 5200 visual-qa/desktop-residence-reservation-matched.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=reservations"
 
-          capture 390,844 1900 visual-qa/mobile-residence-protection.png \
-            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
+          # Residence guest access active vs expired
+          capture 1440,1000 4200 visual-qa/desktop-residence-guest-active.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access"
+          capture 1440,1000 2600 visual-qa/desktop-residence-guest-expired.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaGuest=expired"
+
+          # Residence shared EV charging + solar and portrait regression
+          capture 1440,1000 2500 visual-qa/desktop-residence-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging&qaSolar=1"
+          capture 390,844 2700 visual-qa/mobile-residence-guest-expired.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaGuest=expired"
+          capture 390,844 2400 visual-qa/mobile-residence-ev.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging"
 
       - name: Upload visual QA
         if: always()
