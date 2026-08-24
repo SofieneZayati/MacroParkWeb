@@ -6,9 +6,11 @@ import * as THREE from "three";
 import { EVCharger } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
 
-export function ResidenceChargingSequence() {
+export function ResidenceChargingSequence({ solarEnabled }: { solarEnabled: boolean }) {
   const cablePulseA = useRef<THREE.Mesh>(null);
   const cablePulseB = useRef<THREE.Mesh>(null);
+  const solarPulseA = useRef<THREE.Mesh>(null);
+  const solarPulseB = useRef<THREE.Mesh>(null);
   const chargeRing = useRef<THREE.Mesh>(null);
   const cameraPosition = useMemo(() => new THREE.Vector3(), []);
   const cameraTarget = useMemo(() => new THREE.Vector3(), []);
@@ -28,16 +30,36 @@ export function ResidenceChargingSequence() {
     () => new THREE.TubeGeometry(cableCurve, 42, 0.027, 8, false),
     [cableCurve],
   );
+  const solarCurve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.25, 2.72, 2.15),
+        new THREE.Vector3(1.15, 2.3, 1.95),
+        new THREE.Vector3(2.15, 1.72, 1.6),
+        new THREE.Vector3(3.02, 1.12, 1.25),
+      ]),
+    [],
+  );
 
   useFrame(({ clock, camera, size }, delta) => {
-    const animatePulse = (mesh: THREE.Mesh | null, offset: number) => {
+    const animatePulse = (
+      mesh: THREE.Mesh | null,
+      curve: THREE.CatmullRomCurve3,
+      offset: number,
+      speed: number,
+    ) => {
       if (!mesh) return;
-      const progress = (clock.elapsedTime * 0.48 + offset) % 1;
-      mesh.position.copy(cableCurve.getPointAt(progress));
+      const progress = (clock.elapsedTime * speed + offset) % 1;
+      mesh.position.copy(curve.getPointAt(progress));
       mesh.scale.setScalar(0.72 + Math.sin(progress * Math.PI) * 0.34);
     };
-    animatePulse(cablePulseA.current, 0);
-    animatePulse(cablePulseB.current, 0.52);
+
+    animatePulse(cablePulseA.current, cableCurve, 0, 0.48);
+    animatePulse(cablePulseB.current, cableCurve, 0.52, 0.48);
+    if (solarEnabled) {
+      animatePulse(solarPulseA.current, solarCurve, 0, 0.33);
+      animatePulse(solarPulseB.current, solarCurve, 0.5, 0.33);
+    }
 
     if (chargeRing.current) {
       const material = chargeRing.current.material as THREE.MeshBasicMaterial;
@@ -101,6 +123,20 @@ export function ResidenceChargingSequence() {
           <meshBasicMaterial color="#bafaca" transparent opacity={0.78} />
         </mesh>
       </group>
+
+      {solarEnabled && (
+        <>
+          <mesh ref={solarPulseA}>
+            <sphereGeometry args={[0.065, 14, 14]} />
+            <meshBasicMaterial color="#ffd88b" />
+          </mesh>
+          <mesh ref={solarPulseB}>
+            <sphereGeometry args={[0.052, 14, 14]} />
+            <meshBasicMaterial color="#ffe7a8" />
+          </mesh>
+          <pointLight position={[2.0, 1.75, 1.62]} color="#ffdca0" intensity={1.15} distance={3.6} />
+        </>
+      )}
     </group>
   );
 }
