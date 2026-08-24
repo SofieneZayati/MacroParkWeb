@@ -97,6 +97,12 @@ jobs:
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=guest-access&qaGuest=expired"
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
+
+          # Retail entrance flow + existing guidance regression
+          capture 1440,1000 3300 visual-qa/desktop-retail-entrance-flow.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
+          capture 390,844 3300 visual-qa/mobile-retail-entrance-flow.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
           capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
