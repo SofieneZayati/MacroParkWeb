@@ -98,12 +98,16 @@ jobs:
           capture 1440,1000 1900 visual-qa/desktop-home-ev-solar.png \
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=ev-charging&qaSolar=1"
 
-          # Retail entrance flow + existing guidance regression
+          # Retail entrance flow + two-beat availability/guidance story
           capture 1440,1000 3300 visual-qa/desktop-retail-entrance-flow.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
           capture 390,844 3300 visual-qa/mobile-retail-entrance-flow.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reduce-queues"
-          capture 1440,1000 1900 visual-qa/desktop-retail-guidance.png \
+          capture 1440,1000 1050 visual-qa/desktop-retail-availability.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
+          capture 1440,1000 3200 visual-qa/desktop-retail-guided-bay.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
+          capture 390,844 2800 visual-qa/mobile-retail-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance"
 
           # Residence resident / assigned-space journey
