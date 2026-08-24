@@ -118,6 +118,12 @@ jobs:
           capture 390,844 5200 visual-qa/mobile-retail-reservation-matched.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=reservations"
 
+          # Retail customer charging + optional solar
+          capture 1440,1000 2600 visual-qa/desktop-retail-ev-solar.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=ev-charging&qaSolar=1"
+          capture 390,844 2600 visual-qa/mobile-retail-ev.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=ev-charging"
+
           # Residence resident / assigned-space journey
           capture 1440,1000 2200 visual-qa/desktop-residence-recognition.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space"
