@@ -7,7 +7,10 @@ import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
 
 export function RetailChargingSequence() {
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
+  const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
+  const active = selectedEnvironment === "retail" && selectedProblem === "ev-charging";
   const cablePulseA = useRef<THREE.Mesh>(null);
   const cablePulseB = useRef<THREE.Mesh>(null);
   const solarPulseA = useRef<THREE.Mesh>(null);
@@ -40,6 +43,8 @@ export function RetailChargingSequence() {
   );
 
   useFrame(({ clock }) => {
+    if (!active) return;
+
     const animatePulse = (
       mesh: THREE.Mesh | null,
       curve: THREE.CatmullRomCurve3,
@@ -67,8 +72,10 @@ export function RetailChargingSequence() {
     }
   });
 
+  if (!active) return null;
+
   return (
-    <group>
+    <group position={[-8.5, 0, -10]}>
       <group position={[0.9, 0.24, 2.45]} rotation-y={Math.PI}>
         <PremiumVehicle color="#d8dfdb" scale={0.47} lightsOn={false} />
       </group>
