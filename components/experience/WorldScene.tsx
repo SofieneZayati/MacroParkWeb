@@ -14,6 +14,7 @@ import { PremiumVehicle } from "./PremiumVehicle";
 import { HomeAccessSequence } from "./HomeAccessSequence";
 import { HomeGuestSequence } from "./HomeGuestSequence";
 import { HomeChargingSequence } from "./HomeChargingSequence";
+import { RetailEntranceSequence } from "./RetailEntranceSequence";
 import {
   HomeArchitecture,
   ResidenceArchitecture,
@@ -362,18 +363,7 @@ function RetailWorld() {
       ))}
 
       {guidance && <GuidedRetailVehicle />}
-
-      {active && selectedProblem === "reduce-queues" && (
-        <group position={[-1.15, 0, 4.0]} rotation-y={0.04}>
-          <PremiumVehicle color="#ccd4cf" scale={0.42} lightsOn={false} />
-          <group position={[2.05, 0, 1.5]}>
-            <PremiumVehicle color="#81938a" scale={0.42} lightsOn={false} />
-          </group>
-          <group position={[-1.65, 0, 2.75]}>
-            <PremiumVehicle color="#b9c1bc" scale={0.42} lightsOn={false} />
-          </group>
-        </group>
-      )}
+      {active && selectedProblem === "reduce-queues" && <RetailEntranceSequence />}
 
       {active && selectedProblem === "ev-charging" && (
         <group>
