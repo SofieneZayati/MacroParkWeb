@@ -8,6 +8,7 @@ import { ResidenceAccessSequence } from "./ResidenceAccessSequence";
 import { ResidenceReservationSequence } from "./ResidenceReservationSequence";
 import { ResidenceGuestSequence } from "./ResidenceGuestSequence";
 import { ResidenceChargingSequence } from "./ResidenceChargingSequence";
+import { RetailReservationSequence } from "./RetailReservationSequence";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
@@ -63,6 +64,8 @@ export function SolutionEffects() {
     selectedEnvironment === "residence" && selectedProblem === "guest-access";
   const residenceChargingStory =
     selectedEnvironment === "residence" && selectedProblem === "ev-charging";
+  const retailReservationStory =
+    selectedEnvironment === "retail" && selectedProblem === "reservations";
   const residenceBayReady = !residenceProtectionStory || residenceAccessAuthorized;
 
   return (
@@ -80,8 +83,9 @@ export function SolutionEffects() {
       {residenceReservationStory && <ResidenceReservationSequence />}
       {residenceGuestStory && <ResidenceGuestSequence allowed={guestPreviewActive} />}
       {residenceChargingStory && <ResidenceChargingSequence />}
+      {retailReservationStory && <RetailReservationSequence />}
 
-      {hasReservation && !residenceReservationStory && (
+      {hasReservation && !residenceReservationStory && !retailReservationStory && (
         <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />
       )}
       {hasGuestAccess && !residenceGuestStory && (
@@ -111,7 +115,7 @@ function ActiveBeacon() {
 
   return (
     <mesh ref={ring} rotation-x={Math.PI / 2} position={[0, 0.08, 0]}>
-      <torusGeometry args={[3.4, 0.035, 10, 72]} />
+      <torusGeometry args={[3.4, 0.035, 8, 48]} />
       <meshBasicMaterial color="#9df4b7" transparent opacity={0.35} />
     </mesh>
   );
@@ -176,7 +180,7 @@ function AvailableBayMarker() {
 
       {[-0.62, 0.62].map((x) => (
         <mesh key={`post-${x}`} position={[x, 0.78, -1.28]}>
-          <cylinderGeometry args={[0.032, 0.045, 1.5, 10]} />
+          <cylinderGeometry args={[0.032, 0.045, 1.5, 8]} />
           <meshStandardMaterial color="#66726b" metalness={0.48} roughness={0.44} />
         </mesh>
       ))}
@@ -185,7 +189,7 @@ function AvailableBayMarker() {
         <meshStandardMaterial
           color="#bfffd0"
           emissive="#5dd979"
-          emissiveIntensity={1.65}
+          emissiveIntensity={1.4}
           metalness={0.2}
           roughness={0.3}
         />
@@ -194,7 +198,6 @@ function AvailableBayMarker() {
         <boxGeometry args={[0.74, 0.035, 0.012]} />
         <meshBasicMaterial color="#effff3" />
       </mesh>
-      <pointLight position={[0, 1.38, -1.05]} color="#8fffaa" intensity={3} distance={4.6} />
     </group>
   );
 }
@@ -239,13 +242,10 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
       ))}
 
       {ready && (
-        <>
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.28, -0.2]}>
-            <ringGeometry args={[0.45, 0.51, 42]} />
-            <meshBasicMaterial color="#caffd7" transparent opacity={0.72} side={THREE.DoubleSide} />
-          </mesh>
-          <pointLight position={[0, 0.85, 0]} color="#9effb7" intensity={2.2} distance={3.8} />
-        </>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.28, -0.2]}>
+          <ringGeometry args={[0.45, 0.51, 36]} />
+          <meshBasicMaterial color="#caffd7" transparent opacity={0.72} side={THREE.DoubleSide} />
+        </mesh>
       )}
       {showHardware && <ParkingBlocker position={[0, 0.24, -1.05]} />}
     </group>
@@ -269,29 +269,26 @@ function ReservedBay({ position }: { position: [number, number, number] }) {
         <meshBasicMaterial color="#f2c76f" transparent opacity={0.1} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={marker} rotation-x={Math.PI / 2} position={[0, 0.11, 0]}>
-        <torusGeometry args={[0.55, 0.045, 10, 48, Math.PI * 1.62]} />
+        <torusGeometry args={[0.55, 0.045, 8, 40, Math.PI * 1.62]} />
         <meshBasicMaterial color="#f6cf79" transparent opacity={0.4} />
       </mesh>
       <mesh position={[0, 0.16, -1.28]}>
         <boxGeometry args={[1.35, 0.08, 0.12]} />
         <meshStandardMaterial color="#d8aa50" emissive="#7d5720" emissiveIntensity={0.45} />
       </mesh>
-      <pointLight position={[0, 1.1, 0]} color="#f2ca77" intensity={1.8} distance={3.2} />
     </group>
   );
 }
 
 function GuestWindow({ position, active }: { position: [number, number, number]; active: boolean }) {
   const color = active ? "#d6f7df" : "#f0c779";
-  const lightColor = active ? "#b6f7c9" : "#e5ae53";
 
   return (
     <group position={position}>
       <mesh rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[0.62, 0.7, 40]} />
+        <ringGeometry args={[0.62, 0.7, 32]} />
         <meshBasicMaterial color={color} transparent opacity={active ? 0.44 : 0.5} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[0, 1.1, 0]} color={lightColor} intensity={active ? 2.2 : 1.45} distance={3.4} />
     </group>
   );
 }
@@ -308,9 +305,8 @@ function FlowPulse({ x, startZ, endZ }: { x: number; startZ: number; endZ: numbe
 
   return (
     <mesh ref={pulse} position={[x, 0.2, startZ]}>
-      <sphereGeometry args={[0.1, 14, 14]} />
+      <sphereGeometry args={[0.11, 10, 10]} />
       <meshBasicMaterial color="#a7f8be" />
-      <pointLight color="#9effbd" intensity={2.8} distance={2.5} />
     </mesh>
   );
 }
