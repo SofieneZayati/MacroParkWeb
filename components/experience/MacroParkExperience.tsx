@@ -44,7 +44,9 @@ export function MacroParkExperience() {
     selectedProblem,
     selectedProblems,
   );
-  const showingHomeGuestAccess = selectedEnvironment === "home" && selectedProblem === "guest-access";
+  const showingGuestAccess =
+    (selectedEnvironment === "home" || selectedEnvironment === "residence") &&
+    selectedProblem === "guest-access";
 
   useEffect(() => {
     if (introComplete) return;
@@ -96,7 +98,7 @@ export function MacroParkExperience() {
       chooseProblem(validProblem.id as ProblemId);
       if (wantsSolar && validProblem.id === "ev-charging") toggleSolar();
       if (
-        environmentId === "home" &&
+        (environmentId === "home" || environmentId === "residence") &&
         validProblem.id === "guest-access" &&
         guestPreviewParam === "expired"
       ) {
@@ -222,7 +224,7 @@ export function MacroParkExperience() {
               <h2>{problem ? problem.resultTitle : environment.question}</h2>
               <p>{problem ? problem.resultBody : environment.description}</p>
 
-              {showingHomeGuestAccess && (
+              {showingGuestAccess && (
                 <div className={`guest-access-preview guest-access-preview-${guestAccessPreview}`}>
                   <div className="guest-access-state">
                     <span className="guest-access-dot" aria-hidden="true" />
@@ -289,7 +291,7 @@ export function MacroParkExperience() {
               )}
             </div>
 
-            <div className="corner-caption">Interactive experience · Phase 2</div>
+            <div className="corner-caption">Interactive experience · Phase 3</div>
           </>
         )}
       </section>
