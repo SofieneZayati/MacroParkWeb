@@ -1,10 +1,9 @@
 .dock {
   position: absolute;
-  left: 50%;
-  top: 94px;
+  right: clamp(20px, 4vw, 64px);
+  top: 22px;
   z-index: 8;
-  transform: translateX(-50%);
-  width: min(520px, calc(100vw - 40px));
+  width: min(360px, calc(100vw - 40px));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -12,8 +11,7 @@
   padding: 12px 14px 12px 16px;
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 16px;
-  background: rgba(8, 12, 10, 0.72);
-  backdrop-filter: blur(18px);
+  background: rgba(12, 21, 16, 0.94);
   pointer-events: auto;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.2);
 }
@@ -61,16 +59,25 @@
 }
 
 .backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(3, 6, 5, 0.62);
-  backdrop-filter: blur(18px);
+  width: min(920px, calc(100vw - 48px));
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: #f3f7f4;
   pointer-events: auto;
+}
+
+.backdrop[open] {
   animation: summaryIn 360ms ease both;
+}
+
+.backdrop::backdrop {
+  background: rgba(3, 6, 5, 0.76);
+  backdrop-filter: blur(8px);
 }
 
 .summary {
@@ -85,6 +92,9 @@
     radial-gradient(circle at 90% 0%, rgba(122, 255, 168, 0.09), transparent 32%),
     rgba(9, 14, 11, 0.94);
   box-shadow: 0 40px 120px rgba(0, 0, 0, 0.42);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 248, 190, 0.25) transparent;
 }
 
 .close {
@@ -103,6 +113,7 @@
 
 .heading {
   max-width: 680px;
+  padding-right: 28px;
 }
 
 .heading > span,
@@ -172,12 +183,60 @@
 .solution button {
   border: 0;
   background: transparent;
-  color: rgba(236, 243, 238, 0.45);
+  color: rgba(236, 243, 238, 0.62);
   cursor: pointer;
-  padding: 2px;
+  min-height: 32px;
+  padding: 4px 8px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+}
+
+.solutionActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.solution .previewAction {
+  border: 1px solid rgba(167, 248, 190, 0.18);
+  border-radius: 999px;
+  color: #bcf2cc;
+  white-space: nowrap;
+}
+
+.solution button:hover {
+  color: #f1fff5;
+  background: rgba(167, 248, 190, 0.06);
+}
+
+.emptyState {
+  padding: 26px;
+  border: 1px dashed rgba(167, 248, 190, 0.2);
+  border-radius: 18px;
+}
+
+.emptyState strong {
+  font-size: 20px;
+  font-weight: 550;
+}
+
+.emptyState p {
+  color: rgba(226, 236, 229, 0.65);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.summary button:focus-visible,
+.dock button:focus-visible {
+  outline: 2px solid #a7f8be;
+  outline-offset: 4px;
+}
+
+.heading h2:focus {
+  outline: none;
 }
 
 .solarOption {
@@ -311,8 +370,28 @@
 }
 
 @media (max-width: 720px) {
+  .backdrop {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
   .dock {
-    top: 76px;
+    top: 66px;
+    right: 16px;
+    left: auto;
+    transform: none;
+    width: auto;
+    max-width: calc(100vw - 165px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .dock > div { display: none; }
+
+  .dock button {
+    background: #16251bee;
+    min-height: 36px;
   }
 
   .dock button {
@@ -329,10 +408,19 @@
     grid-template-columns: 28px 1fr;
   }
 
-  .solution button,
+  .solutionActions,
   .solarOption .toggle {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .solutionActions {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .solution button {
+    min-height: 40px;
   }
 
   .footer {
@@ -347,5 +435,16 @@
 
   .footer button {
     justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop[open] {
+    animation: none;
+  }
+
+  .summary *,
+  .dock * {
+    transition: none !important;
   }
 }

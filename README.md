@@ -43,5 +43,20 @@ The visitor should mostly interact with **places, vehicles, gates, spaces, light
 
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — product, experience, design and implementation roadmap.
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — current phase, completed work, decisions and next actions.
+- [`docs/PERFORMANCE_PASS_2.md`](docs/PERFORMANCE_PASS_2.md) — performance findings, reproducible checks and device-test limitations.
 
 These files should be updated as the project evolves so the plan and progress remain in GitHub rather than only in chat history.
+
+## Run and verify
+
+```sh
+npm run build
+npm start
+node --test tests/experience-store.test.cjs
+```
+
+Open `http://localhost:3000`. Append `?perf=1` for local FPS, frame-time, draw-call and renderer diagnostics. Nothing is uploaded. The adaptive quality selector and Pause motion control are available within the experience.
+
+Set `NEXT_PUBLIC_VISUAL_QA=1` **before building** to enable the existing deterministic `qaEnvironment`, `qaProblem`, `qaGuest`, `qaSolar` and `qaChooser` URLs, plus `qaReducedMotion=1` and `qaNoWebGL=1`.
+
+Without a contact email configured, clients can preview, copy and download their project brief. `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` enables a prepared email for the visitor to review and send; there is no CRM submission backend yet.

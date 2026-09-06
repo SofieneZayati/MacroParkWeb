@@ -694,12 +694,14 @@ The core interaction must be convincing first.
 
 ## 14. Current priority
 
-The next implementation target is **Phase 0 + Phase 1 vertical slice**.
+Phases 1–4 are merged. The current development checkpoint is **Performance Pass 2 + client consultation polish** on `performance-pass-2`. The historical phase checklists above describe the original roadmap; use `PROGRESS.md` for implementation status.
 
-The first experience to prove:
+The core experience is now implemented:
 
 > **Arrival -> automatic entrance -> reveal MacroPark world -> choose an environment -> enter it -> choose a real-life parking problem -> see MacroPark solve it.**
 
 The exact visual design can evolve during implementation, but the guiding principle should remain stable:
 
 > **The visitor should feel the benefit before they have to understand the technology.**
+
+Next: validate on physical phones and the normal production browser, then finish the real consultation destination, production deployment/domain, accessible/SEO content and any justified selective visual asset upgrades. A system/digital-twin reveal remains a later step after performance sign-off.

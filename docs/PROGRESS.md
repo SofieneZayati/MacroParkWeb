@@ -4,11 +4,11 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phase 1 foundation, Phase 2 Home, Phase 3 Residence and Performance Pass 1 are merged. Phase 4 Retail/Mall is implemented, visually reviewed and merge-ready.
+**Project stage:** Phases 1–4 and Performance Pass 1 are merged. Performance Pass 2 and client-journey polish are implemented on the development branch. See `docs/PERFORMANCE_PASS_2.md` for findings, measurements and validation limits.
 
 **Stable branch:** `main`
 
-**Current development branch:** `phase-4-retail-experience`
+**Current development branch:** `performance-pass-2`
 
 **Phase 1 PR:** #1 — merged into `main` as `d3794e5de78e672b4c5b5871c6ab880d9abebef4`.
 
@@ -18,15 +18,30 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Performance PR:** #4 — first rendering-performance pass merged into `main` as `ad2fb93a8af3912fcd55abab6271453a0aab2c46`.
 
-**Phase 4 PR:** #5 — `Phase 4: deepen Retail parking experience` — final code head `2511b2516e94c4f56f84e75eb76c6ae955670b4c`, merge-ready after final documentation update.
+**Phase 4 PR:** #5 — merged as `1b55563b8aed7c3abdfdde0f8be302424f7a9920`.
 
-**Latest validation:** GitHub Actions run #134 passed Node 24 install, optimized production compile, TypeScript validation, static generation and the expanded headless WebGL workflow on the final Retail code head. All requested Retail states were captured and manually spot-checked. One pre-existing Residence active-guest regression capture timed out under SwiftShader after the matrix expanded; that state had already passed earlier Residence validation and the timeout is treated as a non-blocking CI capture flake.
+**Latest validation:** Local Node 24 production build, TypeScript/static generation and six state-regression tests pass. Desktop and portrait browser checks cover the Home, Residence and Retail stories, setup/handoff, replay, motion controls and responsive layout. Measurements use the actual RTX 3060 renderer exposed by the local browser, rather than SwiftShader. CI remains a separate check; the previous merged Retail run was #134.
 
-**Current build baseline:** `/` is approximately 254 kB route size and 356 kB First Load JS. That is only about +2 kB First Load JS over the 354 kB optimized baseline while adding all four deeper Retail stories.
+**Current build baseline:** `/` is approximately 258 kB route size and 361 kB First Load JS. No runtime dependencies or downloaded 3D assets were added.
 
-**Performance caveat:** CI/SwiftShader validates correctness and visual regression, not real hardware FPS. Real-device production-mode performance remains the blocking sign-off before adding another visually heavy phase.
+**Performance caveat:** Local steady-state samples were approximately 140–144 FPS at desktop/portrait viewport sizes on an RTX 3060. This is a single-device observation, not a measured before/after improvement, phone benchmark, thermal test or guarantee for other hardware.
 
-**Current priority:** merge Phase 4, then retest the optimized production build on representative desktop hardware. If the site is still laggy, do Performance Pass 2 before adding a MacroPark system/digital-twin reveal or heavier GLB assets.
+**Current priority:** review Performance Pass 2 on the user's normal browser and representative physical phones before merging or adding a heavier system reveal. The production contact destination, deployment/domain and final content/SEO work remain open.
+
+## 2026-09-05 — Performance Pass 2 and consultation polish
+
+- Removed 17 remaining point-light declarations while preserving recognition indicators, charging, solar, guest and reservation stories.
+- Fixed finite PerformanceMonitor fallback counting healthy samples as flips, which had forced fast devices to DPR 0.75. Adaptive quality can now recover; an explicit smoother-motion mode remains available.
+- Gave each story exclusive camera ownership, retained deliberate mobile targets and composed scenes into the area left visible by the controls.
+- Stopped completed car spline work and settled hardware updates; eliminated charging-pulse vector allocations and disposed generated cable geometries on unmount.
+- Added true pause/hidden-tab/dialog rendering suspension and shared live reduced-motion handling.
+- Raised previously occluded driveway/bay/guidance surfaces. Recognition stories now own authorization colors without a premature green base surface.
+- Added replay, synchronized physical/DOM chooser highlights, direct solar controls, a clear progress trail and an unobstructed scene view.
+- Preserved separate in-memory configurations across place changes; added an accessible native summary dialog, preview/remove actions and an empty-setup recovery state.
+- Added retained in-memory project details, copy, full brief preview and a verified downloadable text brief. Personal details are not persisted or silently sent.
+- Added opt-in local rendering diagnostics (`?perf=1`), six regression tests and reduced-motion/fallback CI capture cases.
+- Final checks on 2026-09-06 verified static reduced-motion outcomes and the no-WebGL consultation journey at 320×568. Fixed fallback text overlap, Retail replay timing, and resuming a paused scene when solar or guest state changes.
+
 
 ## Locked product direction
 

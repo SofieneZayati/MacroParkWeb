@@ -28,6 +28,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify configuration journeys
+        run: node --test tests/experience-store.test.cjs
+
       - name: Capture visual QA
         run: |
           mkdir -p visual-qa
@@ -149,6 +152,12 @@ jobs:
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaGuest=expired"
           capture 390,844 2400 visual-qa/mobile-residence-ev.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging"
+
+          # Accessibility/fallback modes must retain a useful consultation.
+          capture 390,844 2400 visual-qa/mobile-reduced-motion-guidance.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance&qaReducedMotion=1"
+          capture 1440,1000 2400 visual-qa/desktop-no-webgl.png \
+            "http://127.0.0.1:3000/?qaNoWebGL=1"
 
       - name: Upload visual QA
         if: always()
