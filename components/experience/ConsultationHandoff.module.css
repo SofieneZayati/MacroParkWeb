@@ -4,7 +4,7 @@
 }
 
 .back {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -35,17 +35,17 @@
 
 .header h2 {
   margin: 0;
-  max-width: 11ch;
-  font-size: clamp(40px, 5.5vw, 70px);
-  line-height: 0.95;
-  letter-spacing: -0.052em;
+  max-width: 22ch;
+  font-size: clamp(28px, 3.8vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
   font-weight: 560;
 }
 
 .header p {
   max-width: 610px;
-  margin: 18px 0 0;
-  color: rgba(229, 238, 232, 0.6);
+  margin: 14px 0 0;
+  color: rgba(229, 238, 232, 0.7);
   line-height: 1.6;
   font-size: 13px;
 }
@@ -53,7 +53,7 @@
 .grid {
   display: grid;
   gap: 18px;
-  margin-top: 30px;
+  margin-top: 24px;
 }
 
 .selectedNeeds {
@@ -83,16 +83,15 @@
 
 .field > span,
 .group legend {
-  color: rgba(226, 237, 230, 0.72);
-  font-size: 10px;
+  color: rgba(226, 237, 230, 0.85);
+  font-size: 12px;
   font-weight: 650;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .field small {
-  color: rgba(226, 237, 230, 0.34);
-  font-size: 9px;
+  margin-left: 5px;
+  color: rgba(226, 237, 230, 0.55);
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -180,14 +179,6 @@
 .briefPreview > div {
   display: grid;
   gap: 4px;
-}
-
-.briefPreview span {
-  color: rgba(205, 224, 211, 0.45);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .briefPreview strong {

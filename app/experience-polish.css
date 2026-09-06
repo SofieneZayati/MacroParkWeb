@@ -6,7 +6,7 @@
 }
 
 button, a, select, input, textarea { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
   outline: 2px solid var(--accent) !important;
   outline-offset: 4px;
 }
@@ -37,7 +37,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 .chooser-heading h1 { font-size: clamp(32px, 4.4vw, 58px); max-width: 18ch; margin: auto; line-height: 1.04; }
 .chooser-heading p { margin: 12px 0 0; color: var(--text-muted); font-size: 15px; }
 .environment-grid { gap: 12px; }
-.environment-card { min-height: 140px; padding: 23px 25px; border-radius: 4px; border-color: var(--edge); background: #101a15ed; backdrop-filter: none; }
+.environment-card { min-height: 124px; padding: 23px 25px; display: flex; flex-direction: column; justify-content: center; gap: 5px; border-radius: 4px; border-color: var(--edge); background: #101a15ed; backdrop-filter: none; }
 .environment-card:hover, .environment-card:focus-visible, .environment-card.is-highlighted { background: #1b2b21f5; border-color: #b5efc580; transform: translateY(-5px); }
 .environment-index { margin: 0 0 24px; font-size: 12px; letter-spacing: .1em; color: #98ae9f; }
 .place-icon { position: absolute; right: 22px; top: 18px; color: #b9d5c3; opacity: .85; }
@@ -45,38 +45,31 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 .environment-hint { color: #adbbb2; font-size: 13px; padding-right: 22px; }
 .environment-arrow { position: absolute; right: 24px; bottom: 26px; font-size: 21px; color: var(--accent); transition: transform 220ms ease; }
 .environment-card:hover .environment-arrow { transform: translate(2px, -2px); }
-.journey-trail { position: absolute; top: 151px; left: clamp(20px, 4vw, 64px); display: flex; align-items: center; gap: 12px; pointer-events: auto; }
-.journey-trail > span { color: #53665a; }
-.journey-trail button { border: 0; background: transparent; padding: 8px 0; font-size: 12px; color: #a4b2a9; cursor: pointer; }
-.journey-trail button span { margin-left: 5px; }
-.journey-trail button[aria-current], .journey-trail button:hover { color: var(--accent); }
-.journey-trail button:disabled { color: #74877b; cursor: default; }
 .solution-panel {
   right: clamp(22px, 4vw, 64px); bottom: 80px; width: min(380px, calc(100vw - 40px));
-  max-height: calc(100dvh - 210px); overflow: auto; scrollbar-width: thin; scrollbar-color: #4f6658 transparent;
+  max-height: calc(100dvh - 175px); overflow: auto; scrollbar-width: thin; scrollbar-color: #4f6658 transparent;
   padding: 25px 26px; border: 1px solid var(--edge); border-top-color: #b5efc559;
   border-radius: 5px; background: linear-gradient(140deg, #17221bec, #0c1511f5);
   box-shadow: 0 18px 50px #0002;
 }
 .solution-eyebrow { color: var(--accent); margin-bottom: 18px; font-size: 11px; letter-spacing: .1em; }
 .solution-eyebrow > span { padding: 0 5px; color: #60776a; }
-.solution-panel h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.02; max-width: 13ch; font-weight: 500; letter-spacing: -.055em; outline: none; }
+.solution-panel h2 { font-size: clamp(30px, 2.8vw, 38px); line-height: 1.08; max-width: 18ch; font-weight: 500; letter-spacing: -.045em; outline: none; }
 .solution-panel p { font-size: 15px; line-height: 1.6; color: #b6c2ba; margin-top: 16px; }
 .problem-list { margin-top: 22px; gap: 8px; }
-.needs-hint { color: #8fa397; font-size: 12px; line-height: 1.5; margin-bottom: 4px; }
-.problem-button { padding: 14px; border-radius: 4px; font-size: 14px; line-height: 1.4; background: #ffffff04; }
-.problem-button[aria-pressed="true"] { border-color: #b5efc543; background: #a7f8be0b; }
+.problem-button { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 14px; border-radius: 4px; font-size: 14px; line-height: 1.4; background: #ffffff04; }
+.problem-button::after { content: none; }
+.need-state { flex: 0 0 auto; color: #a8b9ae; font-size: 11px; }
+.need-state.is-added { color: var(--accent); }
+.problem-button:has(.is-added) { border-color: #b5efc543; background: #a7f8be0b; }
 .problem-button:hover { transform: translateX(3px); }
 .response-actions { margin-top: 18px; }
-.recommendation-button { border-radius: 4px; background: #b5efc50a; padding: 14px; }
-.recommendation-button span { font-size: 11px; letter-spacing: .1em; color: #a5c0ae; }
-.recommendation-button strong { font-size: 14px; }
-.recommendation-button:hover { transform: translateX(3px); }
 .secondary-action { border-radius: 4px; font-size: 13px; min-height: 42px; text-align: center; color: #bac7bf; }
-.demo-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 20px 0 0; font-size: 12px; }
-.added-to-setup { color: #b4d4be; }
-.added-to-setup > span { margin-right: 5px; }
-.demo-toolbar button { cursor: pointer; border: 1px solid #ffffff1a; border-radius: 30px; padding: 8px 12px; background: #ffffff05; color: #d7e4dc; font-size: 12px; }
+.preview-note { color: #9fb2a5; font-size: 12px; line-height: 1.5; text-align: center; }
+.solution-panel .selection-confirmation { color: var(--accent); font-size: 13px; margin: 0 0 4px; }
+.selection-confirmation > span { margin-right: 5px; }
+.replay-action { justify-self: center; width: fit-content; min-height: 36px; padding: 7px 14px; border: 0; background: transparent; color: #a8b9ae; font-size: 12px; cursor: pointer; }
+.replay-action:hover { color: var(--accent); }
 .inline-solar { display: flex; width: 100%; align-items: center; gap: 12px; padding: 14px 12px; margin-top: 18px; border: 1px solid #dabe7638; border-radius: 4px; background: #dabe7608; text-align: left; cursor: pointer; }
 .inline-solar[aria-pressed="true"] { background: #dabe7615; border-color: #dabe7670; }
 .solar-glyph { color: #e8c988; font-size: 30px; line-height: 1; }
@@ -85,20 +78,27 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 .solar-switch { flex: 0 0 28px; height: 16px; margin-left: auto; border: 1px solid #dabe7670; border-radius: 20px; position: relative; }
 .solar-switch::after { content: ""; position: absolute; width: 10px; height: 10px; top: 2px; left: 2px; border-radius: 50%; background: #dabe76; transition: transform .25s ease; }
 .inline-solar[aria-pressed="true"] .solar-switch::after { transform: translateX(12px); }
-.complete-setup { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px; color: #122018; background: var(--accent); border: 0; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.complete-setup { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 15px; color: #122018; background: var(--accent); border: 0; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background .18s ease; }
+.complete-setup:hover { background: #d0f7dc; }
 .guest-access-preview { border-radius: 4px; backdrop-filter: none; }
 .guest-access-state { font-size: 12px; }
 .guest-access-toggle button { border-radius: 4px; font-size: 12px; min-height: 42px; }
-.corner-caption { bottom: 33px; display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .08em; color: #b2c4b9; }
-.corner-caption > span:last-child { color: #718c7d; letter-spacing: 0; text-transform: none; border-left: 1px solid #ffffff20; padding-left: 10px; }
-.corner-caption .status-dot { width: 5px; height: 5px; box-shadow: none; }
 .experience-controls { position: absolute; z-index: 9; bottom: 25px; right: clamp(20px, 4vw, 64px); display: flex; align-items: center; gap: 6px; }
 .experience-controls button, .quality-control select { font-size: 12px; color: #b6c8bc; min-height: 36px; padding: 8px 11px; background: #101a15eb; border: 1px solid #b5efc523; border-radius: 3px; cursor: pointer; }
 .quality-control select { max-width: 150px; }
 .experience-controls button:hover, .experience-controls button[aria-pressed="true"] { border-color: #b5efc560; color: #e1f2e7; }
+.view-options { position: relative; }
+.view-options > summary { display: flex; gap: 14px; align-items: center; justify-content: space-between; min-height: 38px; padding: 8px 13px; list-style: none; color: #a6b7ac; background: #0c1510eb; border: 1px solid #b5efc523; border-radius: 5px; cursor: pointer; font-size: 12px; }
+.view-options > summary::-webkit-details-marker { display: none; }
+.view-options[open] > summary { color: var(--accent); border-color: #b5efc560; }
+.view-options-menu { position: absolute; right: 0; bottom: calc(100% + 8px); width: 235px; display: grid; gap: 10px; padding: 14px; border: 1px solid var(--edge); border-radius: 6px; background: #111b15; box-shadow: 0 10px 30px #0006; }
+.view-options-menu .quality-control { display: grid; gap: 8px; font-size: 12px; color: #a6b7ac; }
+.view-options-menu .quality-control select { max-width: none; width: 100%; }
+.view-options-menu button { text-align: left; }
 .experience-shell:has(.chooser) .experience-controls { top: 25px; bottom: auto; right: 30px; }
+.experience-shell:has(.chooser) .view-options-menu { bottom: auto; top: calc(100% + 8px); }
 .experience-shell:has(.chooser) .topbar-note { display: none; }
-.scene-only .solution-panel, .scene-only .journey-trail { display: none; }
+.scene-only .solution-panel { display: none; }
 .performance-readout { position: absolute; left: 12px; bottom: 4px; z-index: 15; font: 10px/1.4 ui-monospace, monospace; max-width: 70vw; color: #d6f8df; background: #000b; pointer-events: none; }
 .chooser-heading .fallback-notice, .solution-panel .fallback-notice { font-size: 12px; color: #92a99a; line-height: 1.5; }
 .scene-unavailable .experience-controls { display: none; }
@@ -107,7 +107,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 @media (max-width: 1000px) and (min-width: 761px) {
   .corner-caption > span:last-child { display: none; }
   .solution-panel { width: 350px; padding: 22px; }
-  .journey-trail button span { display: none; }
 }
 @media (max-width: 760px) {
   .topbar { padding: 20px; }
@@ -123,20 +122,17 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
   .environment-hint { font-size: 12px; padding-right: 0; }
   .environment-arrow { right: 18px; bottom: 28px; }
   .back-button { top: 66px; min-height: 36px; font-size: 12px; padding: 8px 12px; }
-  .journey-trail { display: none; }
-  .solution-panel { left: 16px; right: 16px; bottom: max(65px, calc(50px + env(safe-area-inset-bottom))); width: auto; max-height: min(51dvh, calc(100dvh - 210px)); padding: 20px; border-radius: 6px; }
-  .solution-panel h2 { font-size: 34px; max-width: 16ch; }
+  .solution-panel { left: 16px; right: 16px; bottom: max(65px, calc(50px + env(safe-area-inset-bottom))); width: auto; max-height: min(55dvh, calc(100dvh - 160px)); padding: 20px; border-radius: 6px; }
+  .solution-panel h2 { font-size: 30px; max-width: 18ch; }
   .solution-panel p { font-size: 14px; margin-top: 12px; }
   .solution-eyebrow { margin-bottom: 12px; font-size: 11px; }
   .problem-list { margin-top: 16px; }
   .problem-button { padding: 12px; min-height: 46px; }
-  .demo-toolbar { margin-top: 14px; }
   .guest-access-toggle button { font-size: 12px; }
-  .experience-controls { left: 16px; right: 16px; bottom: max(14px, env(safe-area-inset-bottom)); justify-content: center; gap: 5px; }
+  .experience-controls { left: auto; right: 16px; bottom: max(14px, env(safe-area-inset-bottom)); justify-content: flex-end; gap: 5px; }
   .experience-controls button, .quality-control select { font-size: 11px; padding: 8px; min-height: 36px; }
   .quality-control select { max-width: 120px; }
   .experience-shell:has(.chooser) .experience-controls { top: 17px; bottom: auto; left: auto; right: 16px; }
-  .experience-shell:has(.chooser) .quality-control { display: none; }
   .corner-caption { display: none; }
   .performance-readout { max-width: 100%; font-size: 8px; bottom: 0; }
   .scene-unavailable .solution-panel { top: 130px; bottom: 24px; max-height: none; }
@@ -144,7 +140,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 @media (max-height: 620px) {
   .solution-panel { top: 145px; bottom: 65px; max-height: none; }
   .solution-panel h2 { font-size: 32px; }
-  .journey-trail { display: none; }
   .chooser { bottom: 16px; max-height: calc(100dvh - 100px); overflow: auto; }
   .chooser-heading h1 { font-size: 30px; }
   .environment-card { min-height: 76px; }

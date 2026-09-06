@@ -48,6 +48,57 @@ test('removing charging also removes dependent solar from restored configuration
   assert.equal(state().solarEnabled, false);
 });
 
+test('previewing a need runs its story without adding it to the current or saved setup', () => {
+  state().chooseEnvironment('home');
+  state().chooseProblem('automatic-access');
+  state().openSummary();
+  state().setGuestAccessPreview('expired');
+  state().setResidenceAccessAuthorized(true);
+  const revision = state().demoRevision;
+  state().previewProblem('guest-access');
+  assert.equal(state().selectedProblem, 'guest-access');
+  assert.equal(state().demoRevision, revision + 1);
+  assert.equal(state().summaryOpen, false);
+  assert.equal(state().guestAccessPreview, 'active');
+  assert.equal(state().residenceAccessAuthorized, false);
+  assert.deepEqual(state().selectedProblems, ['automatic-access']);
+
+  state().chooseEnvironment('residence');
+  state().previewProblem('protect-space');
+  assert.deepEqual(state().selectedProblems, []);
+  state().chooseEnvironment('home');
+  assert.deepEqual(state().selectedProblems, ['automatic-access']);
+  state().chooseEnvironment('residence');
+  assert.deepEqual(state().selectedProblems, []);
+});
+
+test('adding a preview saves it once without restarting or resetting the demonstration', () => {
+  state().chooseEnvironment('residence');
+  state().previewProblem('protect-space');
+  state().setResidenceAccessAuthorized(true);
+  const revision = state().demoRevision;
+  state().addProblem('protect-space');
+  state().addProblem('protect-space');
+  assert.deepEqual(state().selectedProblems, ['protect-space']);
+  assert.equal(state().selectedProblem, 'protect-space');
+  assert.equal(state().demoRevision, revision);
+  assert.equal(state().residenceAccessAuthorized, true);
+  state().chooseEnvironment('home');
+  state().chooseEnvironment('residence');
+  assert.deepEqual(state().selectedProblems, ['protect-space']);
+});
+
+test('solar cannot be added while charging is only being previewed', () => {
+  state().chooseEnvironment('retail');
+  state().previewProblem('ev-charging');
+  state().toggleSolar();
+  assert.deepEqual(state().selectedProblems, []);
+  assert.equal(state().solarEnabled, false);
+  state().addProblem('ev-charging');
+  state().toggleSolar();
+  assert.equal(state().solarEnabled, true);
+});
+
 test('replay starts a new demonstration without duplicating the selected need', () => {
   state().chooseEnvironment('residence');
   state().chooseProblem('guest-access');
@@ -71,6 +122,19 @@ test('removing the last need leaves an accessible empty summary until dismissed'
   assert.deepEqual(state().selectedProblems, []);
   state().closeSummary();
   assert.equal(state().summaryOpen, false);
+});
+
+test('reviewing a setup preserves the active demonstration for dismissal', () => {
+  state().chooseEnvironment('residence');
+  state().previewProblem('protect-space');
+  state().addProblem('protect-space');
+  state().setResidenceAccessAuthorized(true);
+  const revision = state().demoRevision;
+  state().openSummary();
+  state().closeSummary();
+  assert.equal(state().selectedProblem, 'protect-space');
+  assert.equal(state().residenceAccessAuthorized, true);
+  assert.equal(state().demoRevision, revision);
 });
 
 test('a fresh protection demonstration requires authorization again', () => {

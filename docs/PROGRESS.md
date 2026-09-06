@@ -20,13 +20,23 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Phase 4 PR:** #5 — merged as `1b55563b8aed7c3abdfdde0f8be302424f7a9920`.
 
-**Latest validation:** Local Node 24 production build, TypeScript/static generation and six state-regression tests pass. Desktop and portrait browser checks cover the Home, Residence and Retail stories, setup/handoff, replay, motion controls and responsive layout. Measurements use the actual RTX 3060 renderer exposed by the local browser, rather than SwiftShader. CI remains a separate check; the previous merged Retail run was #134.
+**Latest validation:** The selection-clarity revision passes the local Node 24 production build, TypeScript/static generation and ten state-regression tests. Fresh visual/interaction validation of this revision is pending: the browser runtime cannot initialize after a plugin update, and launching an isolated headless browser was rejected by automatic approval review. Earlier desktop/portrait checks and RTX 3060 measurements apply to the preceding Performance Pass 2 revision. CI remains a separate check.
 
 **Current build baseline:** `/` is approximately 258 kB route size and 361 kB First Load JS. No runtime dependencies or downloaded 3D assets were added.
 
 **Performance caveat:** Local steady-state samples were approximately 140–144 FPS at desktop/portrait viewport sizes on an RTX 3060. This is a single-device observation, not a measured before/after improvement, phone benchmark, thermal test or guarantee for other hardware.
 
 **Current priority:** review Performance Pass 2 on the user's normal browser and representative physical phones before merging or adding a heavier system reveal. The production contact destination, deployment/domain and final content/SEO work remain open.
+
+## 2026-09-06 — Clearer selection journey
+
+- Replaced implicit selection with **preview → Add to my setup → review**. Previewing leaves saved choices unchanged; adding preserves the running story.
+- Removed the recommendation chain and duplicate step navigation. Each preview has one primary Add/Review action, ahead of optional demo controls.
+- Replaced the large setup dock with My setup (N), and moved quality/motion controls into View options.
+- Used plain place/solution names and clearer summary/brief actions. Solar is offered after charging is added.
+- Kept the active scene and primary button mounted through adding/reviewing for keyboard focus and animation continuity.
+- Added `qaPreview=1` for deterministic previews without adding a solution. Existing QA URLs retain their saved-choice behavior.
+- Build and ten store tests pass; fresh browser layout/interaction QA remains pending for the tooling reason above.
 
 ## 2026-09-05 — Performance Pass 2 and consultation polish
 

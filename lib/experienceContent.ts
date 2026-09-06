@@ -23,9 +23,9 @@ export const environments: Environment[] = [
     id: "home",
     index: "01",
     name: "My home",
-    hint: "Garage, family, guests & charging",
+    hint: "A private garage or driveway",
     eyebrow: "Private home",
-    question: "What should feel effortless at home?",
+    question: "What do you need at home?",
     description:
       "Choose a daily annoyance. MacroPark will reshape the arrival around the people and cars you trust.",
     problems: [
@@ -55,37 +55,37 @@ export const environments: Environment[] = [
   {
     id: "residence",
     index: "02",
-    name: "My residence",
-    hint: "Residents, visitors & protected spaces",
+    name: "Apartment building",
+    hint: "Shared parking for residents",
     eyebrow: "Residence",
-    question: "What causes the most friction for residents?",
+    question: "What do residents need?",
     description:
       "We can make entry calmer, protect assigned spaces and give temporary visitors exactly the access they need.",
     problems: [
       {
         id: "protect-space",
-        label: "People take assigned spaces",
+        label: "Keep assigned spaces private",
         resultTitle: "Your space stays yours.",
         resultBody:
           "A private parking blocker keeps the bay protected and lowers only when the authorized resident arrives.",
       },
       {
         id: "reservations",
-        label: "Reserve spaces for visitors or residents",
+        label: "Reserve a parking space",
         resultTitle: "A space can wait for the right car.",
         resultBody:
           "Hold a specific bay for a chosen time window. It stays visibly reserved until the authorized vehicle arrives or the reservation ends.",
       },
       {
         id: "guest-access",
-        label: "Visitors keep calling at the gate",
+        label: "Let visitors in without gate calls",
         resultTitle: "Invite once. No gate calls.",
         resultBody:
           "Residents can pre-authorize a guest for a chosen time window, so arrival happens without waiting for someone to answer.",
       },
       {
         id: "ev-charging",
-        label: "We need shared EV charging",
+        label: "Add shared EV charging",
         resultTitle: "Charging that belongs to the residence.",
         resultBody:
           "Create shared or assigned charging bays and let access follow the same resident and reservation rules as parking.",
@@ -95,10 +95,10 @@ export const environments: Environment[] = [
   {
     id: "retail",
     index: "03",
-    name: "Retail / mall",
-    hint: "Flow, free spaces & customer charging",
+    name: "Shop or mall",
+    hint: "Parking for customers and visitors",
     eyebrow: "Retail & commercial",
-    question: "What should customers notice first?",
+    question: "What do your customers need?",
     description:
       "Choose the experience you want to improve. The parking can react before the customer ever reaches the entrance doors.",
     problems: [

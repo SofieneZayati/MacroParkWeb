@@ -64,7 +64,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
       `Parking scale: ${SCALE_LABELS[scale]}`,
       `Project timing: ${TIMING_LABELS[timing]}`,
       "",
-      "What matters:",
+      "Selected solutions:",
       ...selected.map((problem) => `- ${problem.label}\n  ${problem.resultBody}`),
       ...(solarEnabled ? ["- Solar canopy above parking and charging spaces"] : []),
       "",
@@ -151,22 +151,21 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
       </button>
 
       <header className={styles.header}>
-        <span>Your next step</span>
-        <h2 ref={headingRef} tabIndex={-1}>A clear starting point.</h2>
+        <span>{environmentName}</span>
+        <h2 ref={headingRef} tabIndex={-1}>Your project brief</h2>
         <p>
-          Your priorities are in place. Add a little context to create a brief you can keep, share and build on.
+          Your selected solutions are included. Add any project details you know, then download or copy your brief.
         </p>
       </header>
 
       <div className={styles.selectedNeeds} aria-label="Included in your brief">
-        <span>{environmentName}</span>
-        <span>{choiceCount} {choiceCount === 1 ? "priority" : "priorities"}</span>
+        <span>{choiceCount} {choiceCount === 1 ? "solution" : "solutions"} included</span>
         {solarEnabled && <span>Solar included</span>}
       </div>
 
       <div className={styles.grid}>
         <label className={styles.field}>
-          <span>Where is the project? <small>optional</small></span>
+          <span>Project location <small>optional</small></span>
           <input
             name="project-location"
             autoComplete="off"
@@ -178,7 +177,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
         </label>
 
         <fieldset className={styles.group}>
-          <legend>About how many parking spaces?</legend>
+          <legend>Number of parking spaces</legend>
           <div className={styles.options}>
             {(Object.keys(SCALE_LABELS) as ScaleOption[]).map((option) => (
               <label key={option} className={scale === option ? styles.active : ""}>
@@ -190,7 +189,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
         </fieldset>
 
         <fieldset className={styles.group}>
-          <legend>Where are you in the process?</legend>
+          <legend>Project stage</legend>
           <div className={styles.options}>
             {(Object.keys(TIMING_LABELS) as TimingOption[]).map((option) => (
               <label key={option} className={timing === option ? styles.active : ""}>
@@ -223,8 +222,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
 
       <div className={styles.briefPreview}>
         <div>
-          <span>Ready when you are</span>
-          <strong>Your personalized project brief</strong>
+          <strong>Save a copy of your brief</strong>
         </div>
         <button type="button" onClick={copyBrief} disabled={feedback === "copying"}>
           {feedback === "copied" ? "Copied ✓" : "Copy brief"}
@@ -232,7 +230,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
       </div>
 
       <details className={styles.previewDetails}>
-        <summary>Preview the full brief <span aria-hidden="true">+</span></summary>
+        <summary>Read your brief <span aria-hidden="true">+</span></summary>
         <pre tabIndex={0} aria-label="Full project brief">{brief}</pre>
       </details>
       <p className={styles.feedback} role="status" aria-live="polite">{FEEDBACK_LABELS[feedback]}</p>
@@ -240,13 +238,13 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
       <footer className={styles.footer}>
         <p>
           {configuredRecipient
-            ? "Opens a prepared email for you to review and send. You can also download a copy."
-            : "Keep a copy to share with your team or bring to a MacroPark consultation. No information is sent from this page."}
+            ? "The email button opens a draft for you to review and send."
+            : "Download or copy this brief to share it with MacroPark. This page does not send your details."}
         </p>
         <div className={styles.footerActions}>
           {configuredRecipient && <button type="button" className={styles.download} onClick={downloadBrief}>Download brief</button>}
           <button className={styles.primary} type="submit">
-            {configuredRecipient ? "Request a consultation" : "Download my project brief"}
+            {configuredRecipient ? "Open email draft" : "Download brief"}
             <span aria-hidden="true">↗</span>
           </button>
         </div>

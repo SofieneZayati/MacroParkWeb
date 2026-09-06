@@ -154,6 +154,10 @@ jobs:
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=ev-charging"
 
           # Accessibility/fallback modes must retain a useful consultation.
+          capture 1440,1000 2600 visual-qa/desktop-unselected-preview.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access&qaPreview=1"
+          capture 320,568 2600 visual-qa/small-guest-preview.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaPreview=1&qaReducedMotion=1"
           capture 390,844 2400 visual-qa/mobile-reduced-motion-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance&qaReducedMotion=1"
           capture 1440,1000 2400 visual-qa/desktop-no-webgl.png \

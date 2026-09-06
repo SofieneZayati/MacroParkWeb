@@ -18,7 +18,6 @@ import {
   environments,
   getEnvironment,
   getProblem,
-  getRecommendedProblem,
 } from "@/lib/experienceContent";
 
 export function MacroParkExperience() {
@@ -39,6 +38,8 @@ export function MacroParkExperience() {
     completeIntro,
     chooseEnvironment,
     chooseProblem,
+    previewProblem,
+    addProblem,
     clearProblem,
     toggleSolar,
     backToChooser,
@@ -58,6 +59,7 @@ export function MacroParkExperience() {
   const reducedMotion = useMotionPreference();
   const diagnostics = useRef<HTMLOutputElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const viewOptions = useRef<HTMLDetailsElement>(null);
   const onReady = useCallback(() => setReady(true), []);
   const onUnavailable = useCallback(() => {
     setUnavailable(true);
@@ -67,11 +69,7 @@ export function MacroParkExperience() {
 
   const environment = getEnvironment(selectedEnvironment);
   const problem = getProblem(selectedEnvironment, selectedProblem);
-  const recommendation = getRecommendedProblem(
-    selectedEnvironment,
-    selectedProblem,
-    selectedProblems,
-  );
+  const problemAdded = !!problem && selectedProblems.includes(problem.id);
   const showingGuestAccess =
     (selectedEnvironment === "home" || selectedEnvironment === "residence") &&
     selectedProblem === "guest-access";
@@ -103,12 +101,26 @@ export function MacroParkExperience() {
   useEffect(() => {
     setSceneOnly(false);
     setPaused(false);
+    if (viewOptions.current) viewOptions.current.open = false;
     if (selectedEnvironment) heading.current?.focus({ preventScroll: true });
   }, [selectedEnvironment, selectedProblem]);
 
   useEffect(() => {
+    // A removed solution can remove the modal's opener as well.
+    if (!summaryOpen && document.activeElement === document.body) {
+      heading.current?.focus({ preventScroll: true });
+    }
+  }, [summaryOpen]);
+
+  useEffect(() => {
     const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSceneOnly(false);
+      if (event.key === "Escape") {
+        setSceneOnly(false);
+        if (viewOptions.current?.open) {
+          viewOptions.current.open = false;
+          viewOptions.current.querySelector("summary")?.focus();
+        }
+      }
     };
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
@@ -160,7 +172,8 @@ export function MacroParkExperience() {
     chooseEnvironment(environmentId);
 
     if (validProblem) {
-      chooseProblem(validProblem.id as ProblemId);
+      if (params.get("qaPreview") === "1") previewProblem(validProblem.id as ProblemId);
+      else chooseProblem(validProblem.id as ProblemId);
       if (wantsSolar && validProblem.id === "ev-charging") toggleSolar();
       if (
         (environmentId === "home" || environmentId === "residence") &&
@@ -173,6 +186,7 @@ export function MacroParkExperience() {
   }, [
     chooseEnvironment,
     chooseProblem,
+    previewProblem,
     completeIntro,
     setGuestAccessPreview,
     toggleSolar,
@@ -242,18 +256,22 @@ export function MacroParkExperience() {
 
       <ConfigurationSummary />
 
-      {introComplete && (
+      {introComplete && !unavailable && (
         <div className="experience-controls" aria-label="Experience controls">
-          {!unavailable && <>
-            <label className="quality-control"><span className="sr-only">Render quality</span>
-              <select aria-label="Render quality" value={quality} onChange={(event) => setQuality(event.target.value)}>
-                <option value="auto">Adaptive quality</option>
-                <option value="smooth">Smoother motion</option>
-              </select>
-            </label>
-            {!reducedMotion && <button type="button" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Resume motion" : "Pause motion"}</button>}
-            {environment && <button type="button" aria-pressed={sceneOnly} onClick={() => setSceneOnly(!sceneOnly)}>{sceneOnly ? "Show choices" : "Explore the view"}</button>}
-          </>}
+          {sceneOnly && <button type="button" onClick={() => setSceneOnly(false)}>Back to choices</button>}
+          <details ref={viewOptions} className="view-options">
+            <summary>View options <span aria-hidden="true">⌄</span></summary>
+            <div className="view-options-menu">
+              <label className="quality-control"><span>Scene quality</span>
+                <select aria-label="Scene quality" value={quality} onChange={(event) => setQuality(event.target.value)}>
+                  <option value="auto">Automatic</option>
+                  <option value="smooth">Lighter graphics</option>
+                </select>
+              </label>
+              {!reducedMotion && <button type="button" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Resume animation" : "Pause animation"}</button>}
+              {environment && <button type="button" onClick={() => { setSceneOnly(!sceneOnly); if (viewOptions.current) viewOptions.current.open = false; }}>{sceneOnly ? "Back to choices" : "Hide panel to see the scene"}</button>}
+            </div>
+          </details>
         </div>
       )}
       {inspect && <output ref={diagnostics} className="performance-readout" aria-label="Rendering diagnostics">Collecting rendering sample…</output>}
@@ -298,9 +316,9 @@ export function MacroParkExperience() {
           <div className="chooser">
             <div className="fade-in">
               <div className="chooser-heading">
-                <span>01 / Your place</span>
-                <h1>Where should parking feel smarter?</h1>
-                <p>{unavailable ? "Choose a place and build your setup." : "Choose a place. See what changes."}</p>
+                <span>1 / Choose your place</span>
+                <h1>Where is your parking?</h1>
+                <p>Start with the place you want to improve.</p>
                 {unavailable && <p className="fallback-notice" role="status">3D preview unavailable in this browser.</p>}
               </div>
               <div className="environment-grid">
@@ -315,7 +333,6 @@ export function MacroParkExperience() {
                     onFocus={() => setHoveredEnvironment(item.id)}
                     onBlur={() => setHoveredEnvironment(null)}
                   >
-                    <span className="environment-index">{item.index}</span>
                     <PlaceIcon place={item.id} />
                     <span className="environment-name">{item.name}</span>
                     <span className="environment-hint">{item.hint}</span>
@@ -329,32 +346,30 @@ export function MacroParkExperience() {
 
         {environment && phase !== "choose" && (
           <>
-            <button className="back-button" type="button" onClick={backToChooser}>
-              ← Change place
+            <button className="back-button" type="button" onClick={problem ? clearProblem : backToChooser}>
+              {problem ? "← All needs" : "← Change place"}
             </button>
 
-            <nav className="journey-trail" aria-label="Your progress">
-              <button type="button" onClick={backToChooser}>01 <span>Your place</span></button>
-              <span aria-hidden="true">/</span>
-              <button type="button" onClick={clearProblem} aria-current={!problem ? "step" : undefined}>02 <span>Your needs</span></button>
-              <span aria-hidden="true">/</span>
-              <button type="button" onClick={openSummary} disabled={selectedProblems.length === 0}>03 <span>Your MacroPark</span></button>
-            </nav>
-
             <div className="solution-panel fade-in" key={`${environment.id}-${problem?.id ?? "question"}`}>
-              <span className="solution-eyebrow">{environment.eyebrow} <span aria-hidden="true">/</span> {problem ? "Made easier" : "Made for you"}</span>
-              <h2 ref={heading} tabIndex={-1}>{problem ? problem.resultTitle : environment.question}</h2>
-              <p>{problem ? problem.resultBody : environment.description}</p>
+              <span className="solution-eyebrow">{problem ? (problemAdded ? "In your setup" : "Preview") : "2 / Choose your needs"} <span aria-hidden="true">·</span> {environment.eyebrow}</span>
+              <h2 ref={heading} tabIndex={-1}>{problem ? problem.label : environment.question}</h2>
+              <p>{problem ? problem.resultBody : "Preview a solution. Add it to your setup if it suits you."}</p>
               {unavailable && <p className="fallback-notice">3D preview unavailable. You can still prepare your project brief.</p>}
 
-              {problem && <div className="demo-toolbar">
-                <span className="added-to-setup"><span aria-hidden="true">✓</span> Added to your setup</span>
-                {!unavailable && <button type="button" onClick={() => { setPaused(false); replayDemo(); }}>↻ Replay</button>}
+              {problem && <div className="response-actions">
+                {problemAdded && <p className="selection-confirmation" role="status"><span aria-hidden="true">✓</span> Added to your setup</p>}
+                <button className="complete-setup" type="button" onClick={problemAdded ? openSummary : () => addProblem(problem.id)}>
+                  {problemAdded ? "Review my setup" : "Add to my setup"} <span aria-hidden="true">{problemAdded ? "→" : "＋"}</span>
+                </button>
+                {problemAdded
+                  ? <button className="secondary-action" type="button" onClick={clearProblem}>Explore other needs</button>
+                  : <span className="preview-note">Nothing is added until you choose.</span>}
+                {!unavailable && <button className="replay-action" type="button" onClick={() => { setPaused(false); replayDemo(); }}>↻ Watch again</button>}
               </div>}
 
-              {selectedProblem === "ev-charging" && <button className="inline-solar" type="button" aria-pressed={solarEnabled} onClick={() => { setPaused(false); toggleSolar(); }}>
+              {selectedProblem === "ev-charging" && problemAdded && <button className="inline-solar" type="button" aria-pressed={solarEnabled} onClick={() => { setPaused(false); toggleSolar(); }}>
                 <span className="solar-glyph" aria-hidden="true">☼</span>
-                <span><strong>{solarEnabled ? "Powered by the sun" : "What if parking made energy?"}</strong><small>{solarEnabled ? "Solar canopy added · tap to remove" : "Add a solar canopy and see the connection"}</small></span>
+                <span><strong>Include a solar canopy</strong><small>{solarEnabled ? "Included · tap to remove" : "Optional · generate energy above the parking"}</small></span>
                 <span className="solar-switch" aria-hidden="true" />
               </button>}
 
@@ -364,8 +379,8 @@ export function MacroParkExperience() {
                     <span className="guest-access-dot" aria-hidden="true" />
                     <strong>
                       {guestAccessPreview === "active"
-                        ? "Temporary access · active for this visit"
-                        : "Access window ended · entrance stays closed"}
+                        ? "During the visit: guest access is allowed"
+                        : "After the visit: access is no longer allowed"}
                     </strong>
                   </div>
                   <div className="guest-access-toggle" aria-label="Guest access demonstration">
@@ -374,22 +389,22 @@ export function MacroParkExperience() {
                       aria-pressed={guestAccessPreview === "active"}
                       onClick={() => { setPaused(false); setGuestAccessPreview("active"); }}
                     >
-                      Guest expected
+                      During the visit
                     </button>
                     <button
                       type="button"
                       aria-pressed={guestAccessPreview === "expired"}
                       onClick={() => { setPaused(false); setGuestAccessPreview("expired"); }}
                     >
-                      After visit
+                      After the visit
                     </button>
                   </div>
                 </div>
               )}
 
-              {!problem ? (
-                <div className="problem-list">
-                  <span className="needs-hint">Choose one to see it in action. You can combine needs.</span>
+              {!problem && (
+                <>
+                <div className="problem-list" aria-label="Solutions to preview">
                   {environment.problems.map((item) => {
                     const configured = selectedProblems.includes(item.id);
 
@@ -398,36 +413,20 @@ export function MacroParkExperience() {
                         className="problem-button"
                         type="button"
                         key={item.id}
-                        aria-pressed={configured}
-                        onClick={() => chooseProblem(item.id)}
+                        aria-label={`${configured ? "View selected solution" : "Preview"}: ${item.label}`}
+                        onClick={() => previewProblem(item.id)}
                       >
-                        {configured ? `✓ ${item.label}` : item.label}
+                        <span>{item.label}</span>
+                        <span className={`need-state${configured ? " is-added" : ""}`}>{configured ? "✓ Added" : "Preview →"}</span>
                       </button>
                     );
                   })}
                 </div>
-              ) : (
-                <div className="response-actions">
-                  {recommendation && (
-                    <button
-                      className="recommendation-button"
-                      type="button"
-                      onClick={() => chooseProblem(recommendation.id)}
-                    >
-                      <span>Recommended next</span>
-                      <strong>{recommendation.label}</strong>
-                      <i aria-hidden="true">→</i>
-                    </button>
-                  )}
-                  {!recommendation && <button className="complete-setup" type="button" onClick={openSummary}>Your setup is ready to explore <span aria-hidden="true">→</span></button>}
-                  <button className="secondary-action" type="button" onClick={clearProblem}>
-                    See all needs
-                  </button>
-                </div>
+                {selectedProblems.length > 0 && <div className="response-actions"><button className="complete-setup" type="button" onClick={openSummary}>Review my setup <span aria-hidden="true">→</span></button></div>}
+                </>
               )}
             </div>
 
-            <div className="corner-caption"><span className="status-dot" /> {environment.eyebrow} <span>Built around your everyday</span></div>
           </>
         )}
       </section>

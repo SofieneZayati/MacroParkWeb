@@ -12,10 +12,11 @@ export function ConfigurationSummary() {
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const summaryOpen = useExperienceStore((state) => state.summaryOpen);
   const removeProblem = useExperienceStore((state) => state.removeProblem);
-  const chooseProblem = useExperienceStore((state) => state.chooseProblem);
+  const previewProblem = useExperienceStore((state) => state.previewProblem);
   const toggleSolar = useExperienceStore((state) => state.toggleSolar);
   const openSummary = useExperienceStore((state) => state.openSummary);
   const closeSummary = useExperienceStore((state) => state.closeSummary);
+  const clearProblem = useExperienceStore((state) => state.clearProblem);
   const [handoffOpen, setHandoffOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -59,10 +60,6 @@ export function ConfigurationSummary() {
     <>
       {selected.length > 0 && (
         <aside className={styles.dock} aria-label="Current MacroPark setup">
-          <div>
-            <span className={styles.dockEyebrow}>Your setup · {environment.eyebrow}</span>
-            <strong aria-live="polite">{choiceCount} {choiceCount === 1 ? "choice" : "choices"} added</strong>
-          </div>
           <button
             type="button"
             aria-haspopup="dialog"
@@ -71,8 +68,7 @@ export function ConfigurationSummary() {
               openSummary();
             }}
           >
-            Review setup
-            <span aria-hidden="true">→</span>
+            My setup <span aria-live="polite">({choiceCount})</span>
           </button>
         </aside>
       )}
@@ -80,7 +76,7 @@ export function ConfigurationSummary() {
       <dialog
         ref={dialogRef}
         className={styles.backdrop}
-        aria-label={handoffOpen ? "Your MacroPark project brief" : "Your MacroPark configuration"}
+        aria-label={handoffOpen ? "Your project brief" : "Your selected solutions"}
         onCancel={(event) => {
           event.preventDefault();
           dismiss();
@@ -90,16 +86,16 @@ export function ConfigurationSummary() {
         }}
       >
         <section ref={summaryRef} className={styles.summary}>
-          <button className={styles.close} type="button" onClick={dismiss} aria-label="Close configuration">
+          <button className={styles.close} type="button" onClick={dismiss} aria-label="Close setup">
             ×
           </button>
 
           <div hidden={handoffOpen}>
             <div className={styles.heading}>
-              <span>Your MacroPark · {environment.name}</span>
-              <h2 ref={headingRef} tabIndex={-1}>Built around you.</h2>
+              <span>{environment.name}</span>
+              <h2 ref={headingRef} tabIndex={-1}>Your selected solutions</h2>
               <p>
-                One place. Your priorities. Preview any part of your setup, keep refining it, or turn it into a project brief.
+                Review what you added, then save it as a project brief.
               </p>
             </div>
 
@@ -108,14 +104,17 @@ export function ConfigurationSummary() {
                 <article className={styles.solution} key={problem.id}>
                   <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
                   <div>
-                    <strong>{problem.resultTitle}</strong>
+                    <strong>{problem.label}</strong>
                     <p>{problem.resultBody}</p>
                   </div>
                   <div className={styles.solutionActions}>
                     <button
                       className={styles.previewAction}
                       type="button"
-                      onClick={() => chooseProblem(problem.id)}
+                      onClick={() => {
+                        previewProblem(problem.id);
+                        dismiss();
+                      }}
                       aria-label={`Preview ${problem.label}`}
                     >
                       <span aria-hidden="true">▷</span> Preview
@@ -136,8 +135,8 @@ export function ConfigurationSummary() {
               ))}
               {selected.length === 0 && (
                 <div className={styles.emptyState}>
-                  <strong>A fresh start for your space.</strong>
-                  <p>Choose a need in the experience to begin building your setup.</p>
+                  <strong>No solutions added yet.</strong>
+                  <p>Preview a solution, then add the ones you want.</p>
                 </div>
               )}
             </div>
@@ -152,27 +151,21 @@ export function ConfigurationSummary() {
                 <span className={styles.solarIcon} aria-hidden="true">☀</span>
                 <span>
                   <strong>{solarEnabled ? "Solar canopy included" : "Add a solar canopy"}</strong>
-                  <small>Generate energy above the same spaces used for parking and charging.</small>
+                  <small>Generate solar energy above your charging spaces.</small>
                 </span>
                 <span className={styles.toggle} aria-hidden="true"><i /></span>
               </button>
             )}
 
             <div className={styles.footer}>
-              {selected.length > 0 && (
-                <div>
-                  <span>Your direction</span>
-                  <strong>{hasEv ? "Connected parking + energy" : "Connected access + parking"}</strong>
-                </div>
-              )}
               <div className={styles.footerActions}>
-                <button ref={exploreRef} type="button" onClick={dismiss}>Keep exploring</button>
                 {selected.length > 0 && (
                   <button className={styles.primaryAction} type="button" onClick={() => setHandoffOpen(true)}>
-                    Turn this into a project
+                    Create project brief
                     <span aria-hidden="true">→</span>
                   </button>
                 )}
+                <button ref={exploreRef} type="button" onClick={() => { clearProblem(); dismiss(); }}>Add another solution</button>
               </div>
             </div>
           </div>

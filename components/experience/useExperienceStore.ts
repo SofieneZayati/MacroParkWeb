@@ -47,6 +47,8 @@ type ExperienceState = {
   setPhase: (phase: ExperiencePhase) => void;
   chooseEnvironment: (environment: EnvironmentId) => void;
   chooseProblem: (problem: ProblemId) => void;
+  previewProblem: (problem: ProblemId) => void;
+  addProblem: (problem: ProblemId) => void;
   clearProblem: () => void;
   removeProblem: (problem: ProblemId) => void;
   toggleSolar: () => void;
@@ -117,6 +119,18 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       guestAccessPreview: "active",
       residenceAccessAuthorized: false,
     })),
+  previewProblem: (selectedProblem) =>
+    set((state) => ({
+      selectedProblem,
+      demoRevision: state.demoRevision + 1,
+      summaryOpen: false,
+      guestAccessPreview: "active",
+      residenceAccessAuthorized: false,
+    })),
+  addProblem: (problem) =>
+    set((state) => state.selectedProblems.includes(problem)
+      ? state
+      : { selectedProblems: [...state.selectedProblems, problem] }),
   clearProblem: () =>
     set({
       selectedProblem: null,
@@ -140,13 +154,8 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
     set((state) => ({
       solarEnabled: state.selectedProblems.includes("ev-charging") ? !state.solarEnabled : false,
     })),
-  openSummary: () =>
-    set({
-      summaryOpen: true,
-      selectedProblem: null,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-    }),
+  // Keep the preview and its opener mounted while the native modal pauses it.
+  openSummary: () => set({ summaryOpen: true }),
   closeSummary: () => set({ summaryOpen: false }),
   backToChooser: () =>
     set((state) => ({

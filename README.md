@@ -33,11 +33,11 @@ The visitor should mostly interact with **places, vehicles, gates, spaces, light
 ## Primary journey
 
 1. Enter a cinematic 3D parking world.
-2. Choose the type of place: Home, Residence, Business, Retail, Hospitality, Public Parking, etc.
-3. Choose what is frustrating or what they want to improve.
-4. Watch the environment react and demonstrate a solution.
-5. Add/remove needs and build a personalized MacroPark setup.
-6. Finish with a clear summary of the chosen solution and a consultation/contact action.
+2. Choose a place: a private home, apartment building, or shop/mall.
+3. Preview a solution for a need. Previewing does not add anything to the saved setup.
+4. Watch the environment react, then explicitly choose **Add to my setup**.
+5. Explore other needs or review the selected solutions in **My setup**.
+6. Create a project brief to keep or share.
 
 ## Project source of truth
 
@@ -55,8 +55,8 @@ npm start
 node --test tests/experience-store.test.cjs
 ```
 
-Open `http://localhost:3000`. Append `?perf=1` for local FPS, frame-time, draw-call and renderer diagnostics. Nothing is uploaded. The adaptive quality selector and Pause motion control are available within the experience.
+Open `http://localhost:3000`. Append `?perf=1` for local FPS, frame-time, draw-call and renderer diagnostics. Nothing is uploaded. Quality and animation controls are grouped under **View options**.
 
-Set `NEXT_PUBLIC_VISUAL_QA=1` **before building** to enable the existing deterministic `qaEnvironment`, `qaProblem`, `qaGuest`, `qaSolar` and `qaChooser` URLs, plus `qaReducedMotion=1` and `qaNoWebGL=1`.
+Set `NEXT_PUBLIC_VISUAL_QA=1` **before building** to enable the existing deterministic `qaEnvironment`, `qaProblem`, `qaGuest`, `qaSolar` and `qaChooser` URLs, plus `qaReducedMotion=1` and `qaNoWebGL=1`. Add `qaPreview=1` to an environment/problem URL to preview the solution without adding it; omitting it preserves the existing selected-state captures.
 
 Without a contact email configured, clients can preview, copy and download their project brief. `NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL` enables a prepared email for the visitor to review and send; there is no CRM submission backend yet.

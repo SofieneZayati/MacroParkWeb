@@ -2,6 +2,8 @@
 
 Development branch: `performance-pass-2`. Work started 2026-09-05; final validation continued 2026-09-06. The merged baseline is `1b55563`.
 
+The measurements and browser verification below describe the completed performance pass. A subsequent selection-clarity revision separates preview from adding, simplifies navigation, and has ten passing store tests. Its fresh browser verification is pending due to unavailable automation; see `PROGRESS.md` for that checkpoint.
+
 ## Confirmed problems and changes
 
 1. **Healthy GPUs were forced into the lowest quality.** The installed Drei PerformanceMonitor increments `flipped` on every incline or decline, not just changes of direction. The old `flipflops={2}` therefore forced DPR 0.75 after three healthy sampling windows too. Removed that finite cutoff. Sustained low FPS still reduces DPR and disables shadows; the visitor can explicitly select Smoother motion.

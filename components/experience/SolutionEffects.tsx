@@ -9,7 +9,7 @@ import { ResidenceReservationSequence } from "./ResidenceReservationSequence";
 import { ResidenceGuestSequence } from "./ResidenceGuestSequence";
 import { ResidenceChargingSequence } from "./ResidenceChargingSequence";
 import { RetailReservationSequence } from "./RetailReservationSequence";
-import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
+import { useExperienceStore, type EnvironmentId, type ProblemId } from "./useExperienceStore";
 import { useMotionPreference } from "./useMotionPreference";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
@@ -51,11 +51,13 @@ export function SolutionEffects() {
 
   const origin = ORIGIN[selectedEnvironment];
   const solar = SOLAR_PLACEMENT[selectedEnvironment];
-  const hasGuidance = selectedProblems.includes("parking-guidance");
-  const hasProtectedSpace = selectedProblems.includes("protect-space");
-  const hasReservation = selectedProblems.includes("reservations");
-  const hasGuestAccess = selectedProblems.includes("guest-access");
-  const hasFlow = selectedProblems.includes("reduce-queues") || selectedProblems.includes("automatic-access");
+  // A preview shows the complete solution before the client adds it to their setup.
+  const isVisible = (problem: ProblemId) => selectedProblem === problem || selectedProblems.includes(problem);
+  const hasGuidance = isVisible("parking-guidance");
+  const hasProtectedSpace = isVisible("protect-space");
+  const hasReservation = isVisible("reservations");
+  const hasGuestAccess = isVisible("guest-access");
+  const hasFlow = isVisible("reduce-queues") || isVisible("automatic-access");
   const guestPreviewActive = guestAccessPreview === "active";
 
   const residenceProtectionStory =
