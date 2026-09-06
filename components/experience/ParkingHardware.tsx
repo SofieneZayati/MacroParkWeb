@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function ParkingBlocker({
   position = [0, 0, 0],
@@ -13,6 +14,7 @@ export function ParkingBlocker({
   position?: [number, number, number];
   lowered?: boolean;
 }) {
+  const reducedMotion = useMotionPreference();
   const barrier = useRef<THREE.Group>(null);
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
@@ -30,7 +32,8 @@ export function ParkingBlocker({
   useFrame((_, delta) => {
     if (!barrier.current) return;
     const target = effectiveLowered ? -1.18 : -0.08;
-    barrier.current.rotation.x = THREE.MathUtils.lerp(
+    if (Math.abs(barrier.current.rotation.x - target) < 0.0001) return;
+    barrier.current.rotation.x = reducedMotion ? target : THREE.MathUtils.lerp(
       barrier.current.rotation.x,
       target,
       1 - Math.exp(-delta * 4.2),
@@ -86,21 +89,20 @@ export function EVCharger({
   compact?: boolean;
   charging?: boolean;
 }) {
+  const reducedMotion = useMotionPreference();
   const height = compact ? 1.08 : 1.42;
   const status = useRef<THREE.Mesh>(null);
-  const light = useRef<THREE.PointLight>(null);
+
+  useEffect(() => {
+    if (!status.current) return;
+    const material = status.current.material as THREE.MeshStandardMaterial;
+    material.emissiveIntensity = charging ? 1.8 : 1.25;
+  }, [charging, reducedMotion]);
 
   useFrame(({ clock }) => {
-    if (status.current) {
+    if (charging && !reducedMotion && status.current) {
       const material = status.current.material as THREE.MeshStandardMaterial;
-      material.emissiveIntensity = charging
-        ? 1.3 + (Math.sin(clock.elapsedTime * 3.1) + 1) * 0.48
-        : 1.25;
-    }
-    if (light.current) {
-      light.current.intensity = charging
-        ? 2.1 + (Math.sin(clock.elapsedTime * 2.7) + 1) * 0.55
-        : 2.1;
+      material.emissiveIntensity = 1.3 + (Math.sin(clock.elapsedTime * 3.1) + 1) * 0.48;
     }
   });
 
@@ -131,7 +133,10 @@ export function EVCharger({
       <RoundedBox args={[0.11, 0.25, 0.09]} radius={0.025} position={[0.31, height * 0.34, 0.16]} rotation={[0, 0, -0.18]}>
         <meshStandardMaterial color="#313a35" metalness={0.34} roughness={0.46} />
       </RoundedBox>
-      <pointLight ref={light} position={[0, height * 0.72, 0.48]} color="#91f5ac" intensity={2.1} distance={2.8} />
+      <mesh position={[0, height * 0.74, 0.225]}>
+        <planeGeometry args={[0.28, 0.2]} />
+        <meshBasicMaterial color="#91f5ac" transparent opacity={charging ? 0.18 : 0.08} depthWrite={false} />
+      </mesh>
     </group>
   );
 }
@@ -144,14 +149,11 @@ export function SolarCanopy({
   scale?: number;
 }) {
   const root = useRef<THREE.Group>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
+  const reducedMotion = useMotionPreference();
 
   useFrame((_, delta) => {
     if (!root.current) return;
+    if (Math.abs(root.current.scale.y - scale) < 0.0001) return;
     root.current.scale.x = scale;
     root.current.scale.z = scale;
     root.current.scale.y = reducedMotion
@@ -202,19 +204,23 @@ export function SolarCanopy({
       </group>
 
       <EnergyFlow />
-      <pointLight position={[0, 2.7, 0]} color="#ffe2a0" intensity={3.2} distance={7.5} />
+      <mesh position={[0, 3.1, 2.1]}>
+        <boxGeometry args={[4.8, 0.025, 0.035]} />
+        <meshBasicMaterial color="#ffe2a0" />
+      </mesh>
     </group>
   );
 }
 
 function EnergyFlow() {
+  const reducedMotion = useMotionPreference();
   const first = useRef<THREE.Mesh>(null);
   const second = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     const animate = (mesh: THREE.Mesh | null, offset: number) => {
       if (!mesh) return;
-      const progress = (clock.elapsedTime * 0.52 + offset) % 1;
+      const progress = ((reducedMotion ? 0.5 : clock.elapsedTime) * 0.52 + offset) % 1;
       mesh.position.y = 3.02 - progress * 2.58;
       mesh.scale.setScalar(0.72 + Math.sin(progress * Math.PI) * 0.42);
     };

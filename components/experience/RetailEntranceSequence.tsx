@@ -4,11 +4,14 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useMotionPreference } from "./useMotionPreference";
 
 const CAR_COLORS = ["#d7ded9", "#83968c", "#b9c4be"] as const;
 const CAR_OFFSETS = [0, 0.34, 0.68] as const;
 
 export function RetailEntranceSequence() {
+  const reducedMotion = useMotionPreference();
+  const elapsed = useRef(0);
   const cars = useRef<Array<THREE.Group | null>>([]);
   const scanField = useRef<THREE.Mesh>(null);
   const statusBar = useRef<THREE.Mesh>(null);
@@ -31,19 +34,20 @@ export function RetailEntranceSequence() {
   );
 
   useFrame(({ clock, camera, size }, delta) => {
+    elapsed.current += delta;
     let nearestScanDistance = Infinity;
 
     CAR_OFFSETS.forEach((offset, index) => {
       const car = cars.current[index];
       if (!car) return;
 
-      const progress = (clock.elapsedTime * 0.105 + offset) % 1;
+      const progress = ((reducedMotion ? 4 : elapsed.current) * 0.105 + offset) % 1;
       const eased = THREE.MathUtils.smoothstep(progress, 0, 1);
       curve.getPointAt(eased, point);
-      curve.getTangentAt(Math.min(1, eased + 0.002), tangent).normalize();
+      curve.getTangentAt(Math.min(1, eased + 0.002), tangent);
 
       car.position.copy(point);
-      car.rotation.y = THREE.MathUtils.damp(
+      car.rotation.y = reducedMotion ? Math.atan2(-tangent.x, -tangent.z) : THREE.MathUtils.damp(
         car.rotation.y,
         Math.atan2(-tangent.x, -tangent.z),
         9,
@@ -56,7 +60,7 @@ export function RetailEntranceSequence() {
     const scanStrength = THREE.MathUtils.clamp(1 - nearestScanDistance / 0.85, 0, 1);
     if (scanField.current) {
       const material = scanField.current.material as THREE.MeshBasicMaterial;
-      material.opacity = scanStrength * (0.22 + Math.sin(clock.elapsedTime * 8) * 0.06);
+      material.opacity = scanStrength * (reducedMotion ? 0.22 : 0.22 + Math.sin(clock.elapsedTime * 8) * 0.06);
     }
     if (statusBar.current) {
       const material = statusBar.current.material as THREE.MeshBasicMaterial;
@@ -71,12 +75,15 @@ export function RetailEntranceSequence() {
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
 
-    const ease = 1 - Math.exp(-delta * 4.8);
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 4.8);
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 48 : 37, 5.2, delta);
-      camera.updateProjectionMatrix();
+      const targetFov = mobile ? 48 : 37;
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.2, delta);
+        camera.updateProjectionMatrix();
+      }
     }
     camera.lookAt(cameraLookAt.current);
   });

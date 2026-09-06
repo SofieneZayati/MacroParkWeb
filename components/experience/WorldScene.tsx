@@ -6,8 +6,10 @@ import { RoundedBox, useCursor } from "@react-three/drei";
 import * as THREE from "three";
 import {
   type EnvironmentId,
+  type ProblemId,
   useExperienceStore,
 } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 import { EntranceKit } from "./EntranceKit";
 import { EVCharger } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
@@ -89,6 +91,19 @@ const MOBILE_PROBLEM_CAMERA: Record<string, CameraTarget> = {
   },
 };
 
+// These mounted stories choreograph their own camera. The overview rig must
+// yield to them instead of pulling toward a second target every frame.
+const STORY_CAMERA_PROBLEMS: Partial<Record<EnvironmentId, readonly ProblemId[]>> = {
+  residence: ["protect-space", "reservations", "guest-access", "ev-charging"],
+  retail: ["reduce-queues", "reservations", "ev-charging"],
+};
+
+const SITE_SIZE: Record<EnvironmentId, [number, number]> = {
+  home: [8.4, 8.2],
+  residence: [9.1, 8],
+  retail: [10, 8.8],
+};
+
 export function WorldScene() {
   const phase = useExperienceStore((state) => state.phase);
   const showArrivalInfrastructure = ["arrival", "scan", "reveal", "choose"].includes(phase);
@@ -120,12 +135,23 @@ export function WorldScene() {
 }
 
 function CameraRig({ phase }: { phase: string }) {
+  const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
+  const reducedMotion = useMotionPreference();
   const lookAt = useRef(new THREE.Vector3(0, 0.8, 1));
+  const hasFramed = useRef(false);
+  const wasStoryCamera = useRef(false);
   const targetPosition = useMemo(() => new THREE.Vector3(), []);
   const targetLookAt = useMemo(() => new THREE.Vector3(), []);
+  const storyOwnsCamera = selectedEnvironment !== null && selectedProblem !== null &&
+    STORY_CAMERA_PROBLEMS[selectedEnvironment]?.includes(selectedProblem);
 
-  useFrame(({ camera, size }, delta) => {
+  useFrame(({ camera, size, pointer }, delta) => {
+    if (storyOwnsCamera) {
+      wasStoryCamera.current = true;
+      return;
+    }
+
     const problemKey = selectedProblem ? `${phase}:${selectedProblem}` : null;
     const problemTarget = problemKey ? PROBLEM_CAMERA[problemKey] : undefined;
     const mobileProblemTarget = problemKey ? MOBILE_PROBLEM_CAMERA[problemKey] : undefined;
@@ -134,16 +160,48 @@ function CameraRig({ phase }: { phase: string }) {
     targetPosition.set(...target.position);
     targetLookAt.set(...target.lookAt);
 
-    const ease = 1 - Math.exp(-delta * 2.2);
-    camera.position.lerp(targetPosition, ease);
-    lookAt.current.lerp(targetLookAt, ease);
+    if (!reducedMotion && size.width > 760) {
+      targetPosition.x += pointer.x * 0.14;
+      targetPosition.y += pointer.y * 0.06;
+    }
 
-    if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, target.fov, 2.7, delta);
+    if (wasStoryCamera.current) {
+      // Resume from the story's actual view, avoiding an orientation jump back
+      // to the overview's stale look-at point.
+      camera.getWorldDirection(lookAt.current);
+      lookAt.current.multiplyScalar(camera.position.distanceTo(targetLookAt)).add(camera.position);
+      wasStoryCamera.current = false;
+    }
+
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 2.2);
+    const positionChanging = !camera.position.equals(targetPosition);
+    const lookAtChanging = !lookAt.current.equals(targetLookAt);
+    if (positionChanging) {
+      if (camera.position.distanceToSquared(targetPosition) < 0.000001) {
+        camera.position.copy(targetPosition);
+      } else {
+        camera.position.lerp(targetPosition, ease);
+      }
+    }
+    if (lookAtChanging) {
+      if (lookAt.current.distanceToSquared(targetLookAt) < 0.000001) {
+        lookAt.current.copy(targetLookAt);
+      } else {
+        lookAt.current.lerp(targetLookAt, ease);
+      }
+    }
+
+    if (camera instanceof THREE.PerspectiveCamera && camera.fov !== target.fov) {
+      camera.fov = reducedMotion || Math.abs(camera.fov - target.fov) < 0.01
+        ? target.fov
+        : THREE.MathUtils.damp(camera.fov, target.fov, 2.7, delta);
       camera.updateProjectionMatrix();
     }
 
-    camera.lookAt(lookAt.current);
+    if (!hasFramed.current || positionChanging || lookAtChanging) {
+      camera.lookAt(lookAt.current);
+      hasFramed.current = true;
+    }
   });
 
   return null;
@@ -200,6 +258,11 @@ function ArrivalCar() {
   useFrame((_, delta) => {
     if (!car.current) return;
     const targetZ = phase === "arrival" ? 3.25 : phase === "scan" ? 2.25 : -4.8;
+    if (car.current.position.z === targetZ) return;
+    if (Math.abs(car.current.position.z - targetZ) < 0.001) {
+      car.current.position.z = targetZ;
+      return;
+    }
     car.current.position.z = THREE.MathUtils.lerp(
       car.current.position.z,
       targetZ,
@@ -241,16 +304,23 @@ function InteractiveEnvironment({
 }) {
   const phase = useExperienceStore((state) => state.phase);
   const chooseEnvironment = useExperienceStore((state) => state.chooseEnvironment);
+  const hoveredEnvironment = useExperienceStore((state) => state.hoveredEnvironment);
+  const setHoveredEnvironment = useExperienceStore((state) => state.setHoveredEnvironment);
+  const reducedMotion = useMotionPreference();
   const group = useRef<THREE.Group>(null);
-  const [hovered, setHovered] = useState(false);
+  const hovered = hoveredEnvironment === id;
   const interactive = phase === "choose";
+  const [width, depth] = SITE_SIZE[id];
   useCursor(interactive && hovered);
 
   useFrame((_, delta) => {
     if (!group.current) return;
     const targetScale = interactive && hovered ? 1.028 : 1;
-    const next = THREE.MathUtils.damp(group.current.scale.x, targetScale, 6, delta);
-    if (Math.abs(next - group.current.scale.x) > 0.0001) group.current.scale.setScalar(next);
+    if (group.current.scale.x === targetScale) return;
+    const next = reducedMotion || Math.abs(group.current.scale.x - targetScale) < 0.0001
+      ? targetScale
+      : THREE.MathUtils.damp(group.current.scale.x, targetScale, 6, delta);
+    group.current.scale.setScalar(next);
   });
 
   return (
@@ -259,9 +329,11 @@ function InteractiveEnvironment({
       position={position}
       onPointerOver={(event) => {
         event.stopPropagation();
-        if (interactive) setHovered(true);
+        if (interactive) setHoveredEnvironment(id);
       }}
-      onPointerOut={() => setHovered(false)}
+      onPointerOut={() => {
+        if (hovered) setHoveredEnvironment(null);
+      }}
       onClick={(event) => {
         event.stopPropagation();
         if (interactive) chooseEnvironment(id);
@@ -269,7 +341,20 @@ function InteractiveEnvironment({
     >
       {children}
       {interactive && hovered && (
-        <pointLight position={[0, 3.6, 1]} color="#9effbd" intensity={5.4} distance={8} />
+        <group position={[0, 0.235, 0]}>
+          {[-1, 1].map((side) => (
+            <group key={side}>
+              <mesh rotation-x={-Math.PI / 2} position={[side * (width / 2 - 0.16), 0, 0]}>
+                <planeGeometry args={[0.055, depth - 0.32]} />
+                <meshBasicMaterial color="#b9f8ca" transparent opacity={0.8} depthWrite={false} />
+              </mesh>
+              <mesh rotation-x={-Math.PI / 2} position={[0, 0, side * (depth / 2 - 0.16)]}>
+                <planeGeometry args={[width - 0.32, 0.055]} />
+                <meshBasicMaterial color="#b9f8ca" transparent opacity={0.8} depthWrite={false} />
+              </mesh>
+            </group>
+          ))}
+        </group>
       )}
     </group>
   );
@@ -280,29 +365,30 @@ function HomeWorld() {
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
+  const demoRevision = useExperienceStore((state) => state.demoRevision);
   const active = selectedEnvironment === "home";
   const automaticAccessActive = active && selectedProblem === "automatic-access";
   const guestAccessActive = active && selectedProblem === "guest-access";
   const [garageAuthorized, setGarageAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!automaticAccessActive) setGarageAuthorized(false);
-  }, [automaticAccessActive]);
+    setGarageAuthorized(false);
+  }, [automaticAccessActive, demoRevision]);
 
   return (
     <InteractiveEnvironment id="home" position={[8, 0, -10]}>
       <HomeArchitecture garageOpen={automaticAccessActive && garageAuthorized} />
 
       {automaticAccessActive && (
-        <HomeAccessSequence onRecognized={() => setGarageAuthorized(true)} />
+        <HomeAccessSequence key={demoRevision} onRecognized={() => setGarageAuthorized(true)} />
       )}
 
       {guestAccessActive && (
-        <HomeGuestSequence allowed={guestAccessPreview === "active"} />
+        <HomeGuestSequence key={demoRevision} allowed={guestAccessPreview === "active"} />
       )}
 
       {selectedProblem === "ev-charging" && active && (
-        <HomeChargingSequence solarEnabled={solarEnabled} />
+        <HomeChargingSequence key={demoRevision} solarEnabled={solarEnabled} />
       )}
     </InteractiveEnvironment>
   );
@@ -316,8 +402,10 @@ function ResidenceWorld() {
   return (
     <InteractiveEnvironment id="residence" position={[0, 0, -14]}>
       <ResidenceArchitecture />
-      <ParkingBay x={-2.45} glow={active && selectedProblem === "protect-space"} />
-      <ParkingBay x={0} glow={active && ["guest-access", "reservations"].includes(selectedProblem ?? "")} />
+      {/* The active stories own amber/green authorization. The base surface
+          must not promise access before recognition, or after a visit ends. */}
+      <ParkingBay x={-2.45} />
+      <ParkingBay x={0} />
       <ParkingBay x={2.45} glow={active && selectedProblem === "ev-charging"} />
     </InteractiveEnvironment>
   );
@@ -325,7 +413,7 @@ function ResidenceWorld() {
 
 function ParkingBay({ x, glow }: { x: number; glow?: boolean }) {
   return (
-    <group position={[x, 0.065, 2.35]}>
+    <group position={[x, 0.235, 2.35]}>
       <mesh rotation-x={-Math.PI / 2}>
         <planeGeometry args={[2.12, 2.92]} />
         <meshStandardMaterial
@@ -351,6 +439,7 @@ function ParkingBay({ x, glow }: { x: number; glow?: boolean }) {
 function RetailWorld() {
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
+  const demoRevision = useExperienceStore((state) => state.demoRevision);
   const active = selectedEnvironment === "retail";
   const guidance = active && selectedProblem === "parking-guidance";
 
@@ -362,8 +451,8 @@ function RetailWorld() {
         <RetailBay key={x} x={x} active={guidance && index === 1} />
       ))}
 
-      {guidance && <GuidedRetailVehicle />}
-      {active && selectedProblem === "reduce-queues" && <RetailEntranceSequence />}
+      {guidance && <GuidedRetailVehicle key={demoRevision} />}
+      {active && selectedProblem === "reduce-queues" && <RetailEntranceSequence key={demoRevision} />}
 
       {active && selectedProblem === "ev-charging" && (
         <group>
@@ -376,41 +465,52 @@ function RetailWorld() {
 }
 
 function GuidedRetailVehicle() {
+  const reducedMotion = useMotionPreference();
   const group = useRef<THREE.Group>(null);
   const progress = useRef(0);
+  const parked = useRef(false);
+  const targetRotation = useRef(0);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-3.75, 0, 6.35),
-        new THREE.Vector3(-3.2, 0, 5.35),
-        new THREE.Vector3(-2.45, 0, 4.45),
-        new THREE.Vector3(-1.55, 0, 3.4),
-        new THREE.Vector3(-0.9, 0, 2.45),
+        new THREE.Vector3(-3.75, 0.24, 6.35),
+        new THREE.Vector3(-3.2, 0.24, 5.35),
+        new THREE.Vector3(-2.45, 0.24, 4.45),
+        new THREE.Vector3(-1.55, 0.24, 3.4),
+        new THREE.Vector3(-0.9, 0.24, 3.15),
+        new THREE.Vector3(-0.9, 0.24, 2.45),
       ]),
     [],
   );
 
   useFrame((_, delta) => {
-    if (!group.current) return;
+    if (!group.current || parked.current) return;
 
-    progress.current = Math.min(1, progress.current + delta * 0.55);
-    const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
-    curve.getPointAt(t, point);
-    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
+    if (progress.current < 1) {
+      progress.current = reducedMotion ? 1 : Math.min(1, progress.current + delta * 0.55);
+      const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
+      curve.getPointAt(t, point);
+      curve.getTangentAt(Math.min(1, t + 0.001), tangent);
+      targetRotation.current = Math.atan2(-tangent.x, -tangent.z);
+      group.current.position.copy(point);
+    }
 
-    group.current.position.copy(point);
-    group.current.rotation.y = THREE.MathUtils.damp(
+    group.current.rotation.y = reducedMotion ? targetRotation.current : THREE.MathUtils.damp(
       group.current.rotation.y,
-      Math.atan2(-tangent.x, -tangent.z),
+      targetRotation.current,
       7,
       delta,
     );
+    if (progress.current === 1 && Math.abs(group.current.rotation.y - targetRotation.current) < 0.001) {
+      group.current.rotation.y = targetRotation.current;
+      parked.current = true;
+    }
   });
 
   return (
-    <group ref={group} position={[-3.75, 0, 6.35]}>
+    <group ref={group} position={[-3.75, 0.24, 6.35]}>
       <PremiumVehicle color="#d4ddd7" scale={0.46} lightsOn={false} />
     </group>
   );
@@ -418,7 +518,7 @@ function GuidedRetailVehicle() {
 
 function RetailBay({ x, active }: { x: number; active: boolean }) {
   return (
-    <group position={[x, 0.066, 2.45]}>
+    <group position={[x, 0.235, 2.45]}>
       <mesh rotation-x={-Math.PI / 2}>
         <planeGeometry args={[1.46, 3.15]} />
         <meshStandardMaterial
@@ -430,10 +530,15 @@ function RetailBay({ x, active }: { x: number; active: boolean }) {
       {[-0.72, 0.72].map((line) => (
         <mesh key={line} rotation-x={-Math.PI / 2} position={[line, 0.012, 0]}>
           <planeGeometry args={[0.025, 3]} />
-          <meshBasicMaterial color="#dce2de" transparent opacity={0.28} />
+          <meshBasicMaterial color={active ? "#b9ffca" : "#dce2de"} transparent opacity={active ? 0.85 : 0.28} />
         </mesh>
       ))}
-      {active && <pointLight position={[0, 0.8, 0]} color="#8ff2aa" intensity={1.4} distance={2.8} />}
+      {active && (
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, -1.5]}>
+          <planeGeometry args={[1.44, 0.04]} />
+          <meshBasicMaterial color="#b9ffca" transparent opacity={0.85} />
+        </mesh>
+      )}
     </group>
   );
 }

@@ -5,8 +5,10 @@ import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function EntranceKit() {
+  const reducedMotion = useMotionPreference();
   const phase = useExperienceStore((state) => state.phase);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const arm = useRef<THREE.Group>(null);
@@ -16,7 +18,8 @@ export function EntranceKit() {
   useFrame((_, delta) => {
     if (!arm.current) return;
     const desired = isOpen ? Math.PI * 0.47 : 0;
-    arm.current.rotation.z = THREE.MathUtils.lerp(
+    if (Math.abs(arm.current.rotation.z - desired) < 0.0001) return;
+    arm.current.rotation.z = reducedMotion ? desired : THREE.MathUtils.lerp(
       arm.current.rotation.z,
       desired,
       1 - Math.exp(-delta * 4.6),
@@ -153,11 +156,12 @@ function InductionLoop() {
 }
 
 function ScanField() {
+  const reducedMotion = useMotionPreference();
   const primary = useRef<THREE.Mesh>(null);
   const secondary = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
-    const progress = (Math.sin(clock.elapsedTime * 3.7) + 1) * 0.5;
+    const progress = reducedMotion ? 0.5 : (Math.sin(clock.elapsedTime * 3.7) + 1) * 0.5;
     if (primary.current) primary.current.position.z = 1.25 + progress * 2;
     if (secondary.current) secondary.current.position.z = 3.25 - progress * 2;
   });
@@ -172,7 +176,10 @@ function ScanField() {
         <planeGeometry args={[4.7, 0.035]} />
         <meshBasicMaterial color="#caffd8" transparent opacity={0.38} />
       </mesh>
-      <pointLight position={[0, 1.05, 2.25]} color="#8affb0" intensity={4.5} distance={5.8} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 2.25]}>
+        <planeGeometry args={[4.7, 2.2]} />
+        <meshBasicMaterial color="#8affb0" transparent opacity={0.06} depthWrite={false} />
+      </mesh>
     </group>
   );
 }

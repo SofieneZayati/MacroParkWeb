@@ -24,6 +24,11 @@ export type ProblemId =
 
 export type GuestAccessPreview = "active" | "expired";
 
+type EnvironmentConfiguration = {
+  selectedProblems: ProblemId[];
+  solarEnabled: boolean;
+};
+
 type ExperienceState = {
   phase: ExperiencePhase;
   selectedEnvironment: EnvironmentId | null;
@@ -34,6 +39,11 @@ type ExperienceState = {
   introComplete: boolean;
   guestAccessPreview: GuestAccessPreview;
   residenceAccessAuthorized: boolean;
+  hoveredEnvironment: EnvironmentId | null;
+  configurations: Partial<Record<EnvironmentId, EnvironmentConfiguration>>;
+  demoRevision: number;
+  setHoveredEnvironment: (environment: EnvironmentId | null) => void;
+  replayDemo: () => void;
   setPhase: (phase: ExperiencePhase) => void;
   chooseEnvironment: (environment: EnvironmentId) => void;
   chooseProblem: (problem: ProblemId) => void;
@@ -59,21 +69,47 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
   introComplete: false,
   guestAccessPreview: "active",
   residenceAccessAuthorized: false,
-  setPhase: (phase) => set({ phase }),
-  chooseEnvironment: (selectedEnvironment) =>
-    set({
-      selectedEnvironment,
-      selectedProblem: null,
-      selectedProblems: [],
-      solarEnabled: false,
-      summaryOpen: false,
+  hoveredEnvironment: null,
+  configurations: {},
+  demoRevision: 0,
+  setHoveredEnvironment: (hoveredEnvironment) => set({ hoveredEnvironment }),
+  replayDemo: () =>
+    set((state) => ({
+      demoRevision: state.demoRevision + 1,
       guestAccessPreview: "active",
       residenceAccessAuthorized: false,
-      phase: selectedEnvironment,
+    })),
+  setPhase: (phase) => set({ phase }),
+  chooseEnvironment: (selectedEnvironment) =>
+    set((state) => {
+      const configurations = state.selectedEnvironment
+        ? {
+            ...state.configurations,
+            [state.selectedEnvironment]: {
+              selectedProblems: state.selectedProblems,
+              solarEnabled: state.solarEnabled,
+            },
+          }
+        : state.configurations;
+      const saved = configurations[selectedEnvironment];
+
+      return {
+        configurations,
+        selectedEnvironment,
+        selectedProblem: null,
+        selectedProblems: saved?.selectedProblems ?? [],
+        solarEnabled: saved?.solarEnabled ?? false,
+        summaryOpen: false,
+        hoveredEnvironment: null,
+        guestAccessPreview: "active",
+        residenceAccessAuthorized: false,
+        phase: selectedEnvironment,
+      };
     }),
   chooseProblem: (selectedProblem) =>
     set((state) => ({
       selectedProblem,
+      demoRevision: state.demoRevision + 1,
       selectedProblems: state.selectedProblems.includes(selectedProblem)
         ? state.selectedProblems
         : [...state.selectedProblems, selectedProblem],
@@ -113,7 +149,16 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
     }),
   closeSummary: () => set({ summaryOpen: false }),
   backToChooser: () =>
-    set({
+    set((state) => ({
+      configurations: state.selectedEnvironment
+        ? {
+            ...state.configurations,
+            [state.selectedEnvironment]: {
+              selectedProblems: state.selectedProblems,
+              solarEnabled: state.solarEnabled,
+            },
+          }
+        : state.configurations,
       selectedEnvironment: null,
       selectedProblem: null,
       selectedProblems: [],
@@ -122,7 +167,8 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       guestAccessPreview: "active",
       residenceAccessAuthorized: false,
       phase: "choose",
-    }),
+      hoveredEnvironment: null,
+    })),
   completeIntro: () => set({ introComplete: true, phase: "choose" }),
   setGuestAccessPreview: (guestAccessPreview) => set({ guestAccessPreview }),
   setResidenceAccessAuthorized: (residenceAccessAuthorized) => set({ residenceAccessAuthorized }),
@@ -137,5 +183,8 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       introComplete: false,
       guestAccessPreview: "active",
       residenceAccessAuthorized: false,
+      hoveredEnvironment: null,
+      configurations: {},
+      demoRevision: 0,
     }),
 }));

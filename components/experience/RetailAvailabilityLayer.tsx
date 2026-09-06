@@ -4,12 +4,14 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 const BAY_STATUS = ["free", "selected", "occupied", "free"] as const;
 const BAY_X = [-2.7, -0.9, 0.9, 2.7] as const;
 const APPROACH_POSITION: [number, number, number] = [-2.72, 0, 6.35];
 
 export function RetailAvailabilityLayer() {
+  const reducedMotion = useMotionPreference();
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const selectedPulse = useRef<THREE.Mesh>(null);
@@ -17,7 +19,7 @@ export function RetailAvailabilityLayer() {
   const active = selectedEnvironment === "retail" && selectedProblem === "parking-guidance";
 
   useFrame(({ clock }) => {
-    if (!active) return;
+    if (!active || reducedMotion) return;
 
     if (selectedPulse.current) {
       const material = selectedPulse.current.material as THREE.MeshBasicMaterial;
@@ -57,7 +59,7 @@ export function RetailAvailabilityLayer() {
             </mesh>
 
             {selected && (
-              <mesh ref={selectedPulse} rotation-x={-Math.PI / 2} position={[0, 0.115, 0]}>
+              <mesh ref={selectedPulse} rotation-x={-Math.PI / 2} position={[0, 0.255, 0]}>
                 <ringGeometry args={[0.54, 0.62, 30]} />
                 <meshBasicMaterial
                   color="#b9ffca"

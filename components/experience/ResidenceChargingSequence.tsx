@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { EVCharger } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function ResidenceChargingSequence() {
+  const reducedMotion = useMotionPreference();
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const cablePulseA = useRef<THREE.Mesh>(null);
   const cablePulseB = useRef<THREE.Mesh>(null);
@@ -29,9 +31,10 @@ export function ResidenceChargingSequence() {
     [],
   );
   const cableGeometry = useMemo(
-    () => new THREE.TubeGeometry(cableCurve, 42, 0.027, 8, false),
+    () => new THREE.TubeGeometry(cableCurve, 30, 0.027, 6, false),
     [cableCurve],
   );
+  useEffect(() => () => cableGeometry.dispose(), [cableGeometry]);
   const solarCurve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -51,8 +54,8 @@ export function ResidenceChargingSequence() {
       speed: number,
     ) => {
       if (!mesh) return;
-      const progress = (clock.elapsedTime * speed + offset) % 1;
-      mesh.position.copy(curve.getPointAt(progress));
+      const progress = ((reducedMotion ? 0 : clock.elapsedTime) * speed + offset) % 1;
+      curve.getPointAt(progress, mesh.position);
       mesh.scale.setScalar(0.72 + Math.sin(progress * Math.PI) * 0.34);
     };
 
@@ -65,8 +68,8 @@ export function ResidenceChargingSequence() {
 
     if (chargeRing.current) {
       const material = chargeRing.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.22 + (Math.sin(clock.elapsedTime * 2.25) + 1) * 0.075;
-      const scale = 1 + Math.sin(clock.elapsedTime * 1.7) * 0.035;
+      material.opacity = reducedMotion ? 0.28 : 0.22 + (Math.sin(clock.elapsedTime * 2.25) + 1) * 0.075;
+      const scale = reducedMotion ? 1 : 1 + Math.sin(clock.elapsedTime * 1.7) * 0.035;
       chargeRing.current.scale.setScalar(scale);
     }
 
@@ -77,12 +80,15 @@ export function ResidenceChargingSequence() {
     const targetLookAt: [number, number, number] = [2.25, 0.9, -11.4];
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
-    const ease = 1 - Math.exp(-delta * 4.8);
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 4.8);
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : 40, 5.2, delta);
-      camera.updateProjectionMatrix();
+      const targetFov = mobile ? 50 : 40;
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.2, delta);
+        camera.updateProjectionMatrix();
+      }
     }
     camera.lookAt(cameraLookAt.current);
   });
@@ -111,7 +117,6 @@ export function ResidenceChargingSequence() {
         <ringGeometry args={[0.95, 1.06, 54]} />
         <meshBasicMaterial color="#8ff3aa" transparent opacity={0.28} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[2.42, 0.85, 2.42]} color="#8ff3aa" intensity={1.65} distance={3.6} />
 
       <group position={[2.42, 0, 2.42]}>
         {[-0.94, 0.94].map((x) => (
@@ -136,7 +141,6 @@ export function ResidenceChargingSequence() {
             <sphereGeometry args={[0.052, 14, 14]} />
             <meshBasicMaterial color="#ffe7a8" />
           </mesh>
-          <pointLight position={[2.0, 1.75, 1.62]} color="#ffdca0" intensity={1.15} distance={3.6} />
         </>
       )}
     </group>

@@ -4,13 +4,16 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function RetailReservationSequence() {
+  const reducedMotion = useMotionPreference();
   const vehicle = useRef<THREE.Group>(null);
   const waitingState = useRef<THREE.Group>(null);
   const matchedState = useRef<THREE.Group>(null);
   const recognitionRing = useRef<THREE.Mesh>(null);
   const progress = useRef(0);
+  const sampledProgress = useRef(-1);
   const matchHold = useRef(0);
   const matchedOnce = useRef(false);
   const point = useMemo(() => new THREE.Vector3(), []);
@@ -33,7 +36,9 @@ export function RetailReservationSequence() {
   useFrame(({ clock, camera, size }, delta) => {
     if (!vehicle.current) return;
 
-    if (matchedOnce.current && matchHold.current < 0.58) {
+    if (reducedMotion) {
+      progress.current = 1;
+    } else if (matchedOnce.current && matchHold.current < 0.58) {
       matchHold.current += delta;
     } else {
       progress.current = Math.min(1, progress.current + delta * 0.22);
@@ -41,27 +46,33 @@ export function RetailReservationSequence() {
 
     if (!matchedOnce.current && progress.current >= 0.37) {
       matchedOnce.current = true;
-      if (waitingState.current) waitingState.current.visible = false;
-      if (matchedState.current) matchedState.current.visible = true;
     }
 
-    const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
-    curve.getPointAt(t, point);
-    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
-    vehicle.current.position.copy(point);
-    vehicle.current.rotation.y = THREE.MathUtils.damp(
-      vehicle.current.rotation.y,
-      Math.atan2(-tangent.x, -tangent.z),
-      8,
-      delta,
-    );
+    // React/Suspense can restore the JSX visibility after a renderer update.
+    // Reconcile from the story state so a matched bay cannot disappear.
+    if (waitingState.current) waitingState.current.visible = !matchedOnce.current;
+    if (matchedState.current) matchedState.current.visible = matchedOnce.current;
+
+    if (sampledProgress.current !== progress.current) {
+      const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
+      curve.getPointAt(t, point);
+      curve.getTangentAt(Math.min(1, t + 0.001), tangent);
+      vehicle.current.position.copy(point);
+      sampledProgress.current = progress.current;
+    }
+    const heading = Math.atan2(-tangent.x, -tangent.z);
+    if (Math.abs(vehicle.current.rotation.y - heading) > 0.0001) {
+      vehicle.current.rotation.y = reducedMotion
+        ? heading
+        : THREE.MathUtils.damp(vehicle.current.rotation.y, heading, 8, delta);
+    }
 
     if (recognitionRing.current) {
       const material = recognitionRing.current.material as THREE.MeshBasicMaterial;
       material.color.set(matchedOnce.current ? "#b9ffca" : "#f2c76f");
       material.opacity = matchedOnce.current
         ? 0.58
-        : 0.24 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.06;
+        : reducedMotion ? 0.3 : 0.24 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.06;
     }
 
     const mobile = size.width <= 760;
@@ -79,13 +90,16 @@ export function RetailReservationSequence() {
 
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
-    const ease = 1 - Math.exp(-delta * (parkingFocus ? 4.4 : 5.2));
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * (parkingFocus ? 4.4 : 5.2));
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : parkingFocus ? 38 : 39, 5.2, delta);
-      camera.updateProjectionMatrix();
+      const targetFov = mobile ? 50 : parkingFocus ? 38 : 39;
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.2, delta);
+        camera.updateProjectionMatrix();
+      }
     }
     camera.lookAt(cameraLookAt.current);
   });

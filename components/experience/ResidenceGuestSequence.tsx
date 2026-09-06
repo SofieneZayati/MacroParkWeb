@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
+  const reducedMotion = useMotionPreference();
   const vehicle = useRef<THREE.Group>(null);
   const scanField = useRef<THREE.Mesh>(null);
   const progress = useRef(0);
+  const sampledProgress = useRef(-1);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
   const cameraPosition = useMemo(() => new THREE.Vector3(), []);
@@ -26,31 +29,39 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
     [],
   );
 
+  useEffect(() => {
+    progress.current = 0;
+    sampledProgress.current = -1;
+    vehicle.current?.rotation.set(0, 0, 0);
+  }, [allowed]);
+
   useFrame(({ clock, camera, size }, delta) => {
     if (!vehicle.current) return;
 
     const stopAt = allowed ? 1 : 0.47;
-    progress.current = Math.min(stopAt, progress.current + delta * 0.23);
-    const normalized = progress.current / stopAt;
-    const t = allowed
-      ? THREE.MathUtils.smoothstep(progress.current, 0, 1)
-      : THREE.MathUtils.smoothstep(normalized, 0, 1) * stopAt;
-
-    curve.getPointAt(Math.min(1, t), point);
-    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
-    vehicle.current.position.copy(point);
-    vehicle.current.rotation.y = THREE.MathUtils.damp(
-      vehicle.current.rotation.y,
-      Math.atan2(-tangent.x, -tangent.z),
-      8,
-      delta,
-    );
+    progress.current = reducedMotion ? stopAt : Math.min(stopAt, progress.current + delta * 0.23);
+    if (sampledProgress.current !== progress.current) {
+      const normalized = progress.current / stopAt;
+      const t = allowed
+        ? THREE.MathUtils.smoothstep(progress.current, 0, 1)
+        : THREE.MathUtils.smoothstep(normalized, 0, 1) * stopAt;
+      curve.getPointAt(Math.min(1, t), point);
+      curve.getTangentAt(Math.min(1, t + 0.001), tangent);
+      vehicle.current.position.copy(point);
+      sampledProgress.current = progress.current;
+    }
+    const heading = Math.atan2(-tangent.x, -tangent.z);
+    if (Math.abs(vehicle.current.rotation.y - heading) > 0.0001) {
+      vehicle.current.rotation.y = reducedMotion
+        ? heading
+        : THREE.MathUtils.damp(vehicle.current.rotation.y, heading, 8, delta);
+    }
 
     if (scanField.current) {
       const material = scanField.current.material as THREE.MeshBasicMaterial;
       const distanceFromScan = Math.abs(point.z - 4.45);
       const nearScan = Math.max(0, 0.28 - distanceFromScan * 0.24);
-      material.opacity = nearScan * (0.78 + Math.sin(clock.elapsedTime * 7.6) * 0.22);
+      material.opacity = nearScan * (reducedMotion ? 1 : 0.78 + Math.sin(clock.elapsedTime * 7.6) * 0.22);
     }
 
     const mobile = size.width <= 760;
@@ -62,12 +73,15 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
       : [0, 0.9, -9.55];
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
-    const ease = 1 - Math.exp(-delta * 5);
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 5);
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 49 : 39, 5.2, delta);
-      camera.updateProjectionMatrix();
+      const targetFov = mobile ? 49 : 39;
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.2, delta);
+        camera.updateProjectionMatrix();
+      }
     }
     camera.lookAt(cameraLookAt.current);
   });
@@ -94,7 +108,6 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
           <circleGeometry args={[0.025, 14]} />
           <meshStandardMaterial color={signalColor} emissive={emissiveColor} emissiveIntensity={2.1} />
         </mesh>
-        <pointLight position={[0, 1.48, -0.16]} color={signalColor} intensity={2.1} distance={3.2} />
       </group>
 
       <mesh ref={scanField} position={[0.05, 0.92, 4.45]}>
@@ -113,7 +126,6 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
             <planeGeometry args={[1.9, 2.8]} />
             <meshBasicMaterial color="#b8ffc9" transparent opacity={0.12} side={THREE.DoubleSide} />
           </mesh>
-          <pointLight position={[0, 0.75, 0]} color="#9effb7" intensity={1.4} distance={3.1} />
         </group>
       ) : (
         <>
@@ -121,7 +133,6 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
             <boxGeometry args={[1.8, 0.07, 0.12]} />
             <meshStandardMaterial color="#b38335" emissive="#71470f" emissiveIntensity={0.4} />
           </mesh>
-          <pointLight position={[0.05, 0.62, 3.8]} color="#efc36f" intensity={1.35} distance={2.5} />
         </>
       )}
     </group>

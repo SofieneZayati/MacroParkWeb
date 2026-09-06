@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { EVCharger } from "./ParkingHardware";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }) {
+  const reducedMotion = useMotionPreference();
   const cablePulseA = useRef<THREE.Mesh>(null);
   const cablePulseB = useRef<THREE.Mesh>(null);
   const solarPulseA = useRef<THREE.Mesh>(null);
@@ -25,9 +27,10 @@ export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }
   );
 
   const cableGeometry = useMemo(
-    () => new THREE.TubeGeometry(cableCurve, 40, 0.026, 8, false),
+    () => new THREE.TubeGeometry(cableCurve, 30, 0.026, 6, false),
     [cableCurve],
   );
+  useEffect(() => () => cableGeometry.dispose(), [cableGeometry]);
 
   const solarCurve = useMemo(
     () =>
@@ -48,8 +51,8 @@ export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }
       speed: number,
     ) => {
       if (!mesh) return;
-      const progress = (clock.elapsedTime * speed + offset) % 1;
-      mesh.position.copy(curve.getPointAt(progress));
+      const progress = ((reducedMotion ? 0 : clock.elapsedTime) * speed + offset) % 1;
+      curve.getPointAt(progress, mesh.position);
       const scale = 0.72 + Math.sin(progress * Math.PI) * 0.34;
       mesh.scale.setScalar(scale);
     };
@@ -64,14 +67,14 @@ export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }
 
     if (chargeRing.current) {
       const material = chargeRing.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.2 + (Math.sin(clock.elapsedTime * 2.3) + 1) * 0.075;
-      const scale = 1 + Math.sin(clock.elapsedTime * 1.8) * 0.035;
+      material.opacity = reducedMotion ? 0.28 : 0.2 + (Math.sin(clock.elapsedTime * 2.3) + 1) * 0.075;
+      const scale = reducedMotion ? 1 : 1 + Math.sin(clock.elapsedTime * 1.8) * 0.035;
       chargeRing.current.scale.setScalar(scale);
     }
   });
 
   return (
-    <group>
+    <group position={[0, 0.23, 0]}>
       <group position={[-0.45, 0, 2.55]} rotation-y={Math.PI}>
         <PremiumVehicle color="#d7dfda" scale={0.56} lightsOn={false} />
       </group>
@@ -91,11 +94,10 @@ export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }
         <meshBasicMaterial color="#c8ffd7" />
       </mesh>
 
-      <mesh ref={chargeRing} rotation-x={-Math.PI / 2} position={[-0.45, 0.09, 2.55]}>
+      <mesh ref={chargeRing} rotation-x={-Math.PI / 2} position={[-0.45, 0.015, 2.55]}>
         <ringGeometry args={[1.02, 1.13, 54]} />
         <meshBasicMaterial color="#8ff3aa" transparent opacity={0.28} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[-0.48, 0.5, 2.55]} color="#8ff3aa" intensity={1.65} distance={3.6} />
 
       {solarEnabled && (
         <>
@@ -107,7 +109,6 @@ export function HomeChargingSequence({ solarEnabled }: { solarEnabled: boolean }
             <sphereGeometry args={[0.055, 14, 14]} />
             <meshBasicMaterial color="#ffe8ae" />
           </mesh>
-          <pointLight position={[-1.55, 1.58, 2.24]} color="#ffdca0" intensity={1.25} distance={3.8} />
         </>
       )}
     </group>

@@ -5,14 +5,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function ResidenceAccessSequence() {
+  const reducedMotion = useMotionPreference();
   const vehicle = useRef<THREE.Group>(null);
   const scanField = useRef<THREE.Mesh>(null);
   const cameraLookAt = useRef(new THREE.Vector3(-2.45, 0.8, -9.7));
   const cameraPosition = useMemo(() => new THREE.Vector3(), []);
   const cameraTarget = useMemo(() => new THREE.Vector3(), []);
   const progress = useRef(0);
+  const sampledProgress = useRef(-1);
   const recognitionHold = useRef(0);
   const recognizedOnce = useRef(false);
   const [recognized, setRecognized] = useState(false);
@@ -41,7 +44,9 @@ export function ResidenceAccessSequence() {
   useFrame(({ clock, camera, size }, delta) => {
     if (!vehicle.current) return;
 
-    if (recognizedOnce.current && recognitionHold.current < 0.72) {
+    if (reducedMotion) {
+      progress.current = 1;
+    } else if (recognizedOnce.current && recognitionHold.current < 0.72) {
       recognitionHold.current += delta;
     } else {
       progress.current = Math.min(1, progress.current + delta * 0.24);
@@ -53,23 +58,25 @@ export function ResidenceAccessSequence() {
       setResidenceAccessAuthorized(true);
     }
 
-    const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
-    curve.getPointAt(t, point);
-    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
-
-    vehicle.current.position.copy(point);
-    vehicle.current.rotation.y = THREE.MathUtils.damp(
-      vehicle.current.rotation.y,
-      Math.atan2(-tangent.x, -tangent.z),
-      8,
-      delta,
-    );
+    if (sampledProgress.current !== progress.current) {
+      const t = THREE.MathUtils.smoothstep(progress.current, 0, 1);
+      curve.getPointAt(t, point);
+      curve.getTangentAt(Math.min(1, t + 0.001), tangent);
+      vehicle.current.position.copy(point);
+      sampledProgress.current = progress.current;
+    }
+    const heading = Math.atan2(-tangent.x, -tangent.z);
+    if (Math.abs(vehicle.current.rotation.y - heading) > 0.0001) {
+      vehicle.current.rotation.y = reducedMotion
+        ? heading
+        : THREE.MathUtils.damp(vehicle.current.rotation.y, heading, 8, delta);
+    }
 
     if (scanField.current) {
       const material = scanField.current.material as THREE.MeshBasicMaterial;
       const distanceFromScan = Math.abs(point.z - 4.45);
       const proximity = Math.max(0, 0.3 - distanceFromScan * 0.27);
-      material.opacity = proximity * (0.78 + Math.sin(clock.elapsedTime * 8.2) * 0.22);
+      material.opacity = proximity * (reducedMotion ? 1 : 0.78 + Math.sin(clock.elapsedTime * 8.2) * 0.22);
     }
 
     const mobile = size.width <= 760;
@@ -88,14 +95,16 @@ export function ResidenceAccessSequence() {
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
 
-    const cameraEase = 1 - Math.exp(-delta * (parkingFocus ? 3.8 : 5.4));
+    const cameraEase = reducedMotion ? 1 : 1 - Math.exp(-delta * (parkingFocus ? 3.8 : 5.4));
     camera.position.lerp(cameraPosition, cameraEase);
     cameraLookAt.current.lerp(cameraTarget, cameraEase);
 
     if (camera instanceof THREE.PerspectiveCamera) {
       const targetFov = mobile ? (parkingFocus ? 50 : 49) : parkingFocus ? 40 : 39;
-      camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
-      camera.updateProjectionMatrix();
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
+        camera.updateProjectionMatrix();
+      }
     }
 
     camera.lookAt(cameraLookAt.current);
@@ -128,9 +137,6 @@ export function ResidenceAccessSequence() {
             emissiveIntensity={recognized ? 2.2 : 0}
           />
         </mesh>
-        {recognized && (
-          <pointLight position={[0, 1.22, -0.15]} color="#98ffb0" intensity={2.4} distance={3.1} />
-        )}
       </group>
 
       <mesh ref={scanField} position={[-2.45, 0.86, 4.45]}>

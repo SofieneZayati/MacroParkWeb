@@ -10,6 +10,7 @@ import { ResidenceGuestSequence } from "./ResidenceGuestSequence";
 import { ResidenceChargingSequence } from "./ResidenceChargingSequence";
 import { RetailReservationSequence } from "./RetailReservationSequence";
 import { useExperienceStore, type EnvironmentId } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 const ORIGIN: Record<EnvironmentId, [number, number, number]> = {
   home: [8, 0, -10],
@@ -30,9 +31,9 @@ const RESERVATION_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
 };
 
 const GUEST_PLACEMENT: Record<EnvironmentId, [number, number, number]> = {
-  home: [1.15, 0.04, 3.1],
+  home: [1.15, 0.245, 3.1],
   residence: [0, 0.24, 2.35],
-  retail: [0, 0.04, 2.45],
+  retail: [0, 0.245, 2.45],
 };
 
 export function SolutionEffects() {
@@ -41,6 +42,7 @@ export function SolutionEffects() {
   const selectedProblems = useExperienceStore((state) => state.selectedProblems);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
   const guestAccessPreview = useExperienceStore((state) => state.guestAccessPreview);
+  const demoRevision = useExperienceStore((state) => state.demoRevision);
   const residenceAccessAuthorized = useExperienceStore(
     (state) => state.residenceAccessAuthorized,
   );
@@ -79,11 +81,11 @@ export function SolutionEffects() {
           ready={residenceBayReady}
         />
       )}
-      {residenceProtectionStory && <ResidenceAccessSequence />}
-      {residenceReservationStory && <ResidenceReservationSequence />}
-      {residenceGuestStory && <ResidenceGuestSequence allowed={guestPreviewActive} />}
-      {residenceChargingStory && <ResidenceChargingSequence />}
-      {retailReservationStory && <RetailReservationSequence />}
+      {residenceProtectionStory && <ResidenceAccessSequence key={demoRevision} />}
+      {residenceReservationStory && <ResidenceReservationSequence key={demoRevision} />}
+      {residenceGuestStory && <ResidenceGuestSequence key={demoRevision} allowed={guestPreviewActive} />}
+      {residenceChargingStory && <ResidenceChargingSequence key={demoRevision} />}
+      {retailReservationStory && <RetailReservationSequence key={demoRevision} />}
 
       {hasReservation && !residenceReservationStory && !retailReservationStory && (
         <ReservedBay position={RESERVATION_PLACEMENT[selectedEnvironment]} />
@@ -104,17 +106,17 @@ export function SolutionEffects() {
 }
 
 function ActiveBeacon() {
+  const reducedMotion = useMotionPreference();
   const ring = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!ring.current) return;
-    const pulse = 1 + Math.sin(clock.elapsedTime * 2.8) * 0.1;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(clock.elapsedTime * 2.8) * 0.1;
     ring.current.scale.setScalar(pulse);
-    ring.current.rotation.z += 0.002;
   });
 
   return (
-    <mesh ref={ring} rotation-x={Math.PI / 2} position={[0, 0.08, 0]}>
+    <mesh ref={ring} rotation-x={Math.PI / 2} position={[0, 0.255, 0]}>
       <torusGeometry args={[3.4, 0.035, 8, 48]} />
       <meshBasicMaterial color="#9df4b7" transparent opacity={0.35} />
     </mesh>
@@ -125,7 +127,7 @@ function GuidanceTrail() {
   return (
     <group>
       {[0, 1, 2, 3, 4, 5].map((step) => (
-        <group key={step} position={[-3.25 + step * 0.47, 0.075, 5.75 - step * 0.66]}>
+        <group key={step} position={[-3.25 + step * 0.47, 0.255, 5.75 - step * 0.66]}>
           <mesh rotation-x={-Math.PI / 2} rotation-z={-0.23} position={[-0.12, 0, 0]}>
             <planeGeometry args={[0.5, 0.11]} />
             <meshBasicMaterial
@@ -152,28 +154,29 @@ function GuidanceTrail() {
 }
 
 function AvailableBayMarker() {
+  const reducedMotion = useMotionPreference();
   const pulse = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!pulse.current) return;
     const material = pulse.current.material as THREE.MeshBasicMaterial;
-    material.opacity = 0.23 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.09;
+    material.opacity = reducedMotion ? 0.32 : 0.23 + (Math.sin(clock.elapsedTime * 2.6) + 1) * 0.09;
   });
 
   return (
     <group position={[-0.9, 0, 2.45]}>
-      <mesh ref={pulse} rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
+      <mesh ref={pulse} rotation-x={-Math.PI / 2} position={[0, 0.245, 0]}>
         <planeGeometry args={[1.42, 3.02]} />
         <meshBasicMaterial color="#8dffab" transparent opacity={0.32} side={THREE.DoubleSide} />
       </mesh>
 
       {[-0.68, 0.68].map((x) => (
-        <mesh key={`line-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.115, 0]}>
+        <mesh key={`line-${x}`} rotation-x={-Math.PI / 2} position={[x, 0.26, 0]}>
           <planeGeometry args={[0.055, 2.9]} />
           <meshBasicMaterial color="#d5ffdf" transparent opacity={0.92} />
         </mesh>
       ))}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.115, -1.42]}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.26, -1.42]}>
         <planeGeometry args={[1.38, 0.055]} />
         <meshBasicMaterial color="#d5ffdf" transparent opacity={0.92} />
       </mesh>
@@ -203,13 +206,14 @@ function AvailableBayMarker() {
 }
 
 function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: boolean }) {
+  const reducedMotion = useMotionPreference();
   const glow = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!glow.current) return;
     const material = glow.current.material as THREE.MeshBasicMaterial;
     material.opacity = ready
-      ? 0.2 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.07
+      ? reducedMotion ? 0.27 : 0.2 + (Math.sin(clock.elapsedTime * 2.4) + 1) * 0.07
       : 0.9;
   });
 
@@ -253,26 +257,27 @@ function ProtectedBay({ showHardware, ready }: { showHardware: boolean; ready: b
 }
 
 function ReservedBay({ position }: { position: [number, number, number] }) {
+  const reducedMotion = useMotionPreference();
   const marker = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!marker.current) return;
-    marker.current.rotation.z = clock.elapsedTime * 0.22;
+    marker.current.rotation.z = reducedMotion ? 0 : clock.elapsedTime * 0.22;
     const material = marker.current.material as THREE.MeshBasicMaterial;
-    material.opacity = 0.32 + (Math.sin(clock.elapsedTime * 2) + 1) * 0.08;
+    material.opacity = reducedMotion ? 0.4 : 0.32 + (Math.sin(clock.elapsedTime * 2) + 1) * 0.08;
   });
 
   return (
     <group position={position}>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 0]}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.245, 0]}>
         <planeGeometry args={[1.7, 3.1]} />
         <meshBasicMaterial color="#f2c76f" transparent opacity={0.1} side={THREE.DoubleSide} />
       </mesh>
-      <mesh ref={marker} rotation-x={Math.PI / 2} position={[0, 0.11, 0]}>
+      <mesh ref={marker} rotation-x={Math.PI / 2} position={[0, 0.285, 0]}>
         <torusGeometry args={[0.55, 0.045, 8, 40, Math.PI * 1.62]} />
         <meshBasicMaterial color="#f6cf79" transparent opacity={0.4} />
       </mesh>
-      <mesh position={[0, 0.16, -1.28]}>
+      <mesh position={[0, 0.28, -1.28]}>
         <boxGeometry args={[1.35, 0.08, 0.12]} />
         <meshStandardMaterial color="#d8aa50" emissive="#7d5720" emissiveIntensity={0.45} />
       </mesh>
@@ -294,17 +299,18 @@ function GuestWindow({ position, active }: { position: [number, number, number];
 }
 
 function FlowPulse({ x, startZ, endZ }: { x: number; startZ: number; endZ: number }) {
+  const reducedMotion = useMotionPreference();
   const pulse = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!pulse.current) return;
-    const progress = (clock.elapsedTime * 0.65) % 1;
+    const progress = reducedMotion ? 0.5 : (clock.elapsedTime * 0.65) % 1;
     pulse.current.position.z = THREE.MathUtils.lerp(startZ, endZ, progress);
-    pulse.current.position.y = 0.18 + Math.sin(progress * Math.PI) * 0.18;
+    pulse.current.position.y = 0.33 + Math.sin(progress * Math.PI) * 0.18;
   });
 
   return (
-    <mesh ref={pulse} position={[x, 0.2, startZ]}>
+    <mesh ref={pulse} position={[x, 0.33, startZ]}>
       <sphereGeometry args={[0.11, 10, 10]} />
       <meshBasicMaterial color="#a7f8be" />
     </mesh>

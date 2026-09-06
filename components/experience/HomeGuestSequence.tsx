@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
+  const reducedMotion = useMotionPreference();
   const vehicle = useRef<THREE.Group>(null);
   const scanField = useRef<THREE.Mesh>(null);
   const progress = useRef(0);
+  const sampledProgress = useRef(-1);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
   const curve = useMemo(
@@ -23,31 +26,39 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
     [],
   );
 
+  useEffect(() => {
+    progress.current = 0;
+    sampledProgress.current = -1;
+    vehicle.current?.rotation.set(0, 0, 0);
+  }, [allowed]);
+
   useFrame(({ clock }, delta) => {
     if (!vehicle.current) return;
 
     const stopAt = allowed ? 1 : 0.47;
-    progress.current = Math.min(stopAt, progress.current + delta * 0.24);
-    const normalized = progress.current / stopAt;
-    const t = allowed
-      ? THREE.MathUtils.smoothstep(progress.current, 0, 1)
-      : THREE.MathUtils.smoothstep(normalized, 0, 1) * stopAt;
-
-    curve.getPointAt(Math.min(1, t), point);
-    curve.getTangentAt(Math.min(1, t + 0.001), tangent).normalize();
-    vehicle.current.position.copy(point);
-    vehicle.current.rotation.y = THREE.MathUtils.damp(
-      vehicle.current.rotation.y,
-      Math.atan2(-tangent.x, -tangent.z),
-      8,
-      delta,
-    );
+    progress.current = reducedMotion ? stopAt : Math.min(stopAt, progress.current + delta * 0.24);
+    if (sampledProgress.current !== progress.current) {
+      const normalized = progress.current / stopAt;
+      const t = allowed
+        ? THREE.MathUtils.smoothstep(progress.current, 0, 1)
+        : THREE.MathUtils.smoothstep(normalized, 0, 1) * stopAt;
+      curve.getPointAt(Math.min(1, t), point);
+      curve.getTangentAt(Math.min(1, t + 0.001), tangent);
+      vehicle.current.position.copy(point);
+      sampledProgress.current = progress.current;
+    }
+    const heading = Math.atan2(-tangent.x, -tangent.z);
+    if (Math.abs(vehicle.current.rotation.y - heading) > 0.0001) {
+      vehicle.current.rotation.y = reducedMotion
+        ? heading
+        : THREE.MathUtils.damp(vehicle.current.rotation.y, heading, 8, delta);
+    }
 
     if (scanField.current) {
       const material = scanField.current.material as THREE.MeshBasicMaterial;
       const distanceFromScan = Math.abs(point.z - 4.05);
       const nearScan = Math.max(0, 0.26 - distanceFromScan * 0.23);
-      material.opacity = nearScan * (0.78 + Math.sin(clock.elapsedTime * 7.5) * 0.22);
+      material.opacity = nearScan * (reducedMotion ? 1 : 0.78 + Math.sin(clock.elapsedTime * 7.5) * 0.22);
     }
   });
 
@@ -55,7 +66,7 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
   const emissiveColor = allowed ? "#57ce72" : "#ad7927";
 
   return (
-    <group>
+    <group position={[0, 0.23, 0]}>
       <group ref={vehicle} position={[1.38, 0, 6.2]}>
         <PremiumVehicle color="#9eb2a5" scale={0.54} lightsOn />
       </group>
@@ -81,7 +92,6 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
             emissiveIntensity={2.1}
           />
         </mesh>
-        <pointLight position={[0, 1.15, -0.16]} color={signalColor} intensity={2.1} distance={3.1} />
       </group>
 
       <mesh ref={scanField} position={[1.25, 0.7, 4.05]}>
@@ -95,7 +105,7 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
         />
       </mesh>
 
-      <mesh rotation-x={-Math.PI / 2} position={[1.25, 0.08, 4.05]}>
+      <mesh rotation-x={-Math.PI / 2} position={[1.25, 0.015, 4.05]}>
         <ringGeometry args={[0.66, 0.74, 48]} />
         <meshBasicMaterial
           color={signalColor}
@@ -111,7 +121,6 @@ export function HomeGuestSequence({ allowed }: { allowed: boolean }) {
             <boxGeometry args={[1.85, 0.06, 0.12]} />
             <meshStandardMaterial color="#b38335" emissive="#71470f" emissiveIntensity={0.4} />
           </mesh>
-          <pointLight position={[1.25, 0.5, 3.62]} color="#efc36f" intensity={1.35} distance={2.5} />
         </>
       )}
     </group>

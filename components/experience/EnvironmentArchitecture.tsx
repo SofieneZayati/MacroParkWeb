@@ -4,12 +4,22 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function HomeArchitecture({ garageOpen }: { garageOpen: boolean }) {
   const garageDoor = useRef<THREE.Group>(null);
+  const reducedMotion = useMotionPreference();
 
   useFrame((_, delta) => {
     if (!garageDoor.current) return;
+    const targetY = garageOpen ? 1.72 : 0.98;
+    const targetScale = garageOpen ? 0.08 : 1;
+    if (Math.abs(garageDoor.current.position.y - targetY) < 0.001 && Math.abs(garageDoor.current.scale.y - targetScale) < 0.001) return;
+    if (reducedMotion) {
+      garageDoor.current.position.y = targetY;
+      garageDoor.current.scale.y = targetScale;
+      return;
+    }
     garageDoor.current.position.y = THREE.MathUtils.damp(
       garageDoor.current.position.y,
       garageOpen ? 1.72 : 0.98,
@@ -28,12 +38,12 @@ export function HomeArchitecture({ garageOpen }: { garageOpen: boolean }) {
     <group>
       <SitePad size={[8.4, 8.2]} color="#26352b" />
 
-      <mesh rotation-x={-Math.PI / 2} position={[-0.8, 0.035, 2.65]} receiveShadow>
+      <mesh rotation-x={-Math.PI / 2} position={[-0.8, 0.225, 2.65]} receiveShadow>
         <planeGeometry args={[3.35, 4.45]} />
         <meshStandardMaterial color="#3d4541" roughness={0.92} />
       </mesh>
 
-      <mesh rotation-x={-Math.PI / 2} position={[2.65, 0.04, 2.35]} receiveShadow>
+      <mesh rotation-x={-Math.PI / 2} position={[2.65, 0.225, 2.35]} receiveShadow>
         <planeGeometry args={[1.45, 4.6]} />
         <meshStandardMaterial color="#b7b7ac" roughness={0.9} />
       </mesh>

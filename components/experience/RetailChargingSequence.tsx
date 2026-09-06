@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
+import { useMotionPreference } from "./useMotionPreference";
 
 export function RetailChargingSequence() {
+  const reducedMotion = useMotionPreference();
   const selectedEnvironment = useExperienceStore((state) => state.selectedEnvironment);
   const selectedProblem = useExperienceStore((state) => state.selectedProblem);
   const solarEnabled = useExperienceStore((state) => state.solarEnabled);
@@ -34,6 +36,7 @@ export function RetailChargingSequence() {
     () => new THREE.TubeGeometry(cableCurve, 30, 0.025, 6, false),
     [cableCurve],
   );
+  useEffect(() => () => cableGeometry.dispose(), [cableGeometry]);
   const solarCurve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -55,8 +58,8 @@ export function RetailChargingSequence() {
       speed: number,
     ) => {
       if (!mesh) return;
-      const progress = (clock.elapsedTime * speed + offset) % 1;
-      mesh.position.copy(curve.getPointAt(progress));
+      const progress = ((reducedMotion ? 0 : clock.elapsedTime) * speed + offset) % 1;
+      curve.getPointAt(progress, mesh.position);
       mesh.scale.setScalar(0.72 + Math.sin(progress * Math.PI) * 0.28);
     };
 
@@ -69,8 +72,8 @@ export function RetailChargingSequence() {
 
     if (chargeRing.current) {
       const material = chargeRing.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.22 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.07;
-      const scale = 1 + Math.sin(clock.elapsedTime * 1.7) * 0.03;
+      material.opacity = reducedMotion ? 0.28 : 0.22 + (Math.sin(clock.elapsedTime * 2.2) + 1) * 0.07;
+      const scale = reducedMotion ? 1 : 1 + Math.sin(clock.elapsedTime * 1.7) * 0.03;
       chargeRing.current.scale.setScalar(scale);
     }
 
@@ -81,13 +84,16 @@ export function RetailChargingSequence() {
     const targetLookAt: [number, number, number] = [-7.8, mobile ? 0.25 : 0.55, -8.2];
     cameraPosition.set(...targetPosition);
     cameraTarget.set(...targetLookAt);
-    const ease = 1 - Math.exp(-delta * 4.7);
+    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 4.7);
     camera.position.lerp(cameraPosition, ease);
     cameraLookAt.current.lerp(cameraTarget, ease);
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = THREE.MathUtils.damp(camera.fov, mobile ? 50 : 39, 5.1, delta);
-      camera.updateProjectionMatrix();
+      const targetFov = mobile ? 50 : 39;
+      if (Math.abs(camera.fov - targetFov) > 0.001) {
+        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.1, delta);
+        camera.updateProjectionMatrix();
+      }
     }
     camera.lookAt(cameraLookAt.current);
   });
