@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useMotionPreference } from "./useMotionPreference";
+import { useStoryCamera } from "./useStoryCamera";
 
 export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
   const reducedMotion = useMotionPreference();
@@ -14,9 +15,7 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
   const sampledProgress = useRef(-1);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
-  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
-  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
-  const cameraLookAt = useRef(new THREE.Vector3(0, 0.9, -9.6));
+  const updateCamera = useStoryCamera([0, 0.9, -9.6]);
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -71,19 +70,13 @@ export function ResidenceGuestSequence({ allowed }: { allowed: boolean }) {
     const targetLookAt: [number, number, number] = allowed && progress.current > 0.7
       ? [0, 0.7, -11.4]
       : [0, 0.9, -9.55];
-    cameraPosition.set(...targetPosition);
-    cameraTarget.set(...targetLookAt);
-    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 5);
-    camera.position.lerp(cameraPosition, ease);
-    cameraLookAt.current.lerp(cameraTarget, ease);
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? 49 : 39;
-      if (Math.abs(camera.fov - targetFov) > 0.001) {
-        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.2, delta);
-        camera.updateProjectionMatrix();
-      }
-    }
-    camera.lookAt(cameraLookAt.current);
+    updateCamera(camera, delta, reducedMotion, {
+      position: targetPosition,
+      lookAt: targetLookAt,
+      fov: mobile ? 49 : 39,
+      movementDamping: 5,
+      fovDamping: 5.2,
+    });
   });
 
   const signalColor = allowed ? "#b8ffc9" : "#f2c76f";

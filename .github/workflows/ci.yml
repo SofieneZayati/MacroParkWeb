@@ -28,8 +28,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify configuration journeys
-        run: node --test tests/experience-store.test.cjs
+      - name: Verify configuration, brief, and camera behavior
+        run: npm test
 
       - name: Capture visual QA
         run: |
@@ -68,6 +68,8 @@ jobs:
             --run-all-compositor-stages-before-draw
           )
 
+          CAPTURE_FAILURES=0
+
           capture() {
             local size="$1"
             local budget="$2"
@@ -79,10 +81,11 @@ jobs:
               --window-size="$size" \
               --virtual-time-budget="$budget" \
               --screenshot="$output" \
-              "$url"; then
+              "$url" && [ -s "$output" ]; then
               echo "Captured $output"
             else
-              echo "::warning::Visual QA capture timed out or failed: $output"
+              echo "::error::Visual QA capture failed, timed out, or produced no image: $output"
+              CAPTURE_FAILURES=$((CAPTURE_FAILURES + 1))
               rm -f "$output"
             fi
           }
@@ -158,10 +161,21 @@ jobs:
             "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access&qaPreview=1"
           capture 320,568 2600 visual-qa/small-guest-preview.png \
             "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=guest-access&qaPreview=1&qaReducedMotion=1"
+          capture 390,844 2600 visual-qa/mobile-workbench-preview.png \
+            "http://127.0.0.1:3000/?qaEnvironment=home&qaProblem=automatic-access&qaPreview=1&qaReducedMotion=1"
+          capture 320,568 2600 visual-qa/small-retail-workbench-preview.png \
+            "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance&qaPreview=1&qaReducedMotion=1"
+          capture 844,390 2600 visual-qa/landscape-workbench-preview.png \
+            "http://127.0.0.1:3000/?qaEnvironment=residence&qaProblem=protect-space&qaPreview=1&qaReducedMotion=1"
           capture 390,844 2400 visual-qa/mobile-reduced-motion-guidance.png \
             "http://127.0.0.1:3000/?qaEnvironment=retail&qaProblem=parking-guidance&qaReducedMotion=1"
           capture 1440,1000 2400 visual-qa/desktop-no-webgl.png \
             "http://127.0.0.1:3000/?qaNoWebGL=1"
+
+          if [ "$CAPTURE_FAILURES" -gt 0 ]; then
+            echo "::error::$CAPTURE_FAILURES visual QA capture(s) failed. Review the remaining images and step logs."
+            exit 1
+          fi
 
       - name: Upload visual QA
         if: always()

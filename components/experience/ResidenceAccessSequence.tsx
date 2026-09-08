@@ -6,14 +6,13 @@ import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
 import { useMotionPreference } from "./useMotionPreference";
+import { useStoryCamera } from "./useStoryCamera";
 
 export function ResidenceAccessSequence() {
   const reducedMotion = useMotionPreference();
   const vehicle = useRef<THREE.Group>(null);
   const scanField = useRef<THREE.Mesh>(null);
-  const cameraLookAt = useRef(new THREE.Vector3(-2.45, 0.8, -9.7));
-  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
-  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
+  const updateCamera = useStoryCamera([-2.45, 0.8, -9.7]);
   const progress = useRef(0);
   const sampledProgress = useRef(-1);
   const recognitionHold = useRef(0);
@@ -92,22 +91,13 @@ export function ResidenceAccessSequence() {
       ? [-2.4, 0.95, -11.45]
       : [-2.45, 0.82, -9.7];
 
-    cameraPosition.set(...targetPosition);
-    cameraTarget.set(...targetLookAt);
-
-    const cameraEase = reducedMotion ? 1 : 1 - Math.exp(-delta * (parkingFocus ? 3.8 : 5.4));
-    camera.position.lerp(cameraPosition, cameraEase);
-    cameraLookAt.current.lerp(cameraTarget, cameraEase);
-
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? (parkingFocus ? 50 : 49) : parkingFocus ? 40 : 39;
-      if (Math.abs(camera.fov - targetFov) > 0.001) {
-        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.8, delta);
-        camera.updateProjectionMatrix();
-      }
-    }
-
-    camera.lookAt(cameraLookAt.current);
+    updateCamera(camera, delta, reducedMotion, {
+      position: targetPosition,
+      lookAt: targetLookAt,
+      fov: mobile ? (parkingFocus ? 50 : 49) : parkingFocus ? 40 : 39,
+      movementDamping: parkingFocus ? 3.8 : 5.4,
+      fovDamping: 5.8,
+    });
   });
 
   return (

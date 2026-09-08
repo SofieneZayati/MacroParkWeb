@@ -1,18 +1,9 @@
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-const { readFileSync } = require('node:fs');
-const { resolve } = require('node:path');
-const { createRequire } = require('node:module');
-const ts = require('typescript');
+const { loadTypeScript } = require('./helpers/load-typescript.cjs');
 
 // Test the real store without adding a runner or a duplicate state model.
-const filename = resolve(__dirname, '../components/experience/useExperienceStore.ts');
-const source = ts.transpileModule(readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-}).outputText;
-const moduleExports = {};
-new Function('require', 'exports', source)(createRequire(filename), moduleExports);
-const store = moduleExports.useExperienceStore;
+const { useExperienceStore: store } = loadTypeScript('components/experience/useExperienceStore.ts');
 const state = () => store.getState();
 beforeEach(() => state().reset());
 
@@ -157,4 +148,66 @@ test('reset removes all per-place setups and returns to the opening', () => {
   assert.equal(state().selectedEnvironment, null);
   assert.equal(state().introComplete, false);
   assert.equal(state().phase, 'arrival');
+});
+
+test('invalid solutions and places cannot enter the preview or saved setup', () => {
+  const initial = state();
+  state().previewProblem('ev-charging');
+  state().addProblem('ev-charging');
+  state().chooseProblem('ev-charging');
+  state().chooseEnvironment('unknown');
+  assert.equal(state(), initial);
+
+  state().chooseEnvironment('home');
+  state().previewProblem('guest-access');
+  const home = state();
+  for (const action of ['previewProblem', 'addProblem', 'chooseProblem']) {
+    state()[action]('parking-guidance');
+    state()[action]('unknown');
+    assert.equal(state(), home);
+  }
+  assert.equal(state().selectedProblem, 'guest-access');
+  assert.deepEqual(state().selectedProblems, []);
+});
+
+test('the canonical configuration is current before switching places, and old snapshots stay unchanged', () => {
+  state().chooseEnvironment('home');
+  state().addProblem('ev-charging');
+  const previous = state().configurations;
+  assert.deepEqual(previous.home, { selectedProblems: ['ev-charging'], solarEnabled: false });
+  assert.equal(state().selectedProblems, previous.home.selectedProblems);
+
+  state().toggleSolar();
+  assert.equal(state().configurations.home.solarEnabled, true);
+  assert.equal(previous.home.solarEnabled, false);
+  const withSolar = state().configurations.home;
+  state().removeProblem('ev-charging');
+  assert.deepEqual(state().configurations.home, { selectedProblems: [], solarEnabled: false });
+  assert.equal(state().selectedProblems, state().configurations.home.selectedProblems);
+  assert.equal(withSolar.solarEnabled, true);
+  assert.deepEqual(withSolar.selectedProblems, ['ev-charging']);
+  assert.ok(Object.isFrozen(withSolar));
+  assert.ok(Object.isFrozen(withSolar.selectedProblems));
+});
+
+test('removing an included solution leaves its preview and demonstration state intact', () => {
+  state().chooseEnvironment('residence');
+  state().previewProblem('protect-space');
+  state().addProblem('protect-space');
+  state().setResidenceAccessAuthorized(true);
+  state().setGuestAccessPreview('expired');
+  const revision = state().demoRevision;
+  state().removeProblem('protect-space');
+  assert.deepEqual(state().selectedProblems, []);
+  assert.equal(state().selectedProblem, 'protect-space');
+  assert.equal(state().residenceAccessAuthorized, true);
+  assert.equal(state().guestAccessPreview, 'expired');
+  assert.equal(state().demoRevision, revision);
+
+  state().previewProblem('ev-charging');
+  state().addProblem('ev-charging');
+  state().toggleSolar();
+  state().removeProblem('ev-charging');
+  assert.equal(state().selectedProblem, 'ev-charging');
+  assert.equal(state().solarEnabled, false);
 });

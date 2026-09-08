@@ -1,51 +1,39 @@
 "use client";
 
 import { create } from "zustand";
+import { isEnvironmentId } from "@/lib/experienceContent";
+import { EMPTY_CONFIGURATION, isProblemAvailable, normalizeConfiguration } from "@/lib/experienceConfiguration";
+import type {
+  Configurations,
+  EnvironmentConfiguration,
+  EnvironmentId,
+  ExperiencePhase,
+  GuestAccessPreview,
+  ProblemId,
+} from "@/lib/experienceDomain";
 
-export type ExperiencePhase =
-  | "arrival"
-  | "scan"
-  | "reveal"
-  | "choose"
-  | "home"
-  | "residence"
-  | "retail";
-
-export type EnvironmentId = "home" | "residence" | "retail";
-
-export type ProblemId =
-  | "automatic-access"
-  | "guest-access"
-  | "protect-space"
-  | "reservations"
-  | "parking-guidance"
-  | "reduce-queues"
-  | "ev-charging";
-
-export type GuestAccessPreview = "active" | "expired";
-
-type EnvironmentConfiguration = {
-  selectedProblems: ProblemId[];
-  solarEnabled: boolean;
-};
+// Compatibility for scene components; domain modules import from lib/experienceDomain directly.
+export type { EnvironmentId, ExperiencePhase, GuestAccessPreview, ProblemId } from "@/lib/experienceDomain";
 
 type ExperienceState = {
   phase: ExperiencePhase;
   selectedEnvironment: EnvironmentId | null;
   selectedProblem: ProblemId | null;
-  selectedProblems: ProblemId[];
+  /** Read-only projections of the active entry in configurations. */
+  selectedProblems: readonly ProblemId[];
   solarEnabled: boolean;
+  configurations: Configurations;
   summaryOpen: boolean;
   introComplete: boolean;
   guestAccessPreview: GuestAccessPreview;
   residenceAccessAuthorized: boolean;
   hoveredEnvironment: EnvironmentId | null;
-  configurations: Partial<Record<EnvironmentId, EnvironmentConfiguration>>;
   demoRevision: number;
   setHoveredEnvironment: (environment: EnvironmentId | null) => void;
   replayDemo: () => void;
   setPhase: (phase: ExperiencePhase) => void;
   chooseEnvironment: (environment: EnvironmentId) => void;
+  /** Preview and include together; retained for deterministic scene QA links. */
   chooseProblem: (problem: ProblemId) => void;
   previewProblem: (problem: ProblemId) => void;
   addProblem: (problem: ProblemId) => void;
@@ -61,139 +49,116 @@ type ExperienceState = {
   reset: () => void;
 };
 
-export const useExperienceStore = create<ExperienceState>((set) => ({
-  phase: "arrival",
-  selectedEnvironment: null,
+const idlePreview = {
   selectedProblem: null,
-  selectedProblems: [],
-  solarEnabled: false,
-  summaryOpen: false,
-  introComplete: false,
-  guestAccessPreview: "active",
+  guestAccessPreview: "active" as const,
   residenceAccessAuthorized: false,
-  hoveredEnvironment: null,
-  configurations: {},
-  demoRevision: 0,
+};
+
+function activeConfiguration(configurations: Configurations, environment: EnvironmentId | null) {
+  const active = (environment && configurations[environment]) || EMPTY_CONFIGURATION;
+  return {
+    configurations,
+    selectedProblems: active.selectedProblems,
+    solarEnabled: active.solarEnabled,
+  };
+}
+
+/** All setup writes pass through one boundary; the active projection never goes stale. */
+function updateConfiguration(
+  state: ExperienceState,
+  update: (configuration: EnvironmentConfiguration) => EnvironmentConfiguration,
+) {
+  const environment = state.selectedEnvironment;
+  if (!environment) return state;
+  const current = state.configurations[environment] ?? EMPTY_CONFIGURATION;
+  const next = update(current);
+  if (next === current) return state;
+  const configurations = {
+    ...state.configurations,
+    [environment]: normalizeConfiguration(environment, next),
+  };
+  return activeConfiguration(configurations, environment);
+}
+
+function preview(state: ExperienceState, selectedProblem: ProblemId) {
+  return {
+    ...idlePreview,
+    selectedProblem,
+    demoRevision: state.demoRevision + 1,
+    summaryOpen: false,
+  };
+}
+
+function initialState() {
+  return {
+    ...idlePreview,
+    ...activeConfiguration({}, null),
+    phase: "arrival" as const,
+    selectedEnvironment: null,
+    summaryOpen: false,
+    introComplete: false,
+    hoveredEnvironment: null,
+    demoRevision: 0,
+  };
+}
+
+export const useExperienceStore = create<ExperienceState>((set) => ({
+  ...initialState(),
   setHoveredEnvironment: (hoveredEnvironment) => set({ hoveredEnvironment }),
   replayDemo: () =>
-    set((state) => ({
-      demoRevision: state.demoRevision + 1,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-    })),
+    set((state) => state.selectedProblem ? preview(state, state.selectedProblem) : state),
   setPhase: (phase) => set({ phase }),
   chooseEnvironment: (selectedEnvironment) =>
+    set((state) => isEnvironmentId(selectedEnvironment) ? {
+      ...idlePreview,
+      ...activeConfiguration(state.configurations, selectedEnvironment),
+      selectedEnvironment,
+      summaryOpen: false,
+      hoveredEnvironment: null,
+      phase: selectedEnvironment,
+    } : state),
+  chooseProblem: (problem) =>
     set((state) => {
-      const configurations = state.selectedEnvironment
-        ? {
-            ...state.configurations,
-            [state.selectedEnvironment]: {
-              selectedProblems: state.selectedProblems,
-              solarEnabled: state.solarEnabled,
-            },
-          }
-        : state.configurations;
-      const saved = configurations[selectedEnvironment];
-
+      if (!isProblemAvailable(state.selectedEnvironment, problem)) return state;
       return {
-        configurations,
-        selectedEnvironment,
-        selectedProblem: null,
-        selectedProblems: saved?.selectedProblems ?? [],
-        solarEnabled: saved?.solarEnabled ?? false,
-        summaryOpen: false,
-        hoveredEnvironment: null,
-        guestAccessPreview: "active",
-        residenceAccessAuthorized: false,
-        phase: selectedEnvironment,
+        ...updateConfiguration(state, (configuration) => configuration.selectedProblems.includes(problem)
+          ? configuration
+          : { ...configuration, selectedProblems: [...configuration.selectedProblems, problem] }),
+        ...preview(state, problem),
       };
     }),
-  chooseProblem: (selectedProblem) =>
-    set((state) => ({
-      selectedProblem,
-      demoRevision: state.demoRevision + 1,
-      selectedProblems: state.selectedProblems.includes(selectedProblem)
-        ? state.selectedProblems
-        : [...state.selectedProblems, selectedProblem],
-      summaryOpen: false,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-    })),
-  previewProblem: (selectedProblem) =>
-    set((state) => ({
-      selectedProblem,
-      demoRevision: state.demoRevision + 1,
-      summaryOpen: false,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-    })),
+  previewProblem: (problem) =>
+    set((state) => isProblemAvailable(state.selectedEnvironment, problem) ? preview(state, problem) : state),
   addProblem: (problem) =>
-    set((state) => state.selectedProblems.includes(problem)
-      ? state
-      : { selectedProblems: [...state.selectedProblems, problem] }),
-  clearProblem: () =>
-    set({
-      selectedProblem: null,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-    }),
+    set((state) => isProblemAvailable(state.selectedEnvironment, problem)
+      ? updateConfiguration(state, (configuration) => configuration.selectedProblems.includes(problem)
+        ? configuration
+        : { ...configuration, selectedProblems: [...configuration.selectedProblems, problem] })
+      : state),
+  clearProblem: () => set(idlePreview),
   removeProblem: (problem) =>
-    set((state) => {
-      const selectedProblems = state.selectedProblems.filter((item) => item !== problem);
-      const evStillSelected = selectedProblems.includes("ev-charging");
-
-      return {
-        selectedProblems,
-        selectedProblem: state.selectedProblem === problem ? null : state.selectedProblem,
-        solarEnabled: evStillSelected ? state.solarEnabled : false,
-        guestAccessPreview: "active",
-        residenceAccessAuthorized: false,
-      };
-    }),
+    set((state) => updateConfiguration(state, (configuration) => configuration.selectedProblems.includes(problem)
+      ? { ...configuration, selectedProblems: configuration.selectedProblems.filter((item) => item !== problem) }
+      : configuration)),
   toggleSolar: () =>
-    set((state) => ({
-      solarEnabled: state.selectedProblems.includes("ev-charging") ? !state.solarEnabled : false,
-    })),
-  // Keep the preview and its opener mounted while the native modal pauses it.
-  openSummary: () => set({ summaryOpen: true }),
+    set((state) => updateConfiguration(state, (configuration) => configuration.selectedProblems.includes("ev-charging")
+      ? { ...configuration, solarEnabled: !configuration.solarEnabled }
+      : configuration)),
+  // The native modal leaves the active preview mounted and resumes it on dismissal.
+  openSummary: () => set((state) => state.selectedEnvironment ? { summaryOpen: true } : state),
   closeSummary: () => set({ summaryOpen: false }),
   backToChooser: () =>
     set((state) => ({
-      configurations: state.selectedEnvironment
-        ? {
-            ...state.configurations,
-            [state.selectedEnvironment]: {
-              selectedProblems: state.selectedProblems,
-              solarEnabled: state.solarEnabled,
-            },
-          }
-        : state.configurations,
+      ...idlePreview,
+      ...activeConfiguration(state.configurations, null),
       selectedEnvironment: null,
-      selectedProblem: null,
-      selectedProblems: [],
-      solarEnabled: false,
       summaryOpen: false,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
       phase: "choose",
       hoveredEnvironment: null,
     })),
   completeIntro: () => set({ introComplete: true, phase: "choose" }),
   setGuestAccessPreview: (guestAccessPreview) => set({ guestAccessPreview }),
   setResidenceAccessAuthorized: (residenceAccessAuthorized) => set({ residenceAccessAuthorized }),
-  reset: () =>
-    set({
-      phase: "arrival",
-      selectedEnvironment: null,
-      selectedProblem: null,
-      selectedProblems: [],
-      solarEnabled: false,
-      summaryOpen: false,
-      introComplete: false,
-      guestAccessPreview: "active",
-      residenceAccessAuthorized: false,
-      hoveredEnvironment: null,
-      configurations: {},
-      demoRevision: 0,
-    }),
+  reset: () => set(initialState()),
 }));

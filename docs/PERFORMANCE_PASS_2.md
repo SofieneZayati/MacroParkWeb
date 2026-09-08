@@ -2,7 +2,27 @@
 
 Development branch: `performance-pass-2`. Work started 2026-09-05; final validation continued 2026-09-06. The merged baseline is `1b55563`.
 
-The measurements and browser verification below describe the completed performance pass. A subsequent selection-clarity revision separates preview from adding, simplifies navigation, and has ten passing store tests. Its fresh browser verification is pending due to unavailable automation; see `PROGRESS.md` for that checkpoint.
+The main measurements below describe the 2026-09-05/06 performance pass. The following dated addendum records the subsequent full refactor; see `PROGRESS.md` for the current checkpoint.
+
+## 2026-09-08 — Full-refactor production check
+
+The interface, domain/configuration rules, renderer lifecycle, shared story camera and brief builder now have separate owners. Settled camera transforms stop updating. Display changes and solution replay resume a paused scene so quality changes cannot leave a cleared canvas. The interface uses scoped CSS and responsive portrait/landscape layouts.
+
+Next.js 15.5.23 on Node 24 reports **12.7 kB route size / 115 kB First Load JS**, versus the preceding 258/361 kB. The renderer is dynamically imported with SSR disabled. Its bytes still download when the experience opens; the figures compare initial bundles, not total transfers, loading time or a measured percentage speedup. No heavyweight assets or runtime dependencies were added.
+
+Fresh representative one-second samples in the production in-app Chromium browser, on NVIDIA GeForce RTX 3060 / ANGLE Direct3D11:
+
+| Scene / viewport | FPS | p95 frame interval | Draw calls | DPR |
+| --- | ---: | ---: | ---: | ---: |
+| Residence protected space, 1280×720 | 144.0 | 7.2 ms | 102 | 1.10 |
+| Residence protected space, lighter graphics, 1280×720 | 144.0 | 7.0 ms | 102 | 0.75 |
+| Retail EV + solar, 1280×720 | 144.0 | 7.1 ms | 141 | 1.10 |
+| Retail EV + solar, 390×844 viewport | 144.0 | 7.0 ms | 127 | 1.10 |
+| Home expired guest, 390×844 viewport | 144.0 | 7.0 ms | 73 | 1.10 |
+
+All samples report zero point lights. Console inspection captured no errors or warnings in these production scenes. The 21 state/brief/camera tests, TypeScript and production build pass. Browser checks cover plan selection/restoration, keyboard navigation, guest/solar options, pause/replay/quality/full-scene, modal focus, copied and actually downloaded brief contents, reduced motion and WebGL fallback. Portrait and landscape layouts were visually reviewed at 390×844, 320×568 and 844×390.
+
+These are spot samples, not a before/after FPS benchmark, an interaction-latency recording, GPU timer-query measurements or sustained thermal testing. The portrait tests use the same desktop GPU. Physical phones, Safari and low-end hardware remain unverified. Updated CI captures require their own run and visual review.
 
 ## Confirmed problems and changes
 

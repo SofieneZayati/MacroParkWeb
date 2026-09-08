@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useMotionPreference } from "./useMotionPreference";
+import { useStoryCamera } from "./useStoryCamera";
 
 export function ResidenceReservationSequence() {
   const reducedMotion = useMotionPreference();
@@ -17,9 +18,7 @@ export function ResidenceReservationSequence() {
   const [matched, setMatched] = useState(false);
   const point = useMemo(() => new THREE.Vector3(), []);
   const tangent = useMemo(() => new THREE.Vector3(), []);
-  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
-  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
-  const cameraLookAt = useRef(new THREE.Vector3(0, 0.75, 4.2));
+  const updateCamera = useStoryCamera([0, 0.75, 4.2]);
   const curve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -81,20 +80,13 @@ export function ResidenceReservationSequence() {
       ? [0, 0.55, -11.65]
       : [0, 0.9, -9.55];
 
-    cameraPosition.set(...targetPosition);
-    cameraTarget.set(...targetLookAt);
-    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * (parkingFocus ? 4.2 : 5.2));
-    camera.position.lerp(cameraPosition, ease);
-    cameraLookAt.current.lerp(cameraTarget, ease);
-
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? 49 : parkingFocus ? 39 : 38;
-      if (Math.abs(camera.fov - targetFov) > 0.001) {
-        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.4, delta);
-        camera.updateProjectionMatrix();
-      }
-    }
-    camera.lookAt(cameraLookAt.current);
+    updateCamera(camera, delta, reducedMotion, {
+      position: targetPosition,
+      lookAt: targetLookAt,
+      fov: mobile ? 49 : parkingFocus ? 39 : 38,
+      movementDamping: parkingFocus ? 4.2 : 5.2,
+      fovDamping: 5.4,
+    });
   });
 
   const color = matched ? "#a9f7bd" : "#f2c76f";

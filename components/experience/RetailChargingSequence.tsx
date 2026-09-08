@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { PremiumVehicle } from "./PremiumVehicle";
 import { useExperienceStore } from "./useExperienceStore";
 import { useMotionPreference } from "./useMotionPreference";
+import { useStoryCamera } from "./useStoryCamera";
 
 export function RetailChargingSequence() {
   const reducedMotion = useMotionPreference();
@@ -18,9 +19,7 @@ export function RetailChargingSequence() {
   const solarPulseA = useRef<THREE.Mesh>(null);
   const solarPulseB = useRef<THREE.Mesh>(null);
   const chargeRing = useRef<THREE.Mesh>(null);
-  const cameraPosition = useMemo(() => new THREE.Vector3(), []);
-  const cameraTarget = useMemo(() => new THREE.Vector3(), []);
-  const cameraLookAt = useRef(new THREE.Vector3(-7.8, 0.35, -8.25));
+  const updateCamera = useStoryCamera([-7.8, 0.35, -8.25]);
 
   const cableCurve = useMemo(
     () =>
@@ -82,20 +81,13 @@ export function RetailChargingSequence() {
       ? [-10.9, 7.15, -2.3]
       : [-13.05, 4.25, -2.95];
     const targetLookAt: [number, number, number] = [-7.8, mobile ? 0.25 : 0.55, -8.2];
-    cameraPosition.set(...targetPosition);
-    cameraTarget.set(...targetLookAt);
-    const ease = reducedMotion ? 1 : 1 - Math.exp(-delta * 4.7);
-    camera.position.lerp(cameraPosition, ease);
-    cameraLookAt.current.lerp(cameraTarget, ease);
-
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const targetFov = mobile ? 50 : 39;
-      if (Math.abs(camera.fov - targetFov) > 0.001) {
-        camera.fov = reducedMotion ? targetFov : THREE.MathUtils.damp(camera.fov, targetFov, 5.1, delta);
-        camera.updateProjectionMatrix();
-      }
-    }
-    camera.lookAt(cameraLookAt.current);
+    updateCamera(camera, delta, reducedMotion, {
+      position: targetPosition,
+      lookAt: targetLookAt,
+      fov: mobile ? 50 : 39,
+      movementDamping: 4.7,
+      fovDamping: 5.1,
+    });
   });
 
   if (!active) return null;

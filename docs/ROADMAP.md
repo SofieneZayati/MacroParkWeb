@@ -694,14 +694,18 @@ The core interaction must be convincing first.
 
 ## 14. Current priority
 
-Phases 1–4 are merged. The current development checkpoint is **Performance Pass 2 + client consultation polish** on `performance-pass-2`. The historical phase checklists above describe the original roadmap; use `PROGRESS.md` for implementation status.
+Phases 1–4 are merged. The current development checkpoint is the **full client journey and architecture refactor, 2026-09-08**, on `performance-pass-2`. The historical phase checklists above describe the original roadmap; use [`PROGRESS.md`](PROGRESS.md) for implementation status and [`ARCHITECTURE.md`](ARCHITECTURE.md) for current code boundaries.
 
 The core experience is now implemented:
 
-> **Arrival -> automatic entrance -> reveal MacroPark world -> choose an environment -> enter it -> choose a real-life parking problem -> see MacroPark solve it.**
+> **Arrival -> choose your place -> explore needs in one workbench -> see the solution -> explicitly add it to your plan -> review and create a project brief.**
+
+Previewing and adding are separate decisions. Each place retains its own in-memory plan. Optional solar belongs to charging and does not increase the solution count. Replay, pause and full-scene controls support the demonstration; **View settings** offers **Lighter graphics**.
+
+The refactor separates interface composition, domain/configuration rules, rendering lifecycle, shared camera motion and brief generation without adding heavy assets or runtime dependencies. All 21 tests pass. Development-browser checks covered all place/solution tabs, add/remove and plan restoration, solar counts, keyboard navigation, modal focus and brief draft/copy/download. The 390×844, 320×568 and 844×390 layouts showed no page overflow, and reduced motion/WebGL fallback stayed usable.
 
 The exact visual design can evolve during implementation, but the guiding principle should remain stable:
 
 > **The visitor should feel the benefit before they have to understand the technology.**
 
-Next: validate on physical phones and the normal production browser, then finish the real consultation destination, production deployment/domain, accessible/SEO content and any justified selective visual asset upgrades. A system/digital-twin reveal remains a later step after performance sign-off.
+The production build passes, with 115 kB First Load JS and a separately loaded 3D renderer. Fresh RTX 3060 spot samples reached 144 FPS; physical-device limits remain unverified. Next: run the updated GitHub CI workflow and validate physical phones, then finish the real consultation destination, production deployment/domain, accessible/SEO content and any justified selective visual asset upgrades. A system/digital-twin reveal remains a later step after performance sign-off.

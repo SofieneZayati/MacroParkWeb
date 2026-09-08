@@ -31,7 +31,8 @@ export function SceneRuntime({ paused, reducedMotion, onReady, diagnostics, insp
   useLayoutEffect(() => {
     if (!(camera instanceof PerspectiveCamera)) return;
     if (reservePanel) {
-      const mobile = size.width <= 760;
+      const landscape = size.width > size.height && size.height <= 500;
+      const mobile = size.width <= 760 && !landscape;
       camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * 0.14,
         mobile ? size.height * 0.2 : 0, size.width, size.height);
     } else {

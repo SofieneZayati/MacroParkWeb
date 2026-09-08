@@ -1,4 +1,4 @@
-import type { EnvironmentId, ProblemId } from "@/components/experience/useExperienceStore";
+import type { EnvironmentId, ProblemId } from "./experienceDomain";
 
 export type Problem = {
   id: ProblemId;
@@ -7,7 +7,7 @@ export type Problem = {
   resultBody: string;
 };
 
-type Environment = {
+export type Environment = {
   id: EnvironmentId;
   index: string;
   name: string;
@@ -134,25 +134,9 @@ export const environments: Environment[] = [
   },
 ];
 
-const recommendationPriority: Record<EnvironmentId, Partial<Record<ProblemId, ProblemId[]>>> = {
-  home: {
-    "automatic-access": ["guest-access", "ev-charging"],
-    "guest-access": ["automatic-access", "ev-charging"],
-    "ev-charging": ["automatic-access", "guest-access"],
-  },
-  residence: {
-    "protect-space": ["reservations", "guest-access", "ev-charging"],
-    reservations: ["guest-access", "protect-space", "ev-charging"],
-    "guest-access": ["reservations", "protect-space", "ev-charging"],
-    "ev-charging": ["reservations", "protect-space", "guest-access"],
-  },
-  retail: {
-    "reduce-queues": ["parking-guidance", "reservations", "ev-charging"],
-    "parking-guidance": ["reservations", "ev-charging", "reduce-queues"],
-    reservations: ["parking-guidance", "ev-charging", "reduce-queues"],
-    "ev-charging": ["parking-guidance", "reservations", "reduce-queues"],
-  },
-};
+export function isEnvironmentId(value: unknown): value is EnvironmentId {
+  return environments.some((environment) => environment.id === value);
+}
 
 export function getEnvironment(id: EnvironmentId | null) {
   return environments.find((environment) => environment.id === id) ?? null;
@@ -160,22 +144,4 @@ export function getEnvironment(id: EnvironmentId | null) {
 
 export function getProblem(environmentId: EnvironmentId | null, problemId: ProblemId | null) {
   return getEnvironment(environmentId)?.problems.find((problem) => problem.id === problemId) ?? null;
-}
-
-export function getRecommendedProblem(
-  environmentId: EnvironmentId | null,
-  currentProblemId: ProblemId | null,
-  selectedProblemIds: ProblemId[],
-) {
-  if (!environmentId || !currentProblemId) return null;
-
-  const environment = getEnvironment(environmentId);
-  if (!environment) return null;
-
-  const candidates = recommendationPriority[environmentId][currentProblemId] ?? [];
-  const recommendationId = candidates.find((candidate) => !selectedProblemIds.includes(candidate));
-
-  return recommendationId
-    ? environment.problems.find((problem) => problem.id === recommendationId) ?? null
-    : null;
 }

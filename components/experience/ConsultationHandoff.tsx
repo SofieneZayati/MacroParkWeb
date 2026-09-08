@@ -2,26 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getEnvironment } from "@/lib/experienceContent";
+import { buildProjectBrief, SCALE_LABELS, TIMING_LABELS, type ScaleOption, type TimingOption } from "@/lib/projectBrief";
 import { useExperienceStore } from "./useExperienceStore";
 import styles from "./ConsultationHandoff.module.css";
 
-type ScaleOption = "private" | "small" | "medium" | "large";
-type TimingOption = "exploring" | "planning" | "soon" | "upgrade";
 type Feedback = "idle" | "copying" | "copied" | "error" | "downloaded";
-
-const SCALE_LABELS: Record<ScaleOption, string> = {
-  private: "1–5 spaces",
-  small: "6–30 spaces",
-  medium: "31–100 spaces",
-  large: "101+ spaces",
-};
-
-const TIMING_LABELS: Record<TimingOption, string> = {
-  exploring: "Exploring possibilities",
-  planning: "Planning a project",
-  soon: "Ready to move soon",
-  upgrade: "Upgrading existing parking",
-};
 
 const FEEDBACK_LABELS: Record<Feedback, string> = {
   idle: "",
@@ -53,28 +38,11 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
     [environment, selectedProblems],
   );
 
-  const brief = useMemo(() => {
-    if (!environment) return "";
-
-    return [
-      "MACROPARK PROJECT BRIEF",
-      "",
-      `Project type: ${environmentName}`,
-      `Location: ${location.trim() || "To be confirmed"}`,
-      `Parking scale: ${SCALE_LABELS[scale]}`,
-      `Project timing: ${TIMING_LABELS[timing]}`,
-      "",
-      "Selected solutions:",
-      ...selected.map((problem) => `- ${problem.label}\n  ${problem.resultBody}`),
-      ...(solarEnabled ? ["- Solar canopy above parking and charging spaces"] : []),
-      "",
-      `Contact: ${contactName.trim() || "Not provided"}`,
-      `Email: ${contactEmail.trim() || "Not provided"}`,
-      "",
-      "A starting point for consultation. Final design and scope to be confirmed.",
-      "Created with the MacroPark interactive experience.",
-    ].join("\n");
-  }, [contactEmail, contactName, environment, environmentName, location, scale, selected, solarEnabled, timing]);
+  const brief = useMemo(() => buildProjectBrief(
+    selectedEnvironment,
+    { selectedProblems, solarEnabled },
+    { contactEmail, contactName, location, scale, timing },
+  ), [contactEmail, contactName, selectedEnvironment, location, scale, selectedProblems, solarEnabled, timing]);
 
   useEffect(() => {
     if (active) headingRef.current?.focus({ preventScroll: true });
@@ -87,7 +55,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
   if (!environment) return null;
 
   const configuredRecipient = process.env.NEXT_PUBLIC_MACROPARK_CONTACT_EMAIL?.trim();
-  const choiceCount = selected.length + (solarEnabled ? 1 : 0);
+  const choiceCount = selected.length;
 
   async function copyBrief() {
     setFeedback("copying");
@@ -147,7 +115,7 @@ export function ConsultationHandoff({ onBack, active = true }: { onBack: () => v
       }}
     >
       <button className={styles.back} type="button" onClick={onBack}>
-        ← Back to setup
+        ← Back to your plan
       </button>
 
       <header className={styles.header}>

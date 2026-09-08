@@ -14,7 +14,6 @@ export function ConfigurationSummary() {
   const removeProblem = useExperienceStore((state) => state.removeProblem);
   const previewProblem = useExperienceStore((state) => state.previewProblem);
   const toggleSolar = useExperienceStore((state) => state.toggleSolar);
-  const openSummary = useExperienceStore((state) => state.openSummary);
   const closeSummary = useExperienceStore((state) => state.closeSummary);
   const clearProblem = useExperienceStore((state) => state.clearProblem);
   const [handoffOpen, setHandoffOpen] = useState(false);
@@ -26,7 +25,6 @@ export function ConfigurationSummary() {
   const environment = getEnvironment(selectedEnvironment);
   const selected = environment?.problems.filter((problem) => selectedProblems.includes(problem.id)) ?? [];
   const hasEv = selectedProblems.includes("ev-charging");
-  const choiceCount = selected.length + (solarEnabled ? 1 : 0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -58,25 +56,10 @@ export function ConfigurationSummary() {
 
   return (
     <>
-      {selected.length > 0 && (
-        <aside className={styles.dock} aria-label="Current MacroPark setup">
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            onClick={() => {
-              setHandoffOpen(false);
-              openSummary();
-            }}
-          >
-            My setup <span aria-live="polite">({choiceCount})</span>
-          </button>
-        </aside>
-      )}
-
       <dialog
         ref={dialogRef}
         className={styles.backdrop}
-        aria-label={handoffOpen ? "Your project brief" : "Your selected solutions"}
+        aria-label={handoffOpen ? "Your project brief" : "Your parking plan"}
         onCancel={(event) => {
           event.preventDefault();
           dismiss();
@@ -86,14 +69,14 @@ export function ConfigurationSummary() {
         }}
       >
         <section ref={summaryRef} className={styles.summary}>
-          <button className={styles.close} type="button" onClick={dismiss} aria-label="Close setup">
+          <button className={styles.close} type="button" onClick={dismiss} aria-label="Close your plan">
             ×
           </button>
 
           <div hidden={handoffOpen}>
             <div className={styles.heading}>
               <span>{environment.name}</span>
-              <h2 ref={headingRef} tabIndex={-1}>Your selected solutions</h2>
+              <h2 ref={headingRef} tabIndex={-1}>Your parking plan</h2>
               <p>
                 Review what you added, then save it as a project brief.
               </p>

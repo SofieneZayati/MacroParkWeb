@@ -4,7 +4,7 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 ## Current status
 
-**Project stage:** Phases 1–4 and Performance Pass 1 are merged. Performance Pass 2 and client-journey polish are implemented on the development branch. See `docs/PERFORMANCE_PASS_2.md` for findings, measurements and validation limits.
+**Project stage:** Phases 1–4 and Performance Pass 1 are merged. The full client-journey and architecture refactor is implemented on the development branch as of **2026-09-08**, building on Performance Pass 2. See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the new boundaries and [`PERFORMANCE_PASS_2.md`](PERFORMANCE_PASS_2.md) for earlier performance findings and their limits.
 
 **Stable branch:** `main`
 
@@ -20,13 +20,33 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 
 **Phase 4 PR:** #5 — merged as `1b55563b8aed7c3abdfdde0f8be302424f7a9920`.
 
-**Latest validation:** The selection-clarity revision passes the local Node 24 production build, TypeScript/static generation and ten state-regression tests. Fresh visual/interaction validation of this revision is pending: the browser runtime cannot initialize after a plugin update, and launching an isolated headless browser was rejected by automatic approval review. Earlier desktop/portrait checks and RTX 3060 measurements apply to the preceding Performance Pass 2 revision. CI remains a separate check.
+**Latest validation:** On 2026-09-08, all 21 tests, TypeScript and the production build pass. Browser validation exercised all Home/Residence/Retail tabs, explicit add/remove, separate plan restoration, consistent solar counts, keyboard navigation, modal focus and brief draft/copy/download. Screenshots at 390×844, 320×568 and 844×390 showed no page overflow. Reduced motion and WebGL fallback remain usable. Production checks verified paused quality/full-scene changes resume correctly, and captured no console errors. The updated GitHub CI workflow has not yet run.
 
-**Current build baseline:** `/` is approximately 258 kB route size and 361 kB First Load JS. No runtime dependencies or downloaded 3D assets were added.
+**Current build:** `/` reports 12.7 kB route size and 115 kB First Load JS, compared with 258/361 kB before the refactor. The 3D renderer loads in a separate client chunk; this is an initial-bundle reduction rather than a total-transfer measurement. No runtime dependencies or heavy assets were added.
 
-**Performance caveat:** Local steady-state samples were approximately 140–144 FPS at desktop/portrait viewport sizes on an RTX 3060. This is a single-device observation, not a measured before/after improvement, phone benchmark, thermal test or guarantee for other hardware.
+**Performance caveat:** Fresh production samples on the local RTX 3060 reached 144 FPS with p95 frame intervals of 7–7.2 ms in representative Home, Residence and Retail scenes. These one-second spot samples are not a before/after benchmark, physical-phone or thermal test, or a guarantee of no stutter on other hardware. See the dated addendum in `PERFORMANCE_PASS_2.md`.
 
-**Current priority:** review Performance Pass 2 on the user's normal browser and representative physical phones before merging or adding a heavier system reveal. The production contact destination, deployment/domain and final content/SEO work remain open.
+**Current priority:** run the updated GitHub CI workflow and validate representative physical phones before merging or adding a heavier system reveal. The production contact destination, deployment/domain and final content/SEO work remain open.
+
+## 2026-09-08 — Full client journey and architecture refactor
+
+- Replaced the layered selection screens with a persistent workbench: choose a place, explore its needs, preview freely, explicitly **Add to your plan**, and review **Your plan**. The selected need and other available needs stay visible together.
+- Rebuilt the interface as focused header, opening, chooser, workbench and scene-control components with scoped CSS. Removed the obsolete floating-dock styles and competing legacy layout rules.
+- Separated the root coordinator from WebGL capability, loading/failure handling, adaptive quality, visibility/modal pause and reduced-motion scheduling. Opening/QA lifecycle initialization has its own hook.
+- Moved shared identifiers and configuration rules into a domain layer. Each place has one canonical in-memory configuration; preview and inclusion remain separate. Invalid cross-place solutions, duplicates and solar without charging are rejected or normalized.
+- Shared Residence/Retail camera interpolation and settled-state handling while retaining each story's physical targets and timing. No additional camera frame loop, heavy asset or runtime dependency was introduced.
+- Extracted one pure project-brief builder for preview, clipboard, download and the optional email draft. Solar is an option on charging and does not count as an additional selected solution.
+- Added `npm test` and `npm run typecheck`. All 21 configuration, brief and camera tests pass. CI now runs every test file and captures 390-pixel/320-pixel workbench previews while preserving existing scene states. Failed, timed-out, missing or empty captures fail the capture step after the remaining cases are attempted; images remain review artifacts, not visual assertions.
+
+Verified in the development browser:
+
+- Every Home, Residence and Retail solution tab; explicit add/remove and separate plan restoration when switching places.
+- Solar inclusion and removal with consistent solution counts throughout the header, workbench and brief.
+- Arrow keys, Home and End select and scroll the active workbench tab into view; modal focus behavior remains usable.
+- Project details survive review/back within the current place; brief copy works, and the contents of an actual downloaded text file match the plan and draft.
+- Screenshots at 390×844, 320×568 and 844×390, with no page overflow; reduced-motion outcomes and the no-WebGL consultation remain usable.
+
+The production build and representative rendering checks pass. Paused current-solution replay, EV removal, graphics quality changes and full-scene framing now resume the scene to show the changed result. Landscape screens use a compact side panel, with matching camera framing; active tabs remain visible after resizing. CI also captures the landscape workbench. These desktop-browser checks do not constitute physical-phone, sustained-load or thermal benchmarks. The updated GitHub CI workflow has not yet run. No CRM/email message was sent.
 
 ## 2026-09-06 — Clearer selection journey
 
@@ -36,7 +56,7 @@ This file is the persistent project checkpoint. Keep it current after meaningful
 - Used plain place/solution names and clearer summary/brief actions. Solar is offered after charging is added.
 - Kept the active scene and primary button mounted through adding/reviewing for keyboard focus and animation continuity.
 - Added `qaPreview=1` for deterministic previews without adding a solution. Existing QA URLs retain their saved-choice behavior.
-- Build and ten store tests pass; fresh browser layout/interaction QA remains pending for the tooling reason above.
+- At this checkpoint, build and ten store tests passed; fresh browser layout/interaction QA was blocked by browser-tool initialization failure and an automatic approval rejection of an isolated browser launch. The later 2026-09-08 checkpoint records resumed browser validation.
 
 ## 2026-09-05 — Performance Pass 2 and consultation polish
 
